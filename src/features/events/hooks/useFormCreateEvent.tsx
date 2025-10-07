@@ -27,13 +27,27 @@ const EventSchema = z.object({
     })
     .optional(),
   regionId: z.string().min(1, { message: "Região é obrigatória" }),
+  location: z.object({
+    lat: z
+      .number()
+      .min(-90, { message: "Latitude mínima é -90" })
+      .max(90, { message: "Latitude máxima é 90" }),
+    lng: z
+      .number()
+      .min(-180, { message: "Longitude mínima é -180" })
+      .max(180, { message: "Longitude máxima é 180" }),
+    address: z.string().optional(),
+  }),
+  openImmediately: z.boolean(),
 });
 
 type EventFormType = z.infer<typeof EventSchema>;
 
 export type useFormCreateEvent = {
   form: ReturnType<typeof useForm<EventFormType>>;
-  onSubmit: (event?: React.BaseSyntheticEvent) => Promise<boolean>;
+  onSubmit: (
+    event?: React.BaseSyntheticEvent
+  ) => Promise<{ success: boolean; id?: string }>;
   dateRange: DateRange | undefined;
   setDateRange: (dateRange: DateRange | undefined) => void;
 };
@@ -70,10 +84,14 @@ export default function useFormCreateEvent(): useFormCreateEvent {
     defaultValues: {
       name: "",
       regionId: "",
+      location: undefined,
+      openImmediately: false,
     },
   });
 
-  async function onCreateForm(input: EventFormType) {
+  async function onCreateForm(
+    input: EventFormType
+  ): Promise<{ success: boolean; id?: string }> {
     try {
       setLoading(true);
 
@@ -83,7 +101,7 @@ export default function useFormCreateEvent(): useFormCreateEvent {
           description: "Selecione as datas de início e término do evento.",
           icon: <ThumbsDown />,
         });
-        return false;
+        return { success: false };
       }
 
       // Validar se a data final é posterior à data inicial
@@ -92,7 +110,7 @@ export default function useFormCreateEvent(): useFormCreateEvent {
           description: "A data de término deve ser posterior à data de início.",
           icon: <ThumbsDown />,
         });
-        return false;
+        return { success: false };
       }
 
       // Converter imagem para base64 se existir
@@ -112,6 +130,10 @@ export default function useFormCreateEvent(): useFormCreateEvent {
         endDate: endDateISO,
         regionId: input.regionId,
         image: imageBase64,
+        latitude: input.location.lat,
+        longitude: input.location.lng,
+        address: input.location.address,
+        openImmediately: input.openImmediately,
       };
 
       console.log("Dados do evento a serem enviados para a API:");
@@ -126,7 +148,7 @@ export default function useFormCreateEvent(): useFormCreateEvent {
         )
       );
 
-      await registerEvent(eventData);
+      const { id } = await registerEvent(eventData);
 
       form.reset();
       setDateRange({
@@ -138,21 +160,21 @@ export default function useFormCreateEvent(): useFormCreateEvent {
         description: "Evento criado com sucesso e pronto para uso.",
         icon: <ThumbsUp />,
       });
-      return true;
+      return { success: true, id };
     } catch (error) {
       const err = error as Error;
       toast.error("Erro ao criar evento", {
         description: err.message,
         icon: <ThumbsDown />,
       });
-      return false;
+      return { success: false };
     } finally {
       setLoading(false);
     }
   }
 
   const onSubmit = async (event?: React.BaseSyntheticEvent) => {
-    let result = false;
+    let result: { success: boolean; id?: string } = { success: false };
     await form.handleSubmit(async (data) => {
       result = await onCreateForm(data);
     })(event);

@@ -32,8 +32,8 @@ export function CalendarRanger({
   const [internalDateRange, setInternalDateRange] = React.useState<
     DateRange | undefined
   >({
-    from: new Date(),
-    to: new Date(new Date().setDate(new Date().getDate() + 3)),
+    from: undefined,
+    to: undefined,
   });
 
   // Use as props se fornecidas, caso contrário use estado interno
@@ -89,7 +89,6 @@ export function CalendarRanger({
           }}
           captionLayout={dropdown}
           locale={ptBR}
-          numberOfMonths={2}
           className="rounded-lg border shadow-sm"
         />
       </div>

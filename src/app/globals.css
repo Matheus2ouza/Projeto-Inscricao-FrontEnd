@@ -188,3 +188,21 @@
 .animation-delay-4000 {
   animation-delay: 4s;
 }
+
+/* Estilos para os componentes do Google Maps Extended */
+gmpx-place-picker {
+  --gmpx-color-surface: #ffffff;
+  --gmpx-color-on-surface: #1f2937;
+  --gmpx-color-on-surface-variant: #6b7280;
+  --gmpx-color-primary: #3b82f6;
+  --gmpx-color-outline: #d1d5db;
+}
+
+gmp-map {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.place-picker-container {
+  padding: 12px;
+}

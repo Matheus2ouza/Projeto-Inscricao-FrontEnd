@@ -7,7 +7,10 @@ export type RegisterEventInput = {
   startDate?: string;
   endDate?: string;
   regionId: string;
-  image?: string; // base64 string
+  image?: string;
+  latitude?: number;
+  longitude?: number;
+  openImmediately?: boolean;
 };
 
 export type RegisterEventOutput = {

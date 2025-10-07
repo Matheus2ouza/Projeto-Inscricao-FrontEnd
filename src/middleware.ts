@@ -1,38 +1,37 @@
 import { MiddlewareConfig, NextRequest, NextResponse } from "next/server";
 import { verifySession } from "./shared/lib/session";
 
-const publicRoutes = [
-  { path: "/", whenAuthenticated: "next" },
-  { path: "/login", whenAuthenticated: "redirect" },
-  { path: "/documentation", whenAuthenticated: "next" },
-] as const;
-
 const REDIRECT_WHEN_NOT_AUTHENTICATED = "/login";
+
+function isPublicPath(pathname: string): boolean {
+  if (pathname === "/" || pathname === "/documentation") return true;
+  if (pathname === "/login") return true; // pública, mas redireciona se autenticado
+  if (pathname.startsWith("/events/")) return true; // página pública dinâmica
+  return false;
+}
+
+function shouldRedirectWhenAuthenticated(pathname: string): boolean {
+  return pathname === "/login";
+}
 
 export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const publicRoute = publicRoutes.find((route) => route.path === pathname);
   const authToken = request.cookies.get("authToken")?.value;
+  const isPublic = isPublicPath(pathname);
 
-  // Se não há token e é rota pública, libera
-  if (!authToken && publicRoute) {
-    return NextResponse.next();
-  }
+  // Sem token
+  if (!authToken) {
+    // Rotas públicas passam
+    if (isPublic) return NextResponse.next();
 
-  // Se não há token e não é rota pública, redireciona para login
-  if (!authToken && !publicRoute) {
-    console.log("No auth token and not a public route");
+    // Rotas privadas redirecionam ao login
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED;
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Se há token e está tentando acessar rota pública que deve redirecionar
-  if (
-    authToken &&
-    publicRoute &&
-    publicRoute.whenAuthenticated === "redirect"
-  ) {
+  // Com token, se rota pública que redireciona (ex.: /login), mandar para home do role
+  if (shouldRedirectWhenAuthenticated(pathname)) {
     const session = await verifySession();
     if (session) {
       const role = session.user.role;
@@ -43,45 +42,30 @@ export default async function middleware(request: NextRequest) {
         USER: "/user/home",
       };
       const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = roleHome[role] ?? "/user";
+      redirectUrl.pathname = roleHome[role] ?? "/user/home";
       return NextResponse.redirect(redirectUrl);
     }
   }
 
-  // Se há token e não é rota pública, verifica sessão e role
-  if (authToken && !publicRoute) {
+  // Com token em rota privada: validar sessão e prefixo do role
+  if (!isPublic) {
     const session = await verifySession();
     if (!session) {
-      console.log("No valid session found");
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED;
       return NextResponse.redirect(redirectUrl);
     }
 
     const role = session.user.role;
-    const roleHome: Record<string, string> = {
+    const roleHomePrefix: Record<string, string> = {
       SUPER: "/super/",
       ADMIN: "/admin/",
       MANAGER: "/admin/",
       USER: "/user/",
     };
-    const requiredPrefix = roleHome[role] ?? "/user/";
+    const requiredPrefix = roleHomePrefix[role] ?? "/user/";
 
-    // Se não está acessando a rota do seu role, redireciona
     if (!pathname.startsWith(requiredPrefix)) {
-      const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = requiredPrefix;
-      return NextResponse.redirect(redirectUrl);
-    }
-
-    // Se está tentando acessar rota de outro role, redireciona
-    const otherRolePrefixes = Object.values(roleHome).filter(
-      (prefix) => prefix !== requiredPrefix
-    );
-    const isAccessingOtherRole = otherRolePrefixes.some((prefix) =>
-      pathname.startsWith(prefix)
-    );
-    if (isAccessingOtherRole) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = requiredPrefix;
       return NextResponse.redirect(redirectUrl);
