@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Roboto } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../providers/theme-provider";
-import Navbar from "@/shared/components/ui/navbar";
+import Navbar from "@/shared/components/layout/private-navbar";
+import { Toaster } from "@/shared/components/ui/sonner";
+import { HeroUIProviderWrapper } from "../providers/heroui-provider";
+import { GlobalLoadingProvider } from "@/components/GlobalLoading";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,17 +39,26 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="ligth"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Navbar/>
-          <main className="h-[calc(100vh-96px)]">
-            {children}
-          </main>
-        </ThemeProvider>
+        <HeroUIProviderWrapper>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <GlobalLoadingProvider>
+              <main className="h-screen">
+                {children}
+                <Toaster
+                  richColors={true}
+                  position="top-right"
+                  swipeDirections={["right", "left"]}
+                  closeButton
+                />
+              </main>
+            </GlobalLoadingProvider>
+          </ThemeProvider>
+        </HeroUIProviderWrapper>
       </body>
     </html>
   );

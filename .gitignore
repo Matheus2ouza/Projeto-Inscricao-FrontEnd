@@ -40,5 +40,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-
-estrutura_diretorio.txt
+estrutura.txt

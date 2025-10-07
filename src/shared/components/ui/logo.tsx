@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import React from 'react';
-import { useTheme } from 'next-themes';
+import React from "react";
+import { useTheme } from "next-themes";
 
 interface LogoProps {
   className?: string;
@@ -11,36 +11,34 @@ interface LogoProps {
   showTitle?: boolean;
 }
 
-const Logo: React.FC<LogoProps> = ({ 
+const Logo: React.FC<LogoProps> = ({
   className = "w-48 h-48 object-contain mx-auto mb-8",
   lightModeSrc,
   darkModeSrc,
   alt = "Logo Sistema de Inscrição",
-  showTitle = true
+  showTitle = true,
 }) => {
   const { theme, resolvedTheme } = useTheme();
-  
+
   // Determina qual tema está ativo
-  const currentTheme = resolvedTheme || theme || 'light';
-  
+  const currentTheme = resolvedTheme || theme || "light";
+
   // Define as imagens baseadas no showTitle
-  const defaultLightSrc = showTitle ? "/images/logo+title.png" : "/images/logo.png";
-  const defaultDarkSrc = showTitle ? "/images/logo+title-white.png" : "/images/logo-white.png";
-  
+  const defaultLightSrc = showTitle
+    ? "/images/logo+title.png"
+    : "/images/logo.png";
+  const defaultDarkSrc = showTitle
+    ? "/images/logo+title-white.png"
+    : "/images/logo-white.png";
+
   // Usa as props se fornecidas, senão usa os defaults
   const finalLightSrc = lightModeSrc || defaultLightSrc;
   const finalDarkSrc = darkModeSrc || defaultDarkSrc;
-  
-  // Seleciona a imagem baseada no tema
-  const logoSrc = currentTheme === 'dark' ? finalDarkSrc : finalLightSrc;
 
-  return (
-    <img 
-      src={logoSrc}
-      alt={alt}
-      className={className}
-    />
-  );
+  // Seleciona a imagem baseada no tema
+  const logoSrc = currentTheme === "dark" ? finalDarkSrc : finalLightSrc;
+
+  return <img src={logoSrc} alt={alt} className={className} />;
 };
 
 export default Logo;

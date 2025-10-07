@@ -1,0 +1,93 @@
+import axios from "axios";
+import { toast } from "sonner";
+
+const axiosInstance = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
+});
+
+async function resolveAuthToken(): Promise<string | null> {
+  if (typeof window === "undefined") {
+    const { getAuthToken } = await import("./session");
+    return await getAuthToken();
+  }
+  try {
+    // Primeiro tenta cookie direto
+    const match = document.cookie.match(/(?:^|; )authToken=([^;]*)/);
+    if (match) return decodeURIComponent(match[1]);
+    // Fallback: busca do endpoint interno (SSR/CSR)
+    const res = await fetch("/api/token", { cache: "no-store" });
+    if (res.ok) {
+      const { token } = await res.json();
+      return token ?? null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// Interceptor de requisição para adicionar o token dinamicamente
+axiosInstance.interceptors.request.use(
+  async (config) => {
+    const url = config.url ?? "";
+    const isAuthFree =
+      url.includes("/users/login") || url.includes("/users/refresh");
+
+    // Busca o token atual apenas se não for login/refresh (server/client-safe)
+    const token = isAuthFree ? null : await resolveAuthToken();
+
+    // Adiciona o token no header Authorization se existir
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Interceptor de resposta para tratamento de erros
+
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    // Evita loop: não tenta refresh se já for a chamada de refresh
+    const isRefreshCall =
+      originalRequest.url && originalRequest.url.includes("/users/refresh");
+    if (error.response && error.response.status === 403 && !isRefreshCall) {
+      originalRequest.__retryCount = originalRequest.__retryCount || 0;
+      if (originalRequest.__retryCount < 3) {
+        originalRequest.__retryCount += 1;
+        try {
+          // Chama endpoint interno que faz refresh e atualiza cookie httpOnly
+          const res = await fetch("/api/refresh", {
+            method: "POST",
+            cache: "no-store",
+          });
+          if (!res.ok) throw new Error("refresh failed");
+          return axiosInstance(originalRequest);
+        } catch (e) {
+          // Logout e toast de sessão expirada
+          try {
+            await fetch("/api/logout", { method: "POST" });
+          } catch {}
+          toast.error("Sessão expirada. Faça login novamente.");
+          if (typeof window !== "undefined") {
+            window.location.href = "/login";
+          }
+          return Promise.reject(error);
+        }
+      }
+    }
+    console.error("API Error:", error.response?.data || error.message);
+    return Promise.reject(error); // repassa o erro pra onde foi chamado
+  }
+);
+
+export default axiosInstance;
