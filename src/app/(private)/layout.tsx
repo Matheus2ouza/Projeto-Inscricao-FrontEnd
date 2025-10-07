@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { verifySession } from "@/shared/lib/session";
-import Navbar from "@/shared/components/layout/private-navbar";
 
 export default async function PrivateLayout({
   children,

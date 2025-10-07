@@ -12,7 +12,6 @@ import {
   Shield,
   UserCheck,
 } from "lucide-react";
-import { Router } from "next/router";
 
 export default function AdminManagerHome() {
   const { logout } = useLogout();

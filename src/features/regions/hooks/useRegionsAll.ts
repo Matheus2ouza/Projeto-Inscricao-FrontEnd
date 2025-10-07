@@ -29,8 +29,10 @@ export function useRegionsAll({
       setRegions(data.regions);
       setTotal(data.total);
       setPageCount(data.pageCount);
-    } catch (error: any) {
-      setError(error?.message ?? "Falha ao carregar regiões");
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Falha ao carregar regiões";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

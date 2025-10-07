@@ -21,8 +21,10 @@ export function useRegions(): UseRegionsResult {
     try {
       const data = await getRegions();
       setRegions(data);
-    } catch (e: any) {
-      setError(e?.message ?? "Falha ao carregar regiões");
+    } catch (e: unknown) {
+      const errorMessage =
+        e instanceof Error ? e.message : "Falha ao carregar regiões";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

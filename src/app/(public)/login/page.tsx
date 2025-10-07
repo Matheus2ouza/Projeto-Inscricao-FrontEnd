@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import CookieConsent from "../../../components/cookie/CookieConsent";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
@@ -21,14 +21,6 @@ import {
   FormMessage,
 } from "@/shared/components/ui/form";
 import useFormLogin from "./hooks/useFormLogin";
-import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/shared/components/ui/dialog";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);

@@ -2,26 +2,21 @@
 
 import React from "react";
 import { Button } from "@/shared/components/ui/button";
-import { useLogout } from "@/shared/hooks/logout/logout";
 import { useUserRole } from "@/shared/hooks/useUserRole";
 import {
-  Crown,
   Shield,
   Database,
   Users,
   Settings,
   Activity,
-  AlertTriangle,
-  Globe,
   Map,
   CalendarCheck2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function SuperHome() {
-  const { logout } = useLogout();
   const router = useRouter();
-  const { role, loading } = useUserRole();
+  const { loading } = useUserRole();
 
   if (loading) {
     return (

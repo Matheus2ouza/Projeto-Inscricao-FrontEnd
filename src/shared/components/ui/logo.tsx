@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useTheme } from "next-themes";
+import Image from "next/image";
 
 interface LogoProps {
   className?: string;
@@ -38,7 +39,15 @@ const Logo: React.FC<LogoProps> = ({
   // Seleciona a imagem baseada no tema
   const logoSrc = currentTheme === "dark" ? finalDarkSrc : finalLightSrc;
 
-  return <img src={logoSrc} alt={alt} className={className} />;
+  return (
+    <Image
+      src={logoSrc}
+      alt={alt}
+      className={className}
+      width={200}
+      height={50}
+    />
+  );
 };
 
 export default Logo;

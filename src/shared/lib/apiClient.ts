@@ -72,7 +72,7 @@ axiosInstance.interceptors.response.use(
           });
           if (!res.ok) throw new Error("refresh failed");
           return axiosInstance(originalRequest);
-        } catch (e) {
+        } catch {
           // Logout e toast de sessão expirada
           try {
             await fetch("/api/logout", { method: "POST" });

@@ -71,19 +71,23 @@ export async function loginService(
         path: "/",
         maxAge: 60 * 60 * 24, // 24 horas
       });
-    } catch (err) {
+    } catch {
       console.warn("Cookies bloqueados, caindo para sessão em memória");
       return { role, sessionFallback: sessionData };
     }
 
     return { role };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const axiosError = error as {
+      response?: { data?: { message?: string } };
+      message?: string;
+    };
     console.error(
       "Erro ao fazer login:",
-      error.response?.data || error.message
+      axiosError.response?.data || axiosError.message
     );
     throw new Error(
-      error.response?.data?.message ||
+      axiosError.response?.data?.message ||
         "Erro inesperado. Por favor, tente novamente mais tarde."
     );
   }

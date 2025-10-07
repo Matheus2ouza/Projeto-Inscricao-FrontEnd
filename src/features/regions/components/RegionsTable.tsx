@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
+import Image from "next/image";
 import { Button } from "@/shared/components/ui/button";
 import {
   Pagination,
@@ -34,7 +35,7 @@ import {
   DialogHeader,
 } from "@/shared/components/ui/dialog";
 import { DialogClose, DialogTitle } from "@radix-ui/react-dialog";
-import { Form, FormProvider } from "react-hook-form";
+import { FormProvider } from "react-hook-form";
 import {
   FormControl,
   FormField,
@@ -44,7 +45,6 @@ import {
 import useFormCreateRegion from "@/features/regions/hooks/useFormCreateRegion";
 import { Input } from "@/shared/components/ui/input";
 import { useRegionsAll } from "../hooks/useRegionsAll";
-import { get } from "http";
 
 const PAGE_SIZE = 4;
 
@@ -315,10 +315,11 @@ export default function RegionsTable() {
                               <div className="border rounded-lg overflow-hidden bg-white dark:bg-gray-800">
                                 <div className="relative h-32">
                                   {region.lastEvent.imageUrl ? (
-                                    <img
+                                    <Image
                                       src={region.lastEvent.imageUrl}
                                       alt={region.lastEvent.name}
-                                      className="w-full h-full object-cover"
+                                      fill
+                                      className="object-cover"
                                     />
                                   ) : (
                                     <div className="w-full h-full absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500" />
@@ -373,10 +374,11 @@ export default function RegionsTable() {
                               <div className="border rounded-lg overflow-hidden bg-white dark:bg-gray-800">
                                 <div className="relative h-32">
                                   {region.nextEventAt.imageUrl ? (
-                                    <img
+                                    <Image
                                       src={region.nextEventAt.imageUrl}
                                       alt={region.nextEventAt.name}
-                                      className="w-full h-full object-cover"
+                                      fill
+                                      className="object-cover"
                                     />
                                   ) : (
                                     <div className="w-full h-full absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500" />

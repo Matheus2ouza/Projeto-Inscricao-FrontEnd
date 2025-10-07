@@ -8,6 +8,7 @@ import React, {
   useCallback,
   useEffect,
 } from "react";
+import Image from "next/image";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -16,7 +17,7 @@ import {
   DialogHeader,
 } from "@/shared/components/ui/dialog";
 import { DialogClose, DialogTitle } from "@radix-ui/react-dialog";
-import { Form, FormProvider } from "react-hook-form";
+import { FormProvider } from "react-hook-form";
 import {
   FormControl,
   FormField,
@@ -41,14 +42,14 @@ export default function RegisterFormEvent({
   onSubmitSuccess,
 }: RegisterFormEventProps) {
   const { form, onSubmit, dateRange, setDateRange } = useFormCreateEvent();
-  const { regions: fetchedRegions, loading, error } = useRegions();
+  const { regions: fetchedRegions } = useRegions();
   const [isDragging, setIsDragging] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Remover preview da imagem ao resetar o formulário
   React.useEffect(() => {
-    const subscription = form.watch((values: any) => {
+    const subscription = form.watch((values: { image?: File | null }) => {
       if (!values.image && previewUrl) {
         setPreviewUrl(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
@@ -119,6 +120,25 @@ export default function RegisterFormEvent({
     setIsDragging(true);
   }, []);
 
+  // Função para lidar com a seleção de arquivo
+  const handleFileSelect = useCallback(
+    (file: File) => {
+      // Atualizar o formulário
+      form.setValue("image", file);
+
+      // Criar preview
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+
+      // Mostrar toast de sucesso
+      toast.success("Imagem carregada com sucesso", {
+        description: `Arquivo: ${file.name}`,
+        duration: 3000,
+      });
+    },
+    [form]
+  );
+
   // Função para lidar com o drag leave
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -127,44 +147,31 @@ export default function RegisterFormEvent({
   }, []);
 
   // Função para lidar com o drop
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
 
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      const file = files[0];
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        const file = files[0];
 
-      if (!isValidImageType(file)) {
-        showFormatError();
-        return;
+        if (!isValidImageType(file)) {
+          showFormatError();
+          return;
+        }
+
+        if (!isValidFileSize(file)) {
+          showSizeError();
+          return;
+        }
+
+        handleFileSelect(file);
       }
-
-      if (!isValidFileSize(file)) {
-        showSizeError();
-        return;
-      }
-
-      handleFileSelect(file);
-    }
-  }, []);
-
-  // Função para lidar com a seleção de arquivo
-  const handleFileSelect = (file: File) => {
-    // Atualizar o formulário
-    form.setValue("image", file);
-
-    // Criar preview
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-
-    // Mostrar toast de sucesso
-    toast.success("Imagem carregada com sucesso", {
-      description: `Arquivo: ${file.name}`,
-      duration: 3000,
-    });
-  };
+    },
+    [handleFileSelect]
+  );
 
   // Função para lidar com o clique na área de upload
   const handleAreaClick = () => {
@@ -195,7 +202,7 @@ export default function RegisterFormEvent({
 
   // Função para remover a imagem
   const handleRemoveImage = () => {
-    form.setValue("image", null as any);
+    form.setValue("image", undefined);
     setPreviewUrl(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -265,7 +272,7 @@ export default function RegisterFormEvent({
             <FormField
               control={form.control}
               name="image"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
                   <FormControl>
                     <div className="flex flex-col items-center justify-center w-full">
@@ -309,10 +316,11 @@ export default function RegisterFormEvent({
                         // Preview da imagem com botão de remover
                         <div className="w-full space-y-3">
                           <div className="relative w-full h-48 rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700">
-                            <img
+                            <Image
                               src={previewUrl}
                               alt="Preview"
-                              className="w-full h-full object-cover"
+                              fill
+                              className="object-cover"
                             />
                             <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-2 text-xs">
                               Imagem selecionada

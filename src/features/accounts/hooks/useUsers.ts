@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   getUsers,
   type GetUsersResponse,
@@ -42,8 +42,10 @@ export function useUsers({
       setUsers(data.users);
       setTotal(data.total);
       setPageCount(data.pageCount);
-    } catch (e: any) {
-      setError(e?.message ?? "Falha ao carregar usuários");
+    } catch (e: unknown) {
+      const errorMessage =
+        e instanceof Error ? e.message : "Falha ao carregar usuários";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

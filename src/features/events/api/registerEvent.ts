@@ -22,13 +22,17 @@ export async function registerEvent(
     const { data } = response;
 
     return { id: data.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const axiosError = error as {
+      response?: { data?: { message?: string } };
+      message?: string;
+    };
     console.error(
       "Erro ao registrar evento:",
-      error.response?.data || error.message
+      axiosError.response?.data || axiosError.message
     );
     throw new Error(
-      error.response?.data?.message ||
+      axiosError.response?.data?.message ||
         "Erro inesperado. Por favor, tente novamente mais tarde."
     );
   }

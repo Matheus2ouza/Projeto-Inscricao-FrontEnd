@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Roboto } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../providers/theme-provider";
-import Navbar from "@/shared/components/layout/private-navbar";
 import { Toaster } from "@/shared/components/ui/sonner";
 import { HeroUIProviderWrapper } from "../providers/heroui-provider";
 import { GlobalLoadingProvider } from "@/components/GlobalLoading";

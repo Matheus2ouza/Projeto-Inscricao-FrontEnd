@@ -41,8 +41,9 @@ export function useUserRole(): UseUserRoleResult {
 
       const data = (await res.json()) as { role: RoleType };
       setRole(data.role ?? null);
-    } catch (err: any) {
-      if (err?.name !== "AbortError") {
+    } catch (err: unknown) {
+      const error = err as { name?: string };
+      if (error?.name !== "AbortError") {
         setError("Falha ao obter role");
         setRole(null);
       }

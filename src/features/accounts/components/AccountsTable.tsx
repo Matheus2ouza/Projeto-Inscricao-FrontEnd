@@ -44,15 +44,8 @@ export default function AccountsTable() {
   const [hasRegion, setHasRegion] = useState(false);
 
   const { form, onSubmit } = useFormCreateAccount();
-  const { regions: fetchedRegions, loading, error } = useRegions();
-  const {
-    users,
-    total,
-    page,
-    pageCount,
-    loading: loadingUsers,
-    setPage,
-  } = useUsers({ pageSize: 20 });
+  const { regions: fetchedRegions } = useRegions();
+  const { users, total, page, pageCount, setPage } = useUsers({ pageSize: 20 });
 
   // Transformar as regiões do hook no formato de Option
   const regionOptions = useMemo(() => {

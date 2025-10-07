@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import PublicNavbar from "@/shared/components/layout/public-navbar";
 
 export default function Documentation() {
   return (

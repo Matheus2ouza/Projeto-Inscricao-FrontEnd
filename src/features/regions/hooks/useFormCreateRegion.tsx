@@ -3,6 +3,7 @@
 import { useGlobalLoading } from "@/components/GlobalLoading";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import z from "zod";
 import { registerRegion } from "../api/registerRegion";
@@ -10,7 +11,7 @@ import { registerRegion } from "../api/registerRegion";
 const RegionsSchema = z.object({
   name: z
     .string()
-    .min(2, { error: "O nome da Região deve ter pelo menos 2 Caracteres" }),
+    .min(2, { message: "O nome da Região deve ter pelo menos 2 Caracteres" }),
 });
 
 type RegionFormType = z.infer<typeof RegionsSchema>;
@@ -24,6 +25,7 @@ export default function useFormCreateRegion(): useFormCreateRegion {
   const { setLoading } = useGlobalLoading();
 
   const form = useForm<RegionFormType>({
+    resolver: zodResolver(RegionsSchema),
     defaultValues: {
       name: "",
     },

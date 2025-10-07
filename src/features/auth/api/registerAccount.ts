@@ -35,13 +35,17 @@ export async function registerAccount(
     const { data } = response;
 
     return { id: data.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const axiosError = error as {
+      response?: { data?: { message?: string } };
+      message?: string;
+    };
     console.error(
-      "Erro ao fazer login:",
-      error.response?.data || error.message
+      "Erro ao registrar conta:",
+      axiosError.response?.data || axiosError.message
     );
     throw new Error(
-      error.response?.data?.message ||
+      axiosError.response?.data?.message ||
         "Erro inesperado. Por favor, tente novamente mais tarde."
     );
   }

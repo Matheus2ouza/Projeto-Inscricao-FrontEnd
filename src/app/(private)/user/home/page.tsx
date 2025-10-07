@@ -209,7 +209,7 @@ export default function UserHome() {
               <div className="w-2 h-2 rounded-full mt-2 bg-green-500"></div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-900 dark:text-white font-medium">
-                  Inscrição confirmada no evento "Workshop de React"
+                  Inscrição confirmada no evento &quot;Workshop de React&quot;
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Há 2 horas
@@ -220,7 +220,8 @@ export default function UserHome() {
               <div className="w-2 h-2 rounded-full mt-2 bg-blue-500"></div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-900 dark:text-white font-medium">
-                  Novo evento disponível: "Conferência de Tecnologia 2025"
+                  Novo evento disponível: &quot;Conferência de Tecnologia
+                  2025&quot;
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Há 1 dia
@@ -231,7 +232,7 @@ export default function UserHome() {
               <div className="w-2 h-2 rounded-full mt-2 bg-purple-500"></div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-900 dark:text-white font-medium">
-                  Certificado emitido para "Curso de JavaScript"
+                  Certificado emitido para &quot;Curso de JavaScript&quot;
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Há 3 dias

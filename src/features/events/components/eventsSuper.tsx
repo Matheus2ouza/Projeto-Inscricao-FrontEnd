@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { Button } from "@/shared/components/ui/button";
 import {
   Pagination,
@@ -11,13 +12,6 @@ import {
   PaginationPrevious,
   PaginationNext,
 } from "@/shared/components/ui/pagination";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import {
   ChevronDown,
@@ -25,11 +19,9 @@ import {
   Users,
   Calendar,
   Eye,
-  EyeOff,
   DollarSign,
   MapPin,
   EyeClosed,
-  Clock,
 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { Dialog } from "@/shared/components/ui/dialog";
@@ -198,10 +190,11 @@ export default function EventsTableSuper() {
                 {/* Imagem do Evento - Ocupando toda a parte superior */}
                 <div className="relative w-full aspect-[3/1.1] overflow-hidden">
                   {event.imageUrl ? (
-                    <img
+                    <Image
                       src={event.imageUrl}
                       alt={event.name}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                   ) : (
                     <div className="w-full h-full absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500" />

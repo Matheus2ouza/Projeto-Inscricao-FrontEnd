@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { ModeToggle } from "@/shared/components/ui/mode-toggle";
 import Logo from "@/shared/components/ui/logo";
