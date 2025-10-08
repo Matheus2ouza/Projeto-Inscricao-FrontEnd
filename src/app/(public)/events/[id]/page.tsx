@@ -19,7 +19,7 @@ type EventDetail = {
   location: string;
   latitude: number;
   longitude: number;
-  isOpen: boolean;
+  status: "OPEN" | "CLOSE" | "FINALIZED";
   createdAt: string;
   updatedAt: string;
 };
@@ -95,8 +95,8 @@ export default function EventPage({
       };
     }
 
-    // Se as inscrições estão fechadas (CLOSED)
-    if (!event.isOpen) {
+    // Se as inscrições estão fechadas (CLOSE)
+    if (event.status === "CLOSE") {
       return {
         status: "closed",
         label: "Inscrições Fechadas",

@@ -524,22 +524,39 @@ export default function EventManagement({
                     Status das Inscrições
                   </label>
                   {isEditing ? (
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        name="isOpen"
-                        checked={formData.isOpen}
-                        onChange={handleInputChange}
-                        className="h-4 w-4"
-                      />
-                      <span className="text-sm">Inscrições abertas</span>
-                    </div>
+                    <select
+                      name="status"
+                      value={formData.status}
+                      onChange={(e) =>
+                        handleInputChange({
+                          ...({} as any),
+                          target: {
+                            name: "status",
+                            value: e.target.value,
+                            type: "text",
+                          },
+                        } as React.ChangeEvent<HTMLInputElement>)
+                      }
+                      className="border rounded p-2 bg-background"
+                    >
+                      <option value="OPEN">Aberto</option>
+                      <option value="CLOSE">Fechado</option>
+                      <option value="FINALIZED">Finalizado</option>
+                    </select>
                   ) : (
                     <Badge
-                      className={event.isOpen ? "bg-green-600" : "bg-red-600"}
+                      className={
+                        event.status === "OPEN"
+                          ? "bg-green-600"
+                          : event.status === "FINALIZED"
+                          ? "bg-gray-600"
+                          : "bg-red-600"
+                      }
                     >
-                      {event.isOpen
+                      {event.status === "OPEN"
                         ? "Inscrições Abertas"
+                        : event.status === "FINALIZED"
+                        ? "Evento Finalizado"
                         : "Inscrições Fechadas"}
                     </Badge>
                   )}

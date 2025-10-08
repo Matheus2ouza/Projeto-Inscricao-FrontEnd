@@ -21,7 +21,7 @@ export function useFormEditEvent(event: Event) {
     location: event.location || "",
     maxParticipants: event.maxParticipants || 0,
     ticketPrice: event.ticketPrice || 0,
-    isOpen: event.isOpen || false,
+    status: event.status || "CLOSE",
   });
 
   const handleInputChange = (
@@ -51,7 +51,7 @@ export function useFormEditEvent(event: Event) {
         location: formData.location,
         maxParticipants: formData.maxParticipants || undefined,
         ticketPrice: formData.ticketPrice || undefined,
-        isOpen: formData.isOpen,
+        status: formData.status,
       };
 
       await updateEvent(event.id, updateData);
@@ -107,7 +107,7 @@ export function useFormEditEvent(event: Event) {
       location: event.location || "",
       maxParticipants: event.maxParticipants || 0,
       ticketPrice: event.ticketPrice || 0,
-      isOpen: event.isOpen || false,
+      status: event.status || "CLOSE",
     });
     setIsEditing(false);
   };
