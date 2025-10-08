@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -151,7 +152,7 @@ export default function EventsTableSuper() {
           variant="default"
           className="dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/80"
         >
-          <a href="/super/events/create">Novo Evento</a>
+          <Link href="/super/events/create">Novo Evento</Link>
         </Button>
       </div>
 
@@ -375,7 +376,9 @@ export default function EventsTableSuper() {
                       variant="outline"
                       className="flex items-center gap-2"
                     >
-                      <a href={`/super/events/${event.id}`}>Gerenciar Evento</a>
+                      <Link href={`/super/events/${event.id}`}>
+                        Gerenciar Evento
+                      </Link>
                     </Button>
                   </div>
                 </div>
@@ -399,7 +402,7 @@ export default function EventsTableSuper() {
             </p>
           </div>
           <Button size="lg" asChild>
-            <a href="/super/events/create">Criar Primeiro Evento</a>
+            <Link href="/super/events/create">Criar Primeiro Evento</Link>
           </Button>
         </div>
       )}

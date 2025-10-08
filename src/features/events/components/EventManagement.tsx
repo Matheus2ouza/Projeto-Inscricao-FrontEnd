@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { Input } from "@/shared/components/ui/input";
@@ -131,9 +132,9 @@ export default function EventManagement({
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
-              <a href="/super/events">
+              <Link href="/super/events">
                 <ArrowLeft className="h-5 w-5" />
-              </a>
+              </Link>
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">

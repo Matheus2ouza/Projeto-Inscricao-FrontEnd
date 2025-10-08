@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEvent } from "@/features/events/hooks/useEvent";
 import EventManagement from "@/features/events/components/EventManagement";
@@ -30,7 +31,7 @@ export default function EventManagementPage() {
             {error || "Evento não encontrado"}
           </p>
           <Button asChild>
-            <a href="/super/events">Voltar para Eventos</a>
+            <Link href="/super/events">Voltar para Eventos</Link>
           </Button>
         </div>
       </div>
