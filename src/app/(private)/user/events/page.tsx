@@ -4,7 +4,14 @@ import { useEventsAll } from "@/features/events/hooks/useEventsAll";
 import { Card, CardBody, CardFooter } from "@heroui/react";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { Pagination } from "@/shared/components/ui/pagination";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+} from "@/shared/components/ui/pagination";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Calendar, MapPin, User, Users } from "lucide-react";
 import Image from "next/image";
@@ -28,10 +35,7 @@ export default function EventsPage() {
     router.push(`/user/group-inscription/${eventId}`);
   };
 
-  const handlePageChange = (
-    event: React.FormEvent<HTMLElement>,
-    newPage: number
-  ) => {
+  const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
 
@@ -215,12 +219,45 @@ export default function EventsPage() {
 
           {pageCount > 1 && (
             <div className="flex justify-center mt-8">
-              <Pagination
-                current={page}
-                total={pageCount}
-                onChange={handlePageChange}
-                showControls
-              />
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => page > 1 && handlePageChange(page - 1)}
+                      href={page > 1 ? "#" : undefined}
+                      className={
+                        page === 1 ? "pointer-events-none opacity-50" : ""
+                      }
+                    />
+                  </PaginationItem>
+
+                  {Array.from({ length: pageCount }, (_, i) => (
+                    <PaginationItem key={i}>
+                      <PaginationLink
+                        isActive={page === i + 1}
+                        href="#"
+                        onClick={() => handlePageChange(i + 1)}
+                      >
+                        {i + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() =>
+                        page < pageCount && handlePageChange(page + 1)
+                      }
+                      href={page < pageCount ? "#" : undefined}
+                      className={
+                        page === pageCount
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
           )}
         </>
