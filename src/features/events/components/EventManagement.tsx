@@ -529,13 +529,12 @@ export default function EventManagement({
                       value={formData.status}
                       onChange={(e) =>
                         handleInputChange({
-                          ...({} as any),
                           target: {
                             name: "status",
                             value: e.target.value,
                             type: "text",
                           },
-                        } as React.ChangeEvent<HTMLInputElement>)
+                        } as unknown as React.ChangeEvent<HTMLInputElement>)
                       }
                       className="border rounded p-2 bg-background"
                     >
