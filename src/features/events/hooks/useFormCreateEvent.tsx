@@ -123,6 +123,8 @@ export default function useFormCreateEvent(): useFormCreateEvent {
       const startDateISO = convertToISOString(dateRange.from);
       const endDateISO = convertToISOString(dateRange.to);
 
+      const registrationStatus = input.openImmediately ? "OPEN" : "CLOSE";
+
       // Preparar dados no formato esperado pela API
       const eventData = {
         name: input.name,
@@ -133,7 +135,7 @@ export default function useFormCreateEvent(): useFormCreateEvent {
         latitude: input.location.lat,
         longitude: input.location.lng,
         address: input.location.address,
-        openImmediately: input.openImmediately,
+        openImmediately: registrationStatus,
       };
 
       const { id } = await registerEvent(eventData);

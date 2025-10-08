@@ -1,4 +1,4 @@
-import EventsTableSuper from "@/features/events/components/eventsSuper";
+import EventsTableSuper from "@/features/events/components/EventsSuper";
 
 export default function EventsPage() {
   return <EventsTableSuper />;

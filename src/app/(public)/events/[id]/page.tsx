@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import axiosInstance from "@/shared/lib/apiClient";
 import Image from "next/image";
-import { Calendar, MapPin, Clock, Share2 } from "lucide-react";
+import { Calendar, MapPin, Share2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
+import EventMap from "@/shared/components/EventMap";
 
 type EventDetail = {
   id: string;
@@ -27,6 +29,7 @@ export default function EventPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const router = useRouter();
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,9 +39,9 @@ export default function EventPage({
       try {
         setLoading(true);
         const resolvedParams = await params;
-        const { data } = await axiosInstance.get<EventDetail>(`/events/me`, {
-          params: { id: resolvedParams.id },
-        });
+        const { data } = await axiosInstance.get<EventDetail>(
+          `/events/${resolvedParams.id}`
+        );
         setEvent(data);
       } catch (err) {
         setError("Erro ao carregar evento");
@@ -59,13 +62,6 @@ export default function EventPage({
     });
   };
 
-  const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   const getEventStatus = () => {
     if (!event)
       return {
@@ -81,8 +77,39 @@ export default function EventPage({
     if (now < start)
       return { status: "soon", label: "Em Breve", color: "bg-blue-500" };
     if (now > end)
-      return { status: "finished", label: "Encerrado", color: "bg-gray-500" };
+      return { status: "finalized", label: "Encerrado", color: "bg-gray-500" };
     return { status: "ongoing", label: "Ao Vivo", color: "bg-green-500" };
+  };
+
+  const getSubscriptionStatus = () => {
+    if (!event) return { status: "loading", label: "Carregando..." };
+
+    const eventStatus = getEventStatus();
+
+    // Se o evento já finalizou
+    if (eventStatus.status === "finalized") {
+      return {
+        status: "finalized",
+        label: "Inscrições Encerradas",
+        description: "Este evento já foi finalizado",
+      };
+    }
+
+    // Se as inscrições estão fechadas (CLOSED)
+    if (!event.isOpen) {
+      return {
+        status: "closed",
+        label: "Inscrições Fechadas",
+        description: "As inscrições ainda não foram abertas",
+      };
+    }
+
+    // Se as inscrições estão abertas
+    return {
+      status: "open",
+      label: "Inscrições Abertas",
+      description: "Inscreva-se agora para participar",
+    };
   };
 
   const handleShare = () => {
@@ -117,12 +144,19 @@ export default function EventPage({
     window.open(calendarUrl, "_blank");
   };
 
+  const handleSubscribe = () => {
+    if (!event) return;
+
+    // Redireciona para a página de login com o evento ID como parâmetro
+    router.push(`/login?redirect=/events/${event.id}/subscribe`);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando evento...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando evento...</p>
         </div>
       </div>
     );
@@ -132,7 +166,7 @@ export default function EventPage({
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="mb-4 text-gray-900">
+          <p className="mb-4 text-foreground">
             {error || "Evento não encontrado"}
           </p>
           <Button onClick={() => window.location.reload()}>
@@ -144,13 +178,14 @@ export default function EventPage({
   }
 
   const status = getEventStatus();
+  const subscriptionStatus = getSubscriptionStatus();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Header com imagem - mais largo */}
         <div className="relative rounded-2xl overflow-hidden mb-8">
-          <div className="relative w-full aspect-[4/1] bg-gray-200">
+          <div className="relative w-full aspect-[4/1] bg-muted">
             {event.imageUrl ? (
               <Image
                 src={event.imageUrl}
@@ -160,8 +195,10 @@ export default function EventPage({
                 priority
               />
             ) : (
-              <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-                <span className="text-gray-500 text-xl">Sem imagem</span>
+              <div className="w-full h-full bg-muted flex items-center justify-center">
+                <span className="text-muted-foreground text-xl">
+                  Sem imagem
+                </span>
               </div>
             )}
             <div className="absolute inset-0 bg-black/40" />
@@ -190,7 +227,7 @@ export default function EventPage({
         <div className="flex gap-4 mb-8">
           <Button
             variant="outline"
-            className="flex-1 justify-center gap-3 border-gray-300 py-6 text-base"
+            className="flex-1 justify-center gap-3 py-6 text-base"
             onClick={handleShare}
           >
             <Share2 className="h-5 w-5" />
@@ -198,7 +235,7 @@ export default function EventPage({
           </Button>
           <Button
             variant="outline"
-            className="flex-1 justify-center gap-3 border-gray-300 py-6 text-base"
+            className="flex-1 justify-center gap-3 py-6 text-base"
             onClick={handleAddToCalendar}
           >
             <Calendar className="h-5 w-5" />
@@ -208,91 +245,113 @@ export default function EventPage({
 
         {/* Conteúdo principal em layout mais amplo */}
         <div className="space-y-8">
-          {/* Datas e horários - com mais espaço */}
+          {/* Datas - com mais espaço */}
           <div className="grid grid-cols-2 gap-6">
-            <div className="border border-gray-200 rounded-xl p-6">
+            <div className="border border-border rounded-xl p-6 bg-card">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-gray-100 rounded-xl">
-                  <Calendar className="h-6 w-6 text-gray-700" />
+                <div className="p-3 bg-muted rounded-xl">
+                  <Calendar className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900 text-base">
-                    Início
+                  <h3 className="font-medium text-card-foreground text-base">
+                    Data de Início
                   </h3>
-                  <p className="text-xl font-semibold text-gray-900 mt-1">
+                  <p className="text-xl font-semibold text-card-foreground mt-1">
                     {formatDate(event.startDate)}
-                  </p>
-                  <p className="text-gray-600 text-base mt-1">
-                    {formatTime(event.startDate)}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="border border-gray-200 rounded-xl p-6">
+            <div className="border border-border rounded-xl p-6 bg-card">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-gray-100 rounded-xl">
-                  <Clock className="h-6 w-6 text-gray-700" />
+                <div className="p-3 bg-muted rounded-xl">
+                  <Calendar className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900 text-base">
-                    Término
+                  <h3 className="font-medium text-card-foreground text-base">
+                    Data de Término
                   </h3>
-                  <p className="text-xl font-semibold text-gray-900 mt-1">
+                  <p className="text-xl font-semibold text-card-foreground mt-1">
                     {formatDate(event.endDate)}
-                  </p>
-                  <p className="text-gray-600 text-base mt-1">
-                    {formatTime(event.endDate)}
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Localização - mais amplo */}
-          <div className="border border-gray-200 rounded-xl p-8">
-            <div className="flex items-center gap-4 mb-4">
-              <MapPin className="h-6 w-6 text-gray-700" />
-              <h3 className="font-semibold text-gray-900 text-xl">
+          {/* Localização - com mapa largo */}
+          <div className="border border-border rounded-xl p-8 bg-card">
+            <div className="flex items-center gap-4 mb-6">
+              <MapPin className="h-6 w-6 text-card-foreground" />
+              <h3 className="font-semibold text-card-foreground text-xl">
                 Localização
               </h3>
             </div>
-            <p className="text-gray-900 text-lg">
-              {event.location || "Local a ser definido"}
-            </p>
+
+            <div className="space-y-6">
+              {/* Endereço */}
+              <div>
+                <p className="text-card-foreground text-lg font-medium mb-2">
+                  Endereço
+                </p>
+                <p className="text-card-foreground/80">
+                  {event.location || "Local a ser definido"}
+                </p>
+              </div>
+
+              {/* Mapa largo */}
+              {event.latitude && event.longitude && (
+                <div className="h-64 rounded-lg overflow-hidden border border-border">
+                  <EventMap
+                    lat={event.latitude}
+                    lng={event.longitude}
+                    height="100%"
+                    zoom={15}
+                    markerTitle={event.name}
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Inscrições - mais amplo */}
-          <div className="border border-gray-200 rounded-xl p-8">
+          <div className="border border-border rounded-xl p-8 bg-card">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-gray-900 text-xl mb-3">
+                <h3 className="font-semibold text-card-foreground text-xl mb-3">
                   Inscrições
                 </h3>
                 <p
                   className={`font-medium text-lg ${
-                    event.isOpen ? "text-green-600" : "text-red-600"
+                    subscriptionStatus.status === "open"
+                      ? "text-green-600"
+                      : subscriptionStatus.status === "closed"
+                      ? "text-yellow-600"
+                      : "text-red-600"
                   }`}
                 >
-                  {event.isOpen
-                    ? "Inscrições abertas"
-                    : "Inscrições encerradas"}
+                  {subscriptionStatus.label}
+                </p>
+                <p className="text-muted-foreground text-sm mt-1">
+                  {subscriptionStatus.description}
                 </p>
               </div>
               <Button
                 size="lg"
                 className={`font-semibold text-base px-8 py-6 ${
-                  !event.isOpen || status.status === "finished"
-                    ? "bg-gray-400 hover:bg-gray-400"
-                    : "bg-gray-900 hover:bg-gray-800"
+                  subscriptionStatus.status !== "open"
+                    ? "bg-muted text-muted-foreground hover:bg-muted cursor-not-allowed"
+                    : ""
                 }`}
-                disabled={!event.isOpen || status.status === "finished"}
+                disabled={subscriptionStatus.status !== "open"}
+                onClick={handleSubscribe}
               >
-                {status.status === "finished"
+                {subscriptionStatus.status === "finalized"
                   ? "Evento Encerrado"
-                  : event.isOpen
-                  ? "Inscrever-se"
-                  : "Inscrições Fechadas"}
+                  : subscriptionStatus.status === "closed"
+                  ? "Inscrições Fechadas"
+                  : "Inscrever-se"}
               </Button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import RegisterFormEvent from "@/features/events/components/registerFormEvent";
+import RegisterFormEvent from "@/features/events/components/RegisterFormEvent";
 
 export default function CreateEventPage() {
   return <RegisterFormEvent />;

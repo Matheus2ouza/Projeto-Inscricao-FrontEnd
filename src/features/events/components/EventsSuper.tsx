@@ -14,8 +14,6 @@ import {
 } from "@/shared/components/ui/pagination";
 import { Badge } from "@/shared/components/ui/badge";
 import {
-  ChevronDown,
-  ChevronUp,
   Users,
   Calendar,
   Eye,
@@ -25,6 +23,7 @@ import {
   Copy,
   ExternalLink,
   Check,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { useEventsAll } from "../hooks/useEventsAll";
@@ -161,6 +160,7 @@ export default function EventsTableSuper() {
         {events.map((event) => {
           const statusBadge = getStatusBadge(event.startDate, event.endDate);
           const isCopied = copiedEventId === event.id;
+          const hasTypeInscriptions = (event?.countTypeInscriptions ?? 0) > 0;
 
           return (
             <div
@@ -292,6 +292,25 @@ export default function EventsTableSuper() {
                       </span>
                     </div>
                   </div>
+
+                  {/* Alerta para eventos sem tipos de inscrição */}
+                  {!hasTypeInscriptions && (
+                    <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-amber-800 dark:text-amber-300 mb-1">
+                            Configuração Pendente
+                          </p>
+                          <p className="text-xs text-amber-700 dark:text-amber-400">
+                            Este evento ainda não tem Tipos de Inscrições
+                            configurados. Configure clicando em{" "}
+                            <strong>Gerenciar Evento</strong>.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Link público do evento */}
                   <div className="pt-4 border-t">

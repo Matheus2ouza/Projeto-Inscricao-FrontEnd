@@ -24,7 +24,7 @@ import useFormCreateEvent from "../hooks/useFormCreateEvent";
 import { CalendarRanger } from "@/shared/components/calendar-ranger";
 import { useRegions } from "@/features/regions/hooks/useRegions";
 import { ComboboxRegion } from "@/features/regions/components/ComboboxRegion";
-import { Calendar, Upload, X, MapPin } from "lucide-react";
+import { Upload, X, MapPin } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { toast } from "sonner";
 
@@ -199,7 +199,10 @@ export default function RegisterFormEvent({
 
     const { success, id } = await onSubmit(event);
     if (success && id) {
+      // Se tiver uma função de callback, execute
       if (onSubmitSuccess) onSubmitSuccess();
+
+      // Mostrar toast de sucesso
       const url = `${window.location.origin}/events/${id}`;
       toast.success("Evento criado!", {
         description: (
@@ -216,6 +219,11 @@ export default function RegisterFormEvent({
         ) as unknown as string,
         duration: 6000,
       });
+
+      // Redirecionar para a tela de listagem de eventos após 2 segundos
+      setTimeout(() => {
+        router.push("/super/events");
+      }, 2000);
     }
   };
 
@@ -373,6 +381,9 @@ export default function RegisterFormEvent({
       to: undefined,
     });
     setIsDragging(false);
+
+    // Redirecionar para a lista de eventos
+    router.push("/super/events");
   };
 
   return (

@@ -11,7 +11,7 @@ export type RegisterEventInput = {
   address?: string;
   latitude?: number;
   longitude?: number;
-  openImmediately?: boolean;
+  openImmediately?: string;
 };
 
 export type RegisterEventOutput = {
@@ -27,7 +27,7 @@ type RegisterData = {
   location?: string;
   latitude?: number;
   longitude?: number;
-  isOpen?: boolean;
+  status?: string;
 };
 
 export async function registerEvent(
@@ -43,7 +43,7 @@ export async function registerEvent(
       location: input.address,
       latitude: input.latitude,
       longitude: input.longitude,
-      isOpen: input.openImmediately,
+      status: input.openImmediately,
     };
 
     const response = await axiosInstance.post("/events/create", registerData);

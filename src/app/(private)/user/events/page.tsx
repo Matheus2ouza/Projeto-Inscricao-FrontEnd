@@ -1,0 +1,230 @@
+"use client";
+
+import { useEventsAll } from "@/features/events/hooks/useEventsAll";
+import { Card, CardBody, CardFooter } from "@heroui/react";
+import { Badge } from "@/shared/components/ui/badge";
+import { Button } from "@/shared/components/ui/button";
+import { Pagination } from "@/shared/components/ui/pagination";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import { Calendar, MapPin, User, Users } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+
+export default function EventsPage() {
+  const router = useRouter();
+  const { events, loading, error, page, pageCount, setPage } = useEventsAll({
+    initialPage: 1,
+    pageSize: 8,
+  });
+
+  const handleIndividualInscription = (eventId: string) => {
+    console.log("Inscrição individual para evento:", eventId);
+    // Aqui você pode implementar a lógica de inscrição individual
+    // Por exemplo: router.push(`/inscription/individual/${eventId}`)
+  };
+
+  // No arquivo EventsPage, substitua a função handleGroupInscription:
+  const handleGroupInscription = (eventId: string) => {
+    router.push(`/user/group-inscription/${eventId}`);
+  };
+
+  const handlePageChange = (
+    event: React.FormEvent<HTMLElement>,
+    newPage: number
+  ) => {
+    setPage(newPage);
+  };
+
+  // Função para determinar o status do evento
+  const getEventStatusInfo = (status: string) => {
+    switch (status) {
+      case "OPEN":
+        return {
+          label: "Inscrições Abertas",
+          badgeClass: "bg-green-500 hover:bg-green-600 text-white",
+          disabled: false,
+        };
+      case "CLOSE":
+        return {
+          label: "Inscrições Fechadas",
+          badgeClass: "bg-red-500 hover:bg-red-600 text-white",
+          disabled: true,
+        };
+      case "FINALIZED":
+        return {
+          label: "Evento Finalizado",
+          badgeClass: "bg-gray-500 hover:bg-gray-600 text-white",
+          disabled: true,
+        };
+      default:
+        return {
+          label: "Status Desconhecido",
+          badgeClass: "bg-gray-500 hover:bg-gray-600 text-white",
+          disabled: true,
+        };
+    }
+  };
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-96">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-red-600 mb-2">
+            Erro ao carregar eventos
+          </h2>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          Eventos Disponíveis
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
+          Confira os próximos eventos e participe!
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <Card key={index} className="w-full">
+              <CardBody className="p-0">
+                <Skeleton className="w-full h-48 rounded-lg" />
+              </CardBody>
+              <CardFooter className="flex flex-col items-start p-4">
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2 mb-2" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {events.map((event) => {
+              const statusInfo = getEventStatusInfo(event.status);
+
+              return (
+                <Card
+                  key={event.id}
+                  className="w-full hover:shadow-lg transition-shadow"
+                >
+                  <CardBody className="p-0 relative">
+                    <div className="w-full h-48 relative">
+                      <Image
+                        src={event.imageUrl || "/images/event-placeholder.jpg"}
+                        alt={event.name}
+                        fill
+                        className="object-cover rounded-t-lg"
+                        onError={(e) => {
+                          // Fallback para imagem quebrada
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/images/event-placeholder.jpg";
+                        }}
+                      />
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <Badge className={statusInfo.badgeClass}>
+                        {statusInfo.label}
+                      </Badge>
+                    </div>
+                  </CardBody>
+                  <CardFooter className="flex flex-col items-start p-4 gap-3">
+                    <h3 className="font-bold text-lg mb-1 line-clamp-2">
+                      {event.name}
+                    </h3>
+
+                    <div className="flex items-center text-sm text-gray-600 mb-1">
+                      <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <span className="line-clamp-1">
+                        {new Date(event.startDate).toLocaleDateString("pt-BR")}{" "}
+                        - {new Date(event.endDate).toLocaleDateString("pt-BR")}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center text-sm text-gray-600">
+                      <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <span className="line-clamp-1">{event.location}</span>
+                    </div>
+
+                    {/* Botões de Inscrição */}
+                    <div className="flex flex-col w-full gap-2 mt-2">
+                      <Button
+                        size="sm"
+                        className="w-full"
+                        onClick={() => handleIndividualInscription(event.id)}
+                        disabled={statusInfo.disabled}
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        Inscrição Individual
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => handleGroupInscription(event.id)}
+                        disabled={statusInfo.disabled}
+                      >
+                        <Users className="w-4 h-4 mr-2" />
+                        Inscrição em Grupo
+                      </Button>
+                    </div>
+
+                    {event.typesInscriptions &&
+                      event.typesInscriptions.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {event.typesInscriptions.slice(0, 3).map((type) => (
+                            <Badge
+                              key={type.id}
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              {type.description}
+                            </Badge>
+                          ))}
+                          {event.typesInscriptions.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{event.typesInscriptions.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
+
+          {events.length === 0 && !loading && (
+            <div className="text-center py-12">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                Nenhum evento encontrado
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 mt-2">
+                Não há eventos disponíveis no momento.
+              </p>
+            </div>
+          )}
+
+          {pageCount > 1 && (
+            <div className="flex justify-center mt-8">
+              <Pagination
+                current={page}
+                total={pageCount}
+                onChange={handlePageChange}
+                showControls
+              />
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}

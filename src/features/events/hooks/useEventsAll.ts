@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  Events,
+  Event,
   getAllEventsResponse,
   UseEventsParams,
   UseEventsResult,
@@ -11,7 +11,7 @@ export function useEventsAll({
   initialPage = 1,
   pageSize = 4,
 }: UseEventsParams = {}): UseEventsResult {
-  const [events, setEvents] = useState<Events[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(initialPage);
   const [pageCount, setPageCount] = useState(0);
@@ -23,6 +23,7 @@ export function useEventsAll({
     setError(null);
     try {
       const data: getAllEventsResponse = await getEvents({ page, pageSize });
+      console.log(data);
       setEvents(data.events);
       setTotal(data.total);
       setPageCount(data.pageCount);
