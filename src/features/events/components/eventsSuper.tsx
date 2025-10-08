@@ -22,10 +22,11 @@ import {
   DollarSign,
   MapPin,
   EyeClosed,
+  Copy,
+  ExternalLink,
+  Check,
 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { Dialog } from "@/shared/components/ui/dialog";
-import RegisterFormEvent from "./registerFormEvent";
 import { useEventsAll } from "../hooks/useEventsAll";
 
 const PAGE_SIZE = 4;
@@ -33,6 +34,7 @@ const PAGE_SIZE = 4;
 export default function EventsTableSuper() {
   const [open, setOpen] = useState(false);
   const [showAmount, setShowAmount] = useState<{ [key: string]: boolean }>({});
+  const [copiedEventId, setCopiedEventId] = useState<string | null>(null);
 
   const { events, total, page, pageCount, loading, error, setPage, refetch } =
     useEventsAll({
@@ -91,6 +93,24 @@ export default function EventsTableSuper() {
     refetch();
   };
 
+  const copyToClipboard = async (text: string, eventId: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedEventId(eventId);
+
+      // Resetar o estado após 2 segundos
+      setTimeout(() => {
+        setCopiedEventId(null);
+      }, 2000);
+    } catch (err) {
+      console.error("Falha ao copiar texto: ", err);
+    }
+  };
+
+  const openEventPage = (eventId: string) => {
+    window.open(`/events/${eventId}`, "_blank");
+  };
+
   // Estados de loading e error
   if (loading) {
     return (
@@ -136,12 +156,11 @@ export default function EventsTableSuper() {
         </Button>
       </div>
 
-      {/* Dialog removido em favor da página própria de criação */}
-
       {/* Grid de Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-6 relative">
         {events.map((event) => {
           const statusBadge = getStatusBadge(event.startDate, event.endDate);
+          const isCopied = copiedEventId === event.id;
 
           return (
             <div
@@ -274,7 +293,6 @@ export default function EventsTableSuper() {
                     </div>
                   </div>
 
-                  {/* Conteúdo Expandido */}
                   {/* Link público do evento */}
                   <div className="pt-4 border-t">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
@@ -292,17 +310,42 @@ export default function EventsTableSuper() {
                           }/events/${event.id}`}
                         />
                       </div>
-                      <button
-                        type="button"
-                        className="text-xs px-2 py-1 rounded bg-primary text-primary-foreground"
-                        onClick={() =>
-                          navigator.clipboard.writeText(
-                            `${window.location.origin}/events/${event.id}`
-                          )
-                        }
-                      >
-                        Copiar
-                      </button>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className={cn(
+                            "p-2 h-8 w-8 transition-all duration-300",
+                            isCopied
+                              ? "bg-green-50 text-green-600 border-green-200"
+                              : "bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200"
+                          )}
+                          onClick={() =>
+                            copyToClipboard(
+                              `${window.location.origin}/events/${event.id}`,
+                              event.id
+                            )
+                          }
+                          title={isCopied ? "Copiado!" : "Copiar URL"}
+                        >
+                          {isCopied ? (
+                            <Check className="h-3 w-3" />
+                          ) : (
+                            <Copy className="h-3 w-3" />
+                          )}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="p-2 h-8 w-8 bg-green-50 text-green-600 hover:bg-green-100 border-green-200"
+                          onClick={() => openEventPage(event.id)}
+                          title="Visualizar Evento"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
@@ -313,7 +356,7 @@ export default function EventsTableSuper() {
                       variant="outline"
                       className="flex items-center gap-2"
                     >
-                      <a href={`/events/${event.id}`}>Visualizar Evento</a>
+                      <a href={`/super/events/${event.id}`}>Gerenciar Evento</a>
                     </Button>
                   </div>
                 </div>
@@ -336,8 +379,8 @@ export default function EventsTableSuper() {
               evento.
             </p>
           </div>
-          <Button size="lg" onClick={() => setOpen(true)}>
-            Criar Primeiro Evento
+          <Button size="lg" asChild>
+            <a href="/super/events/create">Criar Primeiro Evento</a>
           </Button>
         </div>
       )}

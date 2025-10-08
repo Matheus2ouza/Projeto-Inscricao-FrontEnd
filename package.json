@@ -25,6 +25,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@vercel/speed-insights": "^1.2.0",
     "axios": "^1.12.2",
     "bootstrap-icons": "^1.13.1",
     "class-variance-authority": "^0.7.1",

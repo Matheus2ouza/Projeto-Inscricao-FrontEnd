@@ -1,4 +1,3 @@
-// app/(private)/super/events/create/location/page.tsx
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
@@ -6,9 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import { Search, MapPin, ArrowLeft } from "lucide-react";
+import { Search, MapPin, ArrowLeft, Navigation } from "lucide-react";
 
 const DEFAULT_POSITION = { lat: -23.55052, lng: -46.633308 };
+
+// Chave para armazenar o estado no sessionStorage (deve ser a mesma do formulário)
+const FORM_STORAGE_KEY = "event-form-data";
 
 export default function LocationPickerPage() {
   const router = useRouter();
@@ -22,6 +24,8 @@ export default function LocationPickerPage() {
   const [address, setAddress] = useState("");
   const [selectedPosition, setSelectedPosition] = useState(DEFAULT_POSITION);
   const [loading, setLoading] = useState(false);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   // Obter a posição inicial dos query params, se existir
   useEffect(() => {
@@ -35,6 +39,70 @@ export default function LocationPickerPage() {
       setAddress(address);
     }
   }, [searchParams]);
+
+  // Função para voltar mantendo o estado salvo
+  const handleBack = () => {
+    // Manter o estado salvo para quando voltar ao formulário
+    router.back();
+  };
+
+  // Função para obter a localização atual do usuário
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError("Geolocalização não é suportada pelo seu navegador");
+      return;
+    }
+
+    setIsGettingLocation(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const location = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+
+        setSelectedPosition(location);
+
+        // Se o mapa já estiver carregado, centralizar na nova localização
+        if (map && marker) {
+          map.setCenter(location);
+          map.setZoom(15);
+          marker.setPosition(location);
+          reverseGeocode(location);
+        }
+
+        setIsGettingLocation(false);
+      },
+      (error) => {
+        setIsGettingLocation(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setLocationError(
+              "Permissão de localização negada. Por favor, permita o acesso à localização nas configurações do seu navegador."
+            );
+            break;
+          case error.POSITION_UNAVAILABLE:
+            setLocationError(
+              "Localização indisponível. Verifique se o GPS está ativado."
+            );
+            break;
+          case error.TIMEOUT:
+            setLocationError("Tempo limite para obter a localização excedido.");
+            break;
+          default:
+            setLocationError("Erro desconhecido ao obter localização.");
+            break;
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      }
+    );
+  };
 
   useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -160,22 +228,25 @@ export default function LocationPickerPage() {
       if (status === "OK" && results && results[0]) {
         const newAddress = results[0].formatted_address;
         setAddress(newAddress);
+      } else {
+        setAddress("Endereço não encontrado");
       }
     });
   };
 
   const handleConfirmLocation = () => {
-    // Voltar para a página de criação de evento com os dados de localização
-    const params = new URLSearchParams({
-      lat: selectedPosition.lat.toString(),
-      lng: selectedPosition.lng.toString(),
-      address: address,
-    });
-    router.push(`/super/events/create?${params.toString()}`);
-  };
+    // Salvar os dados de localização temporariamente
+    const tempState = {
+      locationData: {
+        lat: selectedPosition.lat.toString(),
+        lng: selectedPosition.lng.toString(),
+        address: address,
+      },
+    };
+    sessionStorage.setItem("temp-location-data", JSON.stringify(tempState));
 
-  const handleBack = () => {
-    router.back();
+    // Voltar para a página de criação de evento
+    router.push(`/super/events/create`);
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -186,18 +257,35 @@ export default function LocationPickerPage() {
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
-      <div className="flex items-center gap-4 p-4 border-b">
-        <Button variant="ghost" size="icon" onClick={handleBack}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Selecionar Localização
-          </h1>
-          <p className="text-muted-foreground">
-            Escolha o local do evento no mapa
-          </p>
+      <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={handleBack}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">
+              Selecionar Localização
+            </h1>
+            <p className="text-muted-foreground">
+              Escolha o local do evento no mapa
+            </p>
+          </div>
         </div>
+
+        {/* Botão para localização atual */}
+        <Button
+          variant="outline"
+          onClick={getCurrentLocation}
+          disabled={isGettingLocation}
+          className="flex items-center gap-2"
+        >
+          {isGettingLocation ? (
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
+          ) : (
+            <Navigation className="h-4 w-4" />
+          )}
+          {isGettingLocation ? "Obtendo..." : "Minha Localização"}
+        </Button>
       </div>
 
       {/* Search Bar */}
@@ -230,6 +318,13 @@ export default function LocationPickerPage() {
 
       {/* Selected Location Info and Confirm Button */}
       <div className="p-4 border-t bg-card">
+        {/* Mensagem de erro da localização */}
+        {locationError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-700">{locationError}</p>
+          </div>
+        )}
+
         <div className="mb-4 p-4 border rounded-lg bg-muted/50">
           <div className="flex items-start gap-3">
             <MapPin className="h-5 w-5 text-primary mt-0.5" />

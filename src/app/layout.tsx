@@ -5,6 +5,7 @@ import { ThemeProvider } from "../providers/theme-provider";
 import { Toaster } from "@/shared/components/ui/sonner";
 import { HeroUIProviderWrapper } from "../providers/heroui-provider";
 import { GlobalLoadingProvider } from "@/components/GlobalLoading";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,6 +49,7 @@ export default function RootLayout({
             <GlobalLoadingProvider>
               <main className="h-screen">
                 {children}
+                <SpeedInsights />
                 <Toaster
                   richColors={true}
                   position="top-right"

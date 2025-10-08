@@ -1,4 +1,3 @@
-// components/RegisterFormEvent.tsx
 "use client";
 
 import React, {
@@ -33,6 +32,9 @@ interface RegisterFormEventProps {
   onSubmitSuccess?: () => void;
 }
 
+// Chave para armazenar o estado no sessionStorage
+const FORM_STORAGE_KEY = "event-form-data";
+
 export default function RegisterFormEvent({
   onSubmitSuccess,
 }: RegisterFormEventProps) {
@@ -43,6 +45,86 @@ export default function RegisterFormEvent({
   const [isDragging, setIsDragging] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [hasProcessedLocationParams, setHasProcessedLocationParams] =
+    useState(false);
+
+  // Salvar o estado do formulário no sessionStorage antes de navegar
+  const saveFormState = useCallback(() => {
+    const formData = form.getValues();
+    const state = {
+      name: formData.name,
+      regionId: formData.regionId,
+      dateRange: dateRange,
+      openImmediately: formData.openImmediately,
+      previewUrl: previewUrl, // Salvar a URL da preview
+      hasImage: !!formData.image, // Marcar que há uma imagem
+    };
+    sessionStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(state));
+  }, [form, dateRange, previewUrl]);
+
+  // Restaurar o estado do formulário do sessionStorage
+  const restoreFormState = useCallback(() => {
+    try {
+      const saved = sessionStorage.getItem(FORM_STORAGE_KEY);
+      if (saved) {
+        const state = JSON.parse(saved);
+
+        // Restaurar campos básicos
+        if (state.name) form.setValue("name", state.name);
+        if (state.regionId) form.setValue("regionId", state.regionId);
+        if (state.openImmediately !== undefined) {
+          form.setValue("openImmediately", state.openImmediately);
+        }
+
+        // Restaurar dateRange
+        if (state.dateRange) {
+          setDateRange(state.dateRange);
+        }
+
+        // Restaurar preview URL se existir
+        if (state.previewUrl && !previewUrl) {
+          setPreviewUrl(state.previewUrl);
+          // Marcar que há uma imagem no formulário
+          if (state.hasImage) {
+            // Criar um placeholder para manter o estado da imagem
+            form.setValue("image", new File([], "placeholder"));
+          }
+        }
+
+        // Limpar o storage após restaurar
+        sessionStorage.removeItem(FORM_STORAGE_KEY);
+      }
+    } catch (error) {
+      console.error("Erro ao restaurar estado do formulário:", error);
+      sessionStorage.removeItem(FORM_STORAGE_KEY);
+    }
+  }, [form, setDateRange, previewUrl]);
+
+  // Processar dados de localização do sessionStorage
+  const processLocationData = useCallback(() => {
+    try {
+      const locationData = sessionStorage.getItem("temp-location-data");
+      if (locationData) {
+        const { locationData: location } = JSON.parse(locationData);
+
+        if (location && location.lat && location.lng && location.address) {
+          form.setValue("location", {
+            lat: parseFloat(location.lat),
+            lng: parseFloat(location.lng),
+            address: location.address,
+          });
+
+          toast.success("Localização definida com sucesso");
+        }
+
+        // Limpar os dados temporários após processar
+        sessionStorage.removeItem("temp-location-data");
+      }
+    } catch (error) {
+      console.error("Erro ao processar dados de localização:", error);
+      sessionStorage.removeItem("temp-location-data");
+    }
+  }, [form]);
 
   // Efeito para capturar os parâmetros da URL quando voltamos da página de localização
   useEffect(() => {
@@ -50,12 +132,21 @@ export default function RegisterFormEvent({
     const lng = searchParams.get("lng");
     const address = searchParams.get("address");
 
-    if (lat && lng && address) {
+    // Restaurar estado primeiro
+    restoreFormState();
+
+    // Processar dados de localização do sessionStorage
+    processLocationData();
+
+    // Só processa os parâmetros da URL se ainda não foram processados e se existem valores
+    if (!hasProcessedLocationParams && lat && lng && address) {
       form.setValue("location", {
         lat: parseFloat(lat),
         lng: parseFloat(lng),
         address: address,
       });
+
+      setHasProcessedLocationParams(true);
 
       // Limpar os parâmetros da URL para evitar repetição
       const newUrl = window.location.pathname;
@@ -63,12 +154,28 @@ export default function RegisterFormEvent({
 
       toast.success("Localização definida com sucesso");
     }
-  }, [searchParams, form]);
+  }, [
+    searchParams,
+    form,
+    hasProcessedLocationParams,
+    restoreFormState,
+    processLocationData,
+  ]);
+
+  // Restaurar estado quando o componente montar
+  useEffect(() => {
+    restoreFormState();
+    setHasProcessedLocationParams(false);
+
+    // Também processar dados de localização ao montar
+    processLocationData();
+  }, [restoreFormState, processLocationData]);
 
   // Remover preview da imagem ao resetar o formulário
   useEffect(() => {
     const subscription = form.watch((values: { image?: File | null }) => {
       if (!values.image && previewUrl) {
+        // Se não há imagem mas há preview, limpar a preview
         setPreviewUrl(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
       }
@@ -84,6 +191,12 @@ export default function RegisterFormEvent({
   }, [fetchedRegions]);
 
   const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    // Limpar storage antes do submit
+    sessionStorage.removeItem(FORM_STORAGE_KEY);
+    sessionStorage.removeItem("temp-location-data"); // Limpar também dados de localização
+
     const { success, id } = await onSubmit(event);
     if (success && id) {
       if (onSubmitSuccess) onSubmitSuccess();
@@ -228,8 +341,10 @@ export default function RegisterFormEvent({
     });
   };
 
-  // Função para navegar para a página de seleção de localização
   const handleSelectLocation = () => {
+    // Salvar estado antes de navegar
+    saveFormState();
+
     const locationValue = form.getValues("location");
     const params = new URLSearchParams();
 
@@ -246,6 +361,10 @@ export default function RegisterFormEvent({
 
   // Limpar todos os dados ao cancelar
   const handleCancel = () => {
+    // Limpar storage também
+    sessionStorage.removeItem(FORM_STORAGE_KEY);
+    sessionStorage.removeItem("temp-location-data");
+
     form.reset({ name: "", regionId: "", image: undefined });
     setPreviewUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -255,8 +374,6 @@ export default function RegisterFormEvent({
     });
     setIsDragging(false);
   };
-
-  const locationValue = form.watch("location");
 
   return (
     <div className="min-h-screen bg-background">
@@ -428,68 +545,36 @@ export default function RegisterFormEvent({
                   </div>
                 </div>
 
-                {/* Seção: Data e Localização */}
+                {/* Seção: Data do Evento */}
                 <div className="space-y-6">
                   <h2 className="text-xl font-semibold text-foreground">
-                    Data e Localização
+                    Data do Evento
                   </h2>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Coluna 1: Data */}
-                    <div className="space-y-6">
-                      {/* Campo: Período do Evento */}
-                      <div className="space-y-3">
-                        <FormLabel className="text-base font-medium">
-                          Período do Evento *
-                        </FormLabel>
-                        <div className="w-full">
-                          <CalendarRanger
-                            dateRange={dateRange}
-                            onDateRangeChange={setDateRange}
-                          />
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Selecione a data inicial e final do evento. Datas
-                          passadas estão desabilitadas.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Coluna 2: Configurações */}
-                    <div className="space-y-6">
-                      {/* Campo: Abrir inscrições imediatamente */}
-                      <div className="space-y-3">
-                        <FormField
-                          control={form.control}
-                          name="openImmediately"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                              <FormControl>
-                                <Input
-                                  type="checkbox"
-                                  checked={field.value}
-                                  onChange={(e) =>
-                                    field.onChange(e.target.checked)
-                                  }
-                                  className="h-4 w-4 mt-1"
-                                />
-                              </FormControl>
-                              <div className="space-y-1 leading-none">
-                                <FormLabel className="text-base font-medium">
-                                  Abrir inscrições imediatamente
-                                </FormLabel>
-                                <p className="text-sm text-muted-foreground">
-                                  Se marcado, as inscrições ficarão abertas
-                                  assim que o evento for criado.
-                                </p>
-                              </div>
-                              <FormMessage />
-                            </FormItem>
-                          )}
+                  <div className="max-w-md">
+                    {/* Campo: Período do Evento */}
+                    <div className="space-y-3">
+                      <FormLabel className="text-base font-medium">
+                        Período do Evento *
+                      </FormLabel>
+                      <div className="w-full">
+                        <CalendarRanger
+                          dateRange={dateRange}
+                          onDateRangeChange={setDateRange}
                         />
                       </div>
+                      <p className="text-sm text-muted-foreground">
+                        Selecione a data inicial e final do evento.
+                      </p>
                     </div>
                   </div>
+                </div>
+
+                {/* Seção: Localização */}
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold text-foreground">
+                    Localização
+                  </h2>
 
                   {/* Campo: Localização */}
                   <div className="space-y-3">
@@ -540,6 +625,43 @@ export default function RegisterFormEvent({
                       Clique no botão acima para abrir o mapa e selecionar a
                       localização exata do evento.
                     </p>
+                  </div>
+                </div>
+
+                {/* Seção: Configurações */}
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold text-foreground">
+                    Configurações
+                  </h2>
+
+                  {/* Campo: Abrir inscrições imediatamente */}
+                  <div className="space-y-3">
+                    <FormField
+                      control={form.control}
+                      name="openImmediately"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                          <FormControl>
+                            <Input
+                              type="checkbox"
+                              checked={field.value}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                              className="h-4 w-4 mt-1"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-base font-medium">
+                              Abrir inscrições imediatamente
+                            </FormLabel>
+                            <p className="text-sm text-muted-foreground">
+                              Se marcado, as inscrições ficarão abertas assim
+                              que o evento for criado.
+                            </p>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
 

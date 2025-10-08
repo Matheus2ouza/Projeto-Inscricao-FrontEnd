@@ -136,18 +136,6 @@ export default function useFormCreateEvent(): useFormCreateEvent {
         openImmediately: input.openImmediately,
       };
 
-      console.log("Dados do evento a serem enviados para a API:");
-      console.log(
-        JSON.stringify(
-          eventData,
-          (key, value) =>
-            key === "image"
-              ? value?.slice(0, 70) + "...[base64 truncado]"
-              : value,
-          2
-        )
-      );
-
       const { id } = await registerEvent(eventData);
 
       form.reset();

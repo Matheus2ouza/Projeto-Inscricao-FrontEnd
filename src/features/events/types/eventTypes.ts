@@ -11,6 +11,10 @@ export type Events = {
   quantityParticipants: number;
   amountCollected: number;
   imageUrl: string;
+  location: string;
+  latitude: number;
+  longitude: number;
+  isOpen: boolean;
   regionId: string;
   createdAt: string;
   updatedAt: string;
