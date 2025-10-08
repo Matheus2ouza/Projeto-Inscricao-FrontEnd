@@ -1,4 +1,4 @@
-import { Events } from "@/features/events/types/eventTypes";
+import { Event } from "@/features/events/types/eventTypes";
 
 export type UseRegionsParams = {
   initialPage?: number;
@@ -23,8 +23,8 @@ export type RegionsDto = {
   updatedAt: string;
   numberOfEvents: number;
   numberOfAccounts: number;
-  lastEvent: Events | null;
-  nextEventAt: Events | null;
+  lastEvent: Event | null;
+  nextEventAt: Event | null;
 };
 
 export type getAllRegionsResponse = {
