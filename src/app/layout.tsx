@@ -49,7 +49,6 @@ export default function RootLayout({
             <GlobalLoadingProvider>
               <main className="h-screen">
                 {children}
-                <SpeedInsights />
                 <Toaster
                   richColors={true}
                   position="top-right"
@@ -60,6 +59,7 @@ export default function RootLayout({
             </GlobalLoadingProvider>
           </ThemeProvider>
         </HeroUIProviderWrapper>
+        <SpeedInsights />
       </body>
     </html>
   );
