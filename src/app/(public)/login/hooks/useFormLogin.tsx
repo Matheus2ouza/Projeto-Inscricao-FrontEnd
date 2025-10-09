@@ -61,7 +61,9 @@ export default function useFormLogin(): UseFormLoginType {
         icon: <ThumbsUp />,
       });
     } catch (error) {
-      toast.error("Dados Inválidos");
+      toast.error("Dados Inválidos", {
+        description: "Verifique os dados e tente novamente",
+      });
       return;
     }
   }
