@@ -50,11 +50,13 @@ export default function useFormCreateAccount(): useFormCreateAccount {
   async function onCreateForm(input: AcccountFormType) {
     setLoading(true);
     try {
+      const regionValue = input.region?.trim() === "" ? null : input.region;
+
       await registerAccount({
         username: input.username,
         password: input.password,
         role: input.role as string,
-        region: input.region,
+        region: regionValue,
       });
       // reset form to default values after successful creation
       form.reset();

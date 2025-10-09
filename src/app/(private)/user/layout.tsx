@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { verifySession } from "@/shared/lib/session";
+import PrivateNavbar from "@/shared/components/layout/private-navbar";
+import AppSidebarNormal from "@/shared/components/layout/sidebar/Sidebar";
 
 export default async function PrivateLayout({
   children,
@@ -13,5 +15,10 @@ export default async function PrivateLayout({
     redirect("/login");
   }
 
-  return <>{children}</>;
+  return (
+    <AppSidebarNormal>
+      <PrivateNavbar />
+      {children}
+    </AppSidebarNormal>
+  );
 }

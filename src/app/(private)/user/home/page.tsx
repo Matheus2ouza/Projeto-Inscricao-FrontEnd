@@ -1,11 +1,10 @@
 "use client";
 
-import React from "react";
 import { Button } from "@/shared/components/ui/button";
 import { useLogout } from "@/shared/hooks/logout/logout";
 import { useUserRole } from "@/shared/hooks/useUserRole";
+import { Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { User, Calendar, Users } from "lucide-react";
 
 export default function UserHome() {
   const { logout } = useLogout();
@@ -23,27 +22,6 @@ export default function UserHome() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-card shadow-sm border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-bold text-foreground">
-                Área do Participante
-              </h1>
-              <div className="flex items-center space-x-2">
-                <User className="w-5 h-5 text-primary" />
-                <span className="text-sm text-muted-foreground">{role}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" onClick={logout}>
-                Sair
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
@@ -72,7 +50,7 @@ export default function UserHome() {
               Explore todos os eventos disponíveis
             </p>
             <Button
-              className="w-full"
+              className="w-full dark: text-white"
               onClick={() => router.push("/user/events")}
             >
               Ver Eventos

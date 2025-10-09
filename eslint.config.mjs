@@ -1,6 +1,8 @@
+import { FlatCompat } from "@eslint/eslintrc";
+import eslintPluginPrettier from "eslint-plugin-prettier";
+import eslintPluginUnusedImports from "eslint-plugin-unused-imports";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -10,7 +12,9 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  // Base Next.js + TypeScript
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+
   {
     ignores: [
       "node_modules/**",
@@ -19,6 +23,33 @@ const eslintConfig = [
       "build/**",
       "next-env.d.ts",
     ],
+
+    plugins: {
+      prettier: eslintPluginPrettier,
+      "unused-imports": eslintPluginUnusedImports,
+    },
+
+    rules: {
+      // 🧹 Remove imports não usados
+      "unused-imports/no-unused-imports": "error",
+
+      // ⚠️ Marca variáveis não usadas (mas permite _prefixadas)
+      "unused-imports/no-unused-vars": [
+        "warn",
+        { vars: "all", varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
+      ],
+
+      // 💅 Integração com Prettier
+      "prettier/prettier": [
+        "warn",
+        {
+          endOfLine: "auto",
+          singleQuote: true,
+          semi: true,
+          tabWidth: 2,
+        },
+      ],
+    },
   },
 ];
 

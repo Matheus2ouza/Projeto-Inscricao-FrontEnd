@@ -145,10 +145,8 @@ export default function EventPage({
   };
 
   const handleSubscribe = () => {
-    if (!event) return;
-
     // Redireciona para a página de login com o evento ID como parâmetro
-    router.push(`/login?redirect=/events/${event.id}/subscribe`);
+    router.push(`/login`);
   };
 
   if (loading) {
@@ -182,10 +180,10 @@ export default function EventPage({
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Header com imagem - mais largo */}
-        <div className="relative rounded-2xl overflow-hidden mb-8">
-          <div className="relative w-full aspect-[4/1] bg-muted">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+        {/* Header com imagem - MAIS ESPAÇO VERTICAL */}
+        <div className="relative rounded-xl lg:rounded-2xl overflow-hidden mb-8 lg:mb-10">
+          <div className="relative w-full aspect-[2/1] sm:aspect-[3/1] lg:aspect-[4/1] bg-muted">
             {event.imageUrl ? (
               <Image
                 src={event.imageUrl}
@@ -196,83 +194,85 @@ export default function EventPage({
               />
             ) : (
               <div className="w-full h-full bg-muted flex items-center justify-center">
-                <span className="text-muted-foreground text-xl">
+                <span className="text-muted-foreground text-sm sm:text-xl">
                   Sem imagem
                 </span>
               </div>
             )}
             <div className="absolute inset-0 bg-black/40" />
 
-            <div className="absolute top-6 right-6">
+            {/* Badge de status - posição responsiva */}
+            <div className="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8">
               <Badge
-                className={`${status.color} text-white px-4 py-2 text-base`}
+                className={`${status.color} text-white px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base lg:text-lg`}
               >
                 {status.label}
               </Badge>
             </div>
 
-            <div className="absolute bottom-8 left-8">
-              <h1 className="text-4xl font-bold text-white mb-3">
+            {/* Conteúdo do header - posição responsiva com MAIS ESPAÇO */}
+            <div className="absolute bottom-6 left-4 sm:bottom-10 sm:left-8 lg:bottom-12 lg:left-10">
+              <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-white mb-3 sm:mb-4 lg:mb-5 line-clamp-2">
                 {event.name}
               </h1>
-              <div className="flex items-center gap-2 text-white/90 text-lg">
-                <MapPin className="h-5 w-5" />
+              <div className="flex items-center gap-2 text-white/90 text-base sm:text-lg lg:text-xl">
+                <MapPin className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7" />
                 <span>{event.regionName}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Ações rápidas - Horizontal com mais espaço */}
-        <div className="flex gap-4 mb-8">
+        {/* Ações rápidas - Layout responsivo */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 lg:mb-8">
           <Button
             variant="outline"
-            className="flex-1 justify-center gap-3 py-6 text-base"
+            className="flex-1 justify-center gap-2 sm:gap-3 py-4 sm:py-6 text-sm sm:text-base"
             onClick={handleShare}
           >
-            <Share2 className="h-5 w-5" />
-            Compartilhar Evento
+            <Share2 className="h-4 w-4 sm:h-5 sm:w-5" />
+            Compartilhar
           </Button>
           <Button
             variant="outline"
-            className="flex-1 justify-center gap-3 py-6 text-base"
+            className="flex-1 justify-center gap-2 sm:gap-3 py-4 sm:py-6 text-sm sm:text-base"
             onClick={handleAddToCalendar}
           >
-            <Calendar className="h-5 w-5" />
+            <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
             Adicionar à Agenda
           </Button>
         </div>
 
-        {/* Conteúdo principal em layout mais amplo */}
-        <div className="space-y-8">
-          {/* Datas - com mais espaço */}
-          <div className="grid grid-cols-2 gap-6">
-            <div className="border border-border rounded-xl p-6 bg-card">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-muted rounded-xl">
-                  <Calendar className="h-6 w-6 text-muted-foreground" />
+        {/* Conteúdo principal em layout responsivo */}
+        <div className="space-y-6 lg:space-y-8">
+          {/* Datas - Grid responsivo */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div className="border border-border rounded-lg sm:rounded-xl p-4 sm:p-6 bg-card">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="p-2 sm:p-3 bg-muted rounded-lg sm:rounded-xl">
+                  <Calendar className="h-4 w-4 sm:h-6 sm:w-6 text-muted-foreground" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-card-foreground text-base">
+                  <h3 className="font-medium text-card-foreground text-sm sm:text-base">
                     Data de Início
                   </h3>
-                  <p className="text-xl font-semibold text-card-foreground mt-1">
+                  <p className="text-lg sm:text-xl font-semibold text-card-foreground mt-1">
                     {formatDate(event.startDate)}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="border border-border rounded-xl p-6 bg-card">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-muted rounded-xl">
-                  <Calendar className="h-6 w-6 text-muted-foreground" />
+            <div className="border border-border rounded-lg sm:rounded-xl p-4 sm:p-6 bg-card">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="p-2 sm:p-3 bg-muted rounded-lg sm:rounded-xl">
+                  <Calendar className="h-4 w-4 sm:h-6 sm:w-6 text-muted-foreground" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-card-foreground text-base">
+                  <h3 className="font-medium text-card-foreground text-sm sm:text-base">
                     Data de Término
                   </h3>
-                  <p className="text-xl font-semibold text-card-foreground mt-1">
+                  <p className="text-lg sm:text-xl font-semibold text-card-foreground mt-1">
                     {formatDate(event.endDate)}
                   </p>
                 </div>
@@ -280,29 +280,29 @@ export default function EventPage({
             </div>
           </div>
 
-          {/* Localização - com mapa largo */}
-          <div className="border border-border rounded-xl p-8 bg-card">
-            <div className="flex items-center gap-4 mb-6">
-              <MapPin className="h-6 w-6 text-card-foreground" />
-              <h3 className="font-semibold text-card-foreground text-xl">
+          {/* Localização - Responsiva */}
+          <div className="border border-border rounded-lg sm:rounded-xl p-4 sm:p-6 lg:p-8 bg-card">
+            <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <MapPin className="h-5 w-5 sm:h-6 sm:w-6 text-card-foreground" />
+              <h3 className="font-semibold text-card-foreground text-lg sm:text-xl">
                 Localização
               </h3>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Endereço */}
               <div>
-                <p className="text-card-foreground text-lg font-medium mb-2">
+                <p className="text-card-foreground text-base sm:text-lg font-medium mb-2">
                   Endereço
                 </p>
-                <p className="text-card-foreground/80">
+                <p className="text-card-foreground/80 text-sm sm:text-base">
                   {event.location || "Local a ser definido"}
                 </p>
               </div>
 
-              {/* Mapa largo */}
+              {/* Mapa responsivo */}
               {event.latitude && event.longitude && (
-                <div className="h-64 rounded-lg overflow-hidden border border-border">
+                <div className="h-48 sm:h-64 lg:h-72 rounded-lg overflow-hidden border border-border">
                   <EventMap
                     lat={event.latitude}
                     lng={event.longitude}
@@ -315,15 +315,15 @@ export default function EventPage({
             </div>
           </div>
 
-          {/* Inscrições - mais amplo */}
-          <div className="border border-border rounded-xl p-8 bg-card">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-card-foreground text-xl mb-3">
+          {/* Inscrições - Responsiva */}
+          <div className="border border-border rounded-lg sm:rounded-xl p-4 sm:p-6 lg:p-8 bg-card">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex-1">
+                <h3 className="font-semibold text-card-foreground text-lg sm:text-xl mb-2 sm:mb-3">
                   Inscrições
                 </h3>
                 <p
-                  className={`font-medium text-lg ${
+                  className={`font-medium text-base sm:text-lg ${
                     subscriptionStatus.status === "open"
                       ? "text-green-600"
                       : subscriptionStatus.status === "closed"
@@ -333,15 +333,15 @@ export default function EventPage({
                 >
                   {subscriptionStatus.label}
                 </p>
-                <p className="text-muted-foreground text-sm mt-1">
+                <p className="text-muted-foreground text-xs sm:text-sm mt-1">
                   {subscriptionStatus.description}
                 </p>
               </div>
               <Button
                 size="lg"
-                className={`font-semibold text-base px-8 py-6 ${
+                className={`font-semibold text-sm sm:text-base px-6 py-4 sm:px-8 sm:py-6 dark: text-white w-full sm:w-auto ${
                   subscriptionStatus.status !== "open"
-                    ? "bg-muted text-muted-foreground hover:bg-muted cursor-not-allowed"
+                    ? "bg-muted text-muted-foreground hover:bg-muted cursor-not-allowed "
                     : ""
                 }`}
                 disabled={subscriptionStatus.status !== "open"}

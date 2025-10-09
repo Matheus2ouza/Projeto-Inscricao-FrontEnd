@@ -25,9 +25,7 @@ export default function EventsPage() {
   });
 
   const handleIndividualInscription = (eventId: string) => {
-    console.log("Inscrição individual para evento:", eventId);
-    // Aqui você pode implementar a lógica de inscrição individual
-    // Por exemplo: router.push(`/inscription/individual/${eventId}`)
+    router.push(`/user/individual-inscription/${eventId}`);
   };
 
   // No arquivo EventsPage, substitua a função handleGroupInscription:
@@ -144,7 +142,7 @@ export default function EventsPage() {
                       {event.name}
                     </h3>
 
-                    <div className="flex items-center text-sm text-gray-600 mb-1">
+                    <div className="flex items-center text-sm dark:text-white mb-1">
                       <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
                       <span className="line-clamp-1">
                         {new Date(event.startDate).toLocaleDateString("pt-BR")}{" "}
@@ -152,7 +150,7 @@ export default function EventsPage() {
                       </span>
                     </div>
 
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center text-sm dark:text-white">
                       <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
                       <span className="line-clamp-1">{event.location}</span>
                     </div>
@@ -161,7 +159,7 @@ export default function EventsPage() {
                     <div className="flex flex-col w-full gap-2 mt-2">
                       <Button
                         size="sm"
-                        className="w-full"
+                        className="w-full dark:text-white"
                         onClick={() => handleIndividualInscription(event.id)}
                         disabled={statusInfo.disabled}
                       >

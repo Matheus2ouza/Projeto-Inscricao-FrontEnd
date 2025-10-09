@@ -9,10 +9,15 @@ import {
   SidebarSeparator,
 } from "@/shared/components/ui/sidebar";
 import Logo from "@/shared/components/ui/logo";
-import { CalendarCheck2, Users, Map, ScrollText } from "lucide-react";
+import { CalendarCheck2, Users, Map, ScrollText, House } from "lucide-react";
 
 // Itens do menu lateral
 const items = [
+  {
+    title: "Inicio",
+    url: "/super/home",
+    icon: House,
+  },
   {
     title: "Inscrições",
     icon: ScrollText,

@@ -6,7 +6,7 @@ export type RegisterServiceInput = {
   username: string;
   password: string;
   role: string;
-  region?: string;
+  region?: string | null;
 };
 
 export type RegisterServiceOutput = {
@@ -17,7 +17,7 @@ type RequestData = {
   username: string;
   password: string;
   role: string;
-  regionId?: string;
+  regionId?: string | null;
 };
 
 export async function registerAccount(

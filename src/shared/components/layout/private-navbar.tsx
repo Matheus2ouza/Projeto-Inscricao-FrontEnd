@@ -9,13 +9,7 @@ import { SidebarTrigger } from "@/shared/components/ui/sidebar";
 import { useLogout } from "@/shared/hooks/logout/logout";
 
 const PrivateNavbar = () => {
-  const router = useRouter();
   const { logout } = useLogout();
-
-  const handleLogoClick = () => {
-    router.push("/super/home");
-  };
-
   return (
     <>
       <nav className="flex justify-between items-center px-2 sm:px-4 lg:px-6 py-3 bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700 w-full overflow-hidden relative z-50">
@@ -24,10 +18,7 @@ const PrivateNavbar = () => {
           {/* Botão para abrir/fechar sidebar */}
           <SidebarTrigger />
           {/* Logo + Título - clicável para voltar à home */}
-          <div
-            className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity duration-200"
-            onClick={handleLogoClick}
-          >
+          <div className="flex items-center space-x-3 select-none transition-opacity duration-200">
             <Logo className="w-12 h-12 object-contain" showTitle={false} />
             <h1 className="hidden sm:block text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white truncate tracking-[0.2em] uppercase">
               Sistema de Inscrições

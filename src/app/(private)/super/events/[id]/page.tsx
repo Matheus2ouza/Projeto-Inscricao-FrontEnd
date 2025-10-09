@@ -10,7 +10,7 @@ import { Button } from "@/shared/components/ui/button";
 export default function EventManagementPage() {
   const params = useParams();
   const eventId = params.id as string;
-  const { event, loading, error, refetch } = useEvent(eventId); // Adicione refetch aqui
+  const { event, loading, error, refetch } = useEvent(eventId);
 
   if (loading) {
     return (
