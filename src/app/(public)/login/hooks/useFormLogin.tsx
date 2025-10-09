@@ -61,11 +61,7 @@ export default function useFormLogin(): UseFormLoginType {
         icon: <ThumbsUp />,
       });
     } catch (error) {
-      const err = error as Error;
-      toast.error("Erro ao fazer login", {
-        description: err.message,
-        icon: <Frown />,
-      });
+      toast.error("Dados Inválidos");
       return;
     }
   }
