@@ -1,15 +1,21 @@
-export interface IndividualInscriptionData {
+// Props para o hook
+export interface UseFormIndividualInscriptionProps {
   eventId: string;
-  typeInscriptionId: string;
-  responsibleData: {
-    fullName: string;
-    phone: string;
-  };
-  personalData: {
-    fullName: string;
-    birthDate: string;
-    gender: string;
-  };
+}
+
+// Retorno do hook
+export interface UseFormIndividualInscriptionReturn {
+  // Estado
+  formData: any;
+  typeInscriptions: TypeInscription[];
+  isSubmitting: boolean;
+  formErrors: any;
+  typeInscriptionsLoading: boolean;
+
+  // Ações
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
+  register: any;
 }
 
 export interface IndividualInscriptionSubmit {
@@ -26,6 +32,18 @@ export interface IndividualInscriptionSubmit {
 
 // Resposta da API na primeira parte
 export interface IndivUploadRouteResponse {
+  cacheKey: string;
+  participant: {
+    name: string;
+    birthDate: string;
+    gender: string;
+    typeDescription: string;
+    value: number;
+  };
+}
+
+// Dados de confirmação (similar ao grupo)
+export interface IndividualInscriptionConfirmationData {
   cacheKey: string;
   participant: {
     name: string;

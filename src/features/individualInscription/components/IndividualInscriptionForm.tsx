@@ -1,4 +1,3 @@
-// IndividualInscriptionForm.tsx - Componente simplificado
 "use client";
 
 import { useFormIndividualInscription } from "../hooks/useFormIndividualInscription";
@@ -19,28 +18,27 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { cn } from "@/shared/lib/utils";
+import { UseFormIndividualInscriptionReturn } from "../types/individualInscriptionTypes";
+
+interface IndividualInscriptionFormProps {
+  eventId: string;
+}
 
 export default function IndividualInscriptionForm({
   eventId,
-}: {
-  eventId: string;
-}) {
+}: IndividualInscriptionFormProps) {
   const {
     formData,
     typeInscriptions,
-    loading,
-    submitting,
-    submitError,
-    errors,
-    onSubmit,
-    updateResponsibleData,
-    updatePersonalData,
-    setTypeInscriptionId,
-    handlePhoneChange,
-    handleDateChange,
-  } = useFormIndividualInscription(eventId);
+    isSubmitting,
+    formErrors,
+    typeInscriptionsLoading,
+    handleInputChange,
+    handleSubmit,
+    register,
+  } = useFormIndividualInscription({ eventId });
 
-  if (loading) {
+  if (typeInscriptionsLoading) {
     return (
       <Card>
         <CardContent className="p-6">
@@ -56,7 +54,7 @@ export default function IndividualInscriptionForm({
         <CardTitle className="text-2xl">Formulário de Inscrição</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={onSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-8">
           {/* Seção 1: Dados do Responsável */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold border-b pb-2">
@@ -65,45 +63,42 @@ export default function IndividualInscriptionForm({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="responsibleName">
+                <Label htmlFor="responsible">
                   Nome completo do responsável *
                 </Label>
                 <Input
-                  id="responsibleName"
+                  id="responsible"
+                  {...register("responsible")}
+                  value={formData.responsible}
+                  onChange={handleInputChange}
                   placeholder="Ex: João Silva"
-                  value={formData.responsibleData?.fullName || ""}
-                  onChange={(e) =>
-                    updateResponsibleData("fullName", e.target.value)
-                  }
                   className={cn(
-                    errors.responsibleData?.fullName &&
+                    formErrors.responsible &&
                       "border-red-500 focus:border-red-500"
                   )}
                 />
-                {errors.responsibleData?.fullName && (
+                {formErrors.responsible && (
                   <p className="text-red-500 text-sm mt-1">
-                    {errors.responsibleData.fullName.message}
+                    {formErrors.responsible.message}
                   </p>
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="responsiblePhone">
-                  Telefone do responsável *
-                </Label>
+                <Label htmlFor="phone">Telefone do responsável *</Label>
                 <Input
-                  id="responsiblePhone"
+                  id="phone"
+                  {...register("phone")}
+                  value={formData.phone}
+                  onChange={handleInputChange}
                   placeholder="(11) 99999-9999"
-                  value={formData.responsibleData?.phone || ""}
-                  onChange={(e) => handlePhoneChange(e.target.value)}
                   maxLength={15}
                   className={cn(
-                    errors.responsibleData?.phone &&
-                      "border-red-500 focus:border-red-500"
+                    formErrors.phone && "border-red-500 focus:border-red-500"
                   )}
                 />
-                {errors.responsibleData?.phone && (
+                {formErrors.phone && (
                   <p className="text-red-500 text-sm mt-1">
-                    {errors.responsibleData.phone.message}
+                    {formErrors.phone.message}
                   </p>
                 )}
               </div>
@@ -118,24 +113,23 @@ export default function IndividualInscriptionForm({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="inscribedName">
+                <Label htmlFor="participantName">
                   Nome completo do inscrito *
                 </Label>
                 <Input
-                  id="inscribedName"
+                  id="participantName"
+                  {...register("participantName")}
+                  value={formData.participantName}
+                  onChange={handleInputChange}
                   placeholder="Ex: Maria Santos"
-                  value={formData.personalData?.fullName || ""}
-                  onChange={(e) =>
-                    updatePersonalData("fullName", e.target.value)
-                  }
                   className={cn(
-                    errors.personalData?.fullName &&
+                    formErrors.participantName &&
                       "border-red-500 focus:border-red-500"
                   )}
                 />
-                {errors.personalData?.fullName && (
+                {formErrors.participantName && (
                   <p className="text-red-500 text-sm mt-1">
-                    {errors.personalData.fullName.message}
+                    {formErrors.participantName.message}
                   </p>
                 )}
               </div>
@@ -143,32 +137,38 @@ export default function IndividualInscriptionForm({
                 <Label htmlFor="birthDate">Data de nascimento *</Label>
                 <Input
                   id="birthDate"
+                  {...register("birthDate")}
+                  value={formData.birthDate}
+                  onChange={handleInputChange}
                   placeholder="DD/MM/AAAA"
-                  value={formData.personalData?.birthDate || ""}
-                  onChange={(e) => handleDateChange(e.target.value)}
                   maxLength={10}
                   className={cn(
-                    errors.personalData?.birthDate &&
+                    formErrors.birthDate &&
                       "border-red-500 focus:border-red-500"
                   )}
                 />
-                {errors.personalData?.birthDate && (
+                {formErrors.birthDate && (
                   <p className="text-red-500 text-sm mt-1">
-                    {errors.personalData.birthDate.message}
+                    {formErrors.birthDate.message}
                   </p>
                 )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="gender">Gênero *</Label>
                 <Select
-                  value={formData.personalData?.gender || ""}
-                  onValueChange={(value) => updatePersonalData("gender", value)}
+                  value={formData.gender}
+                  onValueChange={(value) => {
+                    // Simular onChange para o react-hook-form
+                    const event = {
+                      target: { name: "gender", value },
+                    } as React.ChangeEvent<HTMLInputElement>;
+                    handleInputChange(event);
+                  }}
                 >
                   <SelectTrigger
                     id="gender"
                     className={cn(
-                      errors.personalData?.gender &&
-                        "border-red-500 focus:border-red-500"
+                      formErrors.gender && "border-red-500 focus:border-red-500"
                     )}
                   >
                     <SelectValue placeholder="Selecione o gênero" />
@@ -178,22 +178,28 @@ export default function IndividualInscriptionForm({
                     <SelectItem value="feminino">Feminino</SelectItem>
                   </SelectContent>
                 </Select>
-                {errors.personalData?.gender && (
+                {formErrors.gender && (
                   <p className="text-red-500 text-sm mt-1">
-                    {errors.personalData.gender.message}
+                    {formErrors.gender.message}
                   </p>
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="inscriptionType">Tipo de inscrição *</Label>
+                <Label htmlFor="typeInscriptionId">Tipo de inscrição *</Label>
                 <Select
-                  value={formData.typeInscriptionId || ""}
-                  onValueChange={setTypeInscriptionId}
+                  value={formData.typeInscriptionId}
+                  onValueChange={(value) => {
+                    // Simular onChange para o react-hook-form
+                    const event = {
+                      target: { name: "typeInscriptionId", value },
+                    } as React.ChangeEvent<HTMLInputElement>;
+                    handleInputChange(event);
+                  }}
                 >
                   <SelectTrigger
-                    id="inscriptionType"
+                    id="typeInscriptionId"
                     className={cn(
-                      errors.typeInscriptionId &&
+                      formErrors.typeInscriptionId &&
                         "border-red-500 focus:border-red-500"
                     )}
                   >
@@ -208,9 +214,9 @@ export default function IndividualInscriptionForm({
                     ))}
                   </SelectContent>
                 </Select>
-                {errors.typeInscriptionId && (
+                {formErrors.typeInscriptionId && (
                   <p className="text-red-500 text-sm mt-1">
-                    {errors.typeInscriptionId.message}
+                    {formErrors.typeInscriptionId.message}
                   </p>
                 )}
               </div>
@@ -219,10 +225,10 @@ export default function IndividualInscriptionForm({
 
           <Button
             type="submit"
-            disabled={submitting || Object.keys(errors).length > 0}
+            disabled={isSubmitting || Object.keys(formErrors).length > 0}
             className="w-full md:w-auto px-8 py-3 text-lg dark:text-white"
           >
-            {submitting ? "Enviando..." : "Finalizar Inscrição"}
+            {isSubmitting ? "Enviando..." : "Finalizar Inscrição"}
           </Button>
         </form>
       </CardContent>

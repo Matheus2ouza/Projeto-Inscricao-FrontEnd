@@ -13,7 +13,6 @@ export const submitIndividualInscription = async (
       data
     );
 
-    console.log("Resposta da API:", response.data);
     return response.data;
   } catch (error: unknown) {
     console.error("Erro ao enviar inscrição individual:", error);

@@ -1,4 +1,3 @@
-// IndividualInscriptionConfirmation.tsx - COM CONTADOR DINÂMICO
 "use client";
 
 import { useIndividualInscriptionConfirmation } from "../hooks/useIndividualInscriptionConfirmation";
@@ -23,6 +22,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import { IndividualPaymentConfirmation } from "./IndividualPaymentConfirmation";
 
 // Sistema de cores para tipos de inscrição (mesmo do grupo)
 const getTypeInscriptionColor = (typeDescription: string) => {
@@ -116,338 +116,281 @@ function LabelWithIcon({
   );
 }
 
+interface IndividualInscriptionConfirmationProps {
+  cacheKey: string;
+  confirmationData: any;
+  confirming: boolean;
+  timeRemaining: number;
+  handleConfirm: () => void;
+  handleCancel: () => void;
+}
+
 export default function IndividualInscriptionConfirmation({
   cacheKey,
-}: {
-  cacheKey: string;
-}) {
-  const {
-    confirmationData,
-    loading,
-    confirming,
-    error,
-    timeRemaining,
-    handleConfirm,
-    handleCancel,
-  } = useIndividualInscriptionConfirmation(cacheKey);
-
-  if (loading) {
-    return (
-      <div className="container mx-auto p-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">Carregando dados da inscrição...</div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (error || !confirmationData) {
-    return (
-      <div className="container mx-auto p-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center text-red-500">
-              {error || "Dados não encontrados"}
-            </div>
-            <div className="flex justify-center mt-4">
-              <Button onClick={handleCancel} variant="outline">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  confirmationData,
+  confirming,
+  timeRemaining,
+  handleConfirm,
+  handleCancel,
+}: IndividualInscriptionConfirmationProps) {
+  // Se não há dados de confirmação, não renderizar nada (a página já trata isso)
+  if (!confirmationData) {
+    return null;
   }
 
   const { participant } = confirmationData;
   const typeColor = getTypeInscriptionColor(participant.typeDescription);
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      {/* Header com botão voltar */}
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="outline" size="icon" onClick={handleCancel}>
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Confirmação de Inscrição Individual
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Revise os dados antes de confirmar a inscrição
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-6">
-        {/* Header com timer (mesmo estilo do grupo) */}
-        <Card
-          className={cn(
-            "border-orange-200 bg-orange-50 dark:bg-orange-900/10 dark:border-orange-800",
-            timeRemaining <= 5 &&
-              "border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-800"
-          )}
-        >
-          <CardHeader className="pb-4">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0">
-                <div
-                  className={cn(
-                    "w-10 h-10 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center",
-                    timeRemaining <= 5 && "bg-red-100 dark:bg-red-900/20"
-                  )}
-                >
-                  <Clock
-                    className={cn(
-                      "h-5 w-5 text-orange-600 dark:text-orange-400",
-                      timeRemaining <= 5 && "text-red-600 dark:text-red-400"
-                    )}
-                  />
-                </div>
-              </div>
-              <div className="flex-1">
-                <CardTitle
-                  className={cn(
-                    "text-lg text-orange-800 dark:text-orange-200",
-                    timeRemaining <= 5 && "text-red-800 dark:text-red-200"
-                  )}
-                >
-                  {timeRemaining <= 5
-                    ? "Tempo Esgotando!"
-                    : "Confirmação Pendente"}
-                </CardTitle>
-                <CardDescription
-                  className={cn(
-                    "text-orange-700 dark:text-orange-300 mt-1",
-                    timeRemaining <= 5 && "text-red-700 dark:text-red-300"
-                  )}
-                >
-                  {timeRemaining > 0 ? (
-                    <>
-                      Você tem{" "}
-                      <strong>
-                        {timeRemaining}{" "}
-                        {timeRemaining === 1 ? "minuto" : "minutos"}
-                      </strong>{" "}
-                      para confirmar esta inscrição. Após esse período, ela será
-                      cancelada automaticamente.
-                    </>
-                  ) : (
-                    <>
-                      O tempo para confirmação expirou. Esta inscrição será
-                      cancelada automaticamente.
-                    </>
-                  )}
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
-
-        {/* Card principal de confirmação */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              Resumo da Inscrição Individual
-            </CardTitle>
-            <CardDescription>
-              Verifique os dados abaixo antes de confirmar
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Estatísticas (adaptado para individual) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mb-3">
-                    <User className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-                  </div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                    1
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Participante
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mb-3">
-                    <DollarSign className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-                  </div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                    R$ {participant.value.toFixed(2)}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Valor Total
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mb-3">
-                    <Tag className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-                  </div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                    1
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Tipo de Inscrição
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Detalhes do participante */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Detalhes do Participante
-              </h3>
-
+    <div className="space-y-6">
+      {/* Header com timer (mesmo estilo do grupo) */}
+      <Card
+        className={cn(
+          "border-orange-200 bg-orange-50 dark:bg-orange-900/10 dark:border-orange-800",
+          timeRemaining <= 5 &&
+            "border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-800"
+        )}
+      >
+        <CardHeader className="pb-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0">
               <div
                 className={cn(
-                  "rounded-lg p-4 border transition-colors",
-                  typeColor.badge
+                  "w-10 h-10 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center",
+                  timeRemaining <= 5 && "bg-red-100 dark:bg-red-900/20"
                 )}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <Badge
-                    variant="outline"
-                    className={cn("text-xs font-medium", typeColor.badge)}
-                  >
-                    {participant.typeDescription}
-                  </Badge>
-                  <span className="text-lg font-bold text-green-600">
-                    R$ {participant.value.toFixed(2)}
-                  </span>
+                <Clock
+                  className={cn(
+                    "h-5 w-5 text-orange-600 dark:text-orange-400",
+                    timeRemaining <= 5 && "text-red-600 dark:text-red-400"
+                  )}
+                />
+              </div>
+            </div>
+            <div className="flex-1">
+              <CardTitle
+                className={cn(
+                  "text-lg text-orange-800 dark:text-orange-200",
+                  timeRemaining <= 5 && "text-red-800 dark:text-red-200"
+                )}
+              >
+                {timeRemaining <= 5
+                  ? "Tempo Esgotando!"
+                  : "Confirmação Pendente"}
+              </CardTitle>
+              <CardDescription
+                className={cn(
+                  "text-orange-700 dark:text-orange-300 mt-1",
+                  timeRemaining <= 5 && "text-red-700 dark:text-red-300"
+                )}
+              >
+                {timeRemaining > 0 ? (
+                  <>
+                    Você tem{" "}
+                    <strong>
+                      {timeRemaining}{" "}
+                      {timeRemaining === 1 ? "minuto" : "minutos"}
+                    </strong>{" "}
+                    para confirmar esta inscrição. Após esse período, ela será
+                    cancelada automaticamente.
+                  </>
+                ) : (
+                  <>
+                    O tempo para confirmação expirou. Esta inscrição será
+                    cancelada automaticamente.
+                  </>
+                )}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* Card principal de confirmação */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            Resumo da Inscrição Individual
+          </CardTitle>
+          <CardDescription>
+            Verifique os dados abaixo antes de confirmar
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Estatísticas (adaptado para individual) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mb-3">
+                  <User className="h-6 w-6 text-gray-600 dark:text-gray-400" />
                 </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                  1
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Participante
+                </p>
+              </div>
+            </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-3">
-                    <div className="space-y-2">
-                      <LabelWithIcon icon={User} text="Nome Completo" />
-                      <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {participant.name}
-                      </p>
-                    </div>
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mb-3">
+                  <DollarSign className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+                </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                  R$ {participant.value.toFixed(2)}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Valor Total
+                </p>
+              </div>
+            </div>
 
-                    <div className="space-y-2">
-                      <LabelWithIcon
-                        icon={Calendar}
-                        text="Data de Nascimento"
-                      />
-                      <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {participant.birthDate}
-                      </p>
-                    </div>
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mb-3">
+                  <Tag className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+                </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                  1
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Tipo de Inscrição
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Detalhes do participante */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Detalhes do Participante
+            </h3>
+
+            <div
+              className={cn(
+                "rounded-lg p-4 border transition-colors",
+                typeColor.badge
+              )}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <LabelWithIcon icon={User} text="Nome Completo" />
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {participant.name}
+                    </p>
                   </div>
 
-                  <div className="space-y-3">
-                    <div className="space-y-2">
-                      <LabelWithIcon icon={VenusAndMars} text="Gênero" />
-                      <p className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
-                        {participant.gender}
-                      </p>
-                    </div>
+                  <div className="space-y-2">
+                    <LabelWithIcon icon={Calendar} text="Data de Nascimento" />
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {participant.birthDate}
+                    </p>
+                  </div>
+                </div>
 
-                    <div className="space-y-2">
-                      <LabelWithIcon icon={Tag} text="Tipo de Inscrição" />
-                      <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {participant.typeDescription}
-                      </p>
-                    </div>
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <LabelWithIcon icon={VenusAndMars} text="Gênero" />
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
+                      {participant.gender}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <LabelWithIcon icon={Tag} text="Tipo de Inscrição" />
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {participant.typeDescription}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Informações importantes (mesmo estilo do grupo) */}
-            <Card className="border-gray-200 bg-gray-50 dark:bg-gray-800/30 dark:border-gray-700">
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                      <AlertTriangle className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base">
-                      Informações Importantes
-                    </h4>
-                    <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-2">
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-400 dark:text-gray-500 mt-1">
-                          •
-                        </span>
-                        <span>
-                          Você tem {timeRemaining}{" "}
-                          {timeRemaining === 1 ? "minuto" : "minutos"} para
-                          confirmar esta inscrição
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-400 dark:text-gray-500 mt-1">
-                          •
-                        </span>
-                        <span>Verifique todos os dados antes de confirmar</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-400 dark:text-gray-500 mt-1">
-                          •
-                        </span>
-                        <span>
-                          Após a confirmação, não será possível alterar os dados
-                        </span>
-                      </li>
-                    </ul>
+          {/* Informações importantes (mesmo estilo do grupo) */}
+          <Card className="border-gray-200 bg-gray-50 dark:bg-gray-800/30 dark:border-gray-700">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                    <AlertTriangle className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </CardContent>
-        </Card>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base">
+                    Informações Importantes
+                  </h4>
+                  <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-2">
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 dark:text-gray-500 mt-1">
+                        •
+                      </span>
+                      <span>
+                        Você tem {timeRemaining}{" "}
+                        {timeRemaining === 1 ? "minuto" : "minutos"} para
+                        confirmar esta inscrição
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 dark:text-gray-500 mt-1">
+                        •
+                      </span>
+                      <span>Verifique todos os dados antes de confirmar</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 dark:text-gray-500 mt-1">
+                        •
+                      </span>
+                      <span>
+                        Após a confirmação, não será possível alterar os dados
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </CardContent>
+      </Card>
 
-        {/* Botões de ação (mesmo estilo do grupo) */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Button
-            onClick={handleCancel}
-            variant="outline"
-            className="flex-1 h-14 text-base"
-            disabled={confirming || timeRemaining <= 0}
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            className={cn(
-              "flex-1 h-14 text-base bg-gray-900 hover:bg-gray-800 text-white",
-              timeRemaining <= 5 && "bg-orange-600 hover:bg-orange-700",
-              timeRemaining <= 0 && "bg-red-600 hover:bg-red-700"
-            )}
-            disabled={confirming || timeRemaining <= 0}
-          >
-            {timeRemaining <= 0 ? (
-              "Tempo Esgotado"
-            ) : confirming ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                Confirmando...
-              </>
-            ) : (
-              <>
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Confirmar Inscrição
-              </>
-            )}
-          </Button>
-        </div>
+      {/* Botões de ação (mesmo estilo do grupo) */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <Button
+          onClick={handleCancel}
+          variant="outline"
+          className="flex-1 h-14 text-base"
+          disabled={confirming || timeRemaining <= 0}
+        >
+          Cancelar
+        </Button>
+        <Button
+          onClick={handleConfirm}
+          className={cn(
+            "flex-1 h-14 text-base bg-gray-900 hover:bg-gray-800 text-white",
+            timeRemaining <= 5 && "bg-orange-600 hover:bg-orange-700",
+            timeRemaining <= 0 && "bg-red-600 hover:bg-red-700"
+          )}
+          disabled={confirming || timeRemaining <= 0}
+        >
+          {timeRemaining <= 0 ? (
+            "Tempo Esgotado"
+          ) : confirming ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+              Confirmando...
+            </>
+          ) : (
+            <>
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Confirmar Inscrição
+            </>
+          )}
+        </Button>
       </div>
     </div>
   );
