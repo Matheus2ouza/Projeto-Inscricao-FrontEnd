@@ -51,30 +51,25 @@ export async function loginService(
       tokens: { authToken, refreshToken },
     };
 
-    try {
-      const cookieStore = await cookies();
-      cookieStore.set("session", JSON.stringify(sessionData), {
-        httpOnly: true,
-        secure: isProd,
-        path: "/",
-        maxAge: 60 * 60 * 7, // 7 horas
-      });
-      cookieStore.set("authToken", authToken, {
-        httpOnly: true,
-        secure: isProd,
-        path: "/",
-        maxAge: 60 * 60 * 7, // 7 horas
-      });
-      cookieStore.set("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: isProd,
-        path: "/",
-        maxAge: 60 * 60 * 24, // 24 horas
-      });
-    } catch {
-      console.warn("Cookies bloqueados, caindo para sessão em memória");
-      return { role, sessionFallback: sessionData };
-    }
+    const cookieStore = await cookies();
+    cookieStore.set("session", JSON.stringify(sessionData), {
+      httpOnly: true,
+      secure: isProd,
+      path: "/",
+      maxAge: 60 * 60 * 7, // 7 horas
+    });
+    cookieStore.set("authToken", authToken, {
+      httpOnly: true,
+      secure: isProd,
+      path: "/",
+      maxAge: 60 * 60 * 7, // 7 horas
+    });
+    cookieStore.set("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: isProd,
+      path: "/",
+      maxAge: 60 * 60 * 7, // 7 horas
+    });
 
     return { role };
   } catch (error: unknown) {
@@ -82,10 +77,6 @@ export async function loginService(
       response?: { data?: { message?: string } };
       message?: string;
     };
-    console.error(
-      "Erro ao fazer login:",
-      axiosError.response?.data || axiosError.message
-    );
     throw new Error(
       axiosError.response?.data?.message ||
         "Erro inesperado. Por favor, tente novamente mais tarde."

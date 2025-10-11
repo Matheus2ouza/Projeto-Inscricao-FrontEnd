@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CookieConsent from "../../../components/cookie/CookieConsent";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
@@ -26,6 +26,16 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [cookieAccepted, setCookieAccepted] = useState(false);
   const { form, onSubmit } = useFormLogin();
+
+  // Verificar se os cookies já foram aceitos ao carregar a página
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const accepted = localStorage.getItem("cookieAccepted");
+      if (accepted === "true") {
+        setCookieAccepted(true);
+      }
+    }
+  }, []);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -105,6 +115,7 @@ export default function Login() {
                               id="password"
                               type={showPassword ? "text" : "password"}
                               placeholder="Digite sua senha"
+                              autoComplete="off"
                               className="w-full rounded-xl border-gray-300 bg-white/50 dark:bg-gray-800/50 shadow-sm focus:border-indigo-400 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:border-gray-600 dark:text-white backdrop-blur-sm transition-all duration-200 pl-4 pr-12 py-3"
                               {...field}
                             />
@@ -129,12 +140,23 @@ export default function Login() {
 
                 {/* Botão de Login */}
                 <div className="pt-4">
+                  {!cookieAccepted && (
+                    <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                      <p className="text-amber-800 dark:text-amber-200 text-sm text-center">
+                        <i className="bi bi-exclamation-triangle mr-2"></i>É
+                        necessário aceitar os cookies para continuar
+                      </p>
+                    </div>
+                  )}
                   <Button
-                    className="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-base hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 dark:hover:from-indigo-600 dark:hover:to-purple-600 py-5 px-6 text-white font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+                    className="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-base hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 dark:hover:from-indigo-600 dark:hover:to-purple-600 py-5 px-6 text-white font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                     type="submit"
+                    disabled={!cookieAccepted}
                   >
                     <i className="bi bi-box-arrow-in-right mr-2 text-base"></i>
-                    Entrar no Sistema
+                    {cookieAccepted
+                      ? "Entrar no Sistema"
+                      : "Aceite os cookies para continuar"}
                   </Button>
                 </div>
               </form>

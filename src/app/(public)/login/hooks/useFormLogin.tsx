@@ -1,5 +1,6 @@
 "use client";
 
+import { useGlobalLoading } from "@/components/GlobalLoading";
 import { loginService } from "@/features/auth/api/login";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Frown, ThumbsUp } from "lucide-react";
@@ -29,6 +30,7 @@ export type UseFormLoginType = {
 
 export default function useFormLogin(): UseFormLoginType {
   const router = useRouter();
+  const { setLoading } = useGlobalLoading();
   const form = useForm<LoginFormType>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -38,19 +40,12 @@ export default function useFormLogin(): UseFormLoginType {
   });
 
   async function onLoginForm(input: LoginFormType) {
+    setLoading(true);
     try {
       const response = await loginService({
         username: input.username,
         password: input.password,
       });
-
-      // fallback: caso cookies não sejam aceitos
-      if ("sessionFallback" in response) {
-        sessionStorage.setItem(
-          "session",
-          JSON.stringify(response.sessionFallback)
-        );
-      }
 
       // Após login bem-sucedido, só redireciona (tokens já estão nos cookies)
       const redirectUrl = `/${response.role.toLocaleLowerCase()}/home`;
@@ -65,6 +60,8 @@ export default function useFormLogin(): UseFormLoginType {
         description: "Verifique os dados e tente novamente",
       });
       return;
+    } finally {
+      setLoading(false);
     }
   }
 
