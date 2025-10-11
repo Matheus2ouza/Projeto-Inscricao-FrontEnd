@@ -3,13 +3,18 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { IndivUploadRouteResponse } from "../types/individualInscriptionTypes";
-import { confirmIndividualInscription } from "../api/confirmIndividualInscription";
+import {
+  confirmIndividualInscription,
+  ConfirmIndividualInscriptionResponse,
+} from "../api/confirmIndividualInscription";
 
 export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
   const router = useRouter();
 
   const [confirmationData, setConfirmationData] =
     useState<IndivUploadRouteResponse | null>(null);
+  const [confirmationResult, setConfirmationResult] =
+    useState<ConfirmIndividualInscriptionResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -101,7 +106,7 @@ export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
     localStorage.removeItem(`individual-time-${decodedCacheKey}`);
 
     toast.error("Tempo esgotado! A inscrição foi cancelada automaticamente.");
-    router.push("/user/events");
+    router.replace("/user/events");
   };
 
   // Função para confirmar inscrição
@@ -110,14 +115,16 @@ export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
     try {
       // Decodificar o cacheKey para a API
       const decodedCacheKey = decodeURIComponent(cacheKey);
-      await confirmIndividualInscription(decodedCacheKey);
+      const result = await confirmIndividualInscription(decodedCacheKey);
 
-      // Limpar dados do localStorage após confirmação
+      // Salvar o resultado da confirmação
+      setConfirmationResult(result);
+
+      // Limpar dados do localStorage após confirmação bem-sucedida
       localStorage.removeItem(`individual-inscription-${decodedCacheKey}`);
       localStorage.removeItem(`individual-time-${decodedCacheKey}`);
 
       toast.success("Inscrição confirmada com sucesso!");
-      router.push("/user/events");
     } catch (error: unknown) {
       console.error("Erro ao confirmar inscrição:", error);
 
@@ -156,7 +163,22 @@ export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
     const decodedCacheKey = decodeURIComponent(cacheKey);
     localStorage.removeItem(`individual-inscription-${decodedCacheKey}`);
     localStorage.removeItem(`individual-time-${decodedCacheKey}`);
-    router.back();
+    router.replace("/user/events");
+  };
+
+  // Função para pagamento
+  const handlePayment = () => {
+    console.log(
+      "Iniciando processo de pagamento para inscrição:",
+      confirmationResult?.inscriptionId
+    );
+    // TODO: Implementar navegação para tela de pagamento
+    toast.info("Funcionalidade de pagamento em desenvolvimento");
+  };
+
+  // Função para pular pagamento
+  const handleSkipPayment = () => {
+    router.replace("/user/events");
   };
 
   // Converter segundos para minutos
@@ -165,6 +187,7 @@ export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
   return {
     // Estado
     confirmationData,
+    confirmationResult,
     loading,
     confirming,
     error,
@@ -173,5 +196,7 @@ export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
     // Ações
     handleConfirm,
     handleCancel,
+    handlePayment,
+    handleSkipPayment,
   };
 };

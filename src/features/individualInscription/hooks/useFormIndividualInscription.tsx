@@ -1,103 +1,150 @@
-// useFormIndividualInscription.tsx - COM PROTEÇÃO CONTRA DUPLICATA
-import { useState, useEffect } from "react";
+"use client";
+
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { z } from "zod";
 import {
-  IndividualInscriptionData,
-  TypeInscription,
   IndividualInscriptionSubmit,
   IndivUploadRouteResponse,
+  UseFormIndividualInscriptionProps,
+  UseFormIndividualInscriptionReturn,
 } from "../types/individualInscriptionTypes";
-import { getTypeInscriptions } from "../api/getTypeInscriptions";
-import { submitIndividualInscription } from "../api/submitIndividualInscription";
-import {
-  individualInscriptionSchema,
-  IndividualInscriptionFormData,
-} from "../schemas/individualInscriptionSchema";
+import { useTypeInscriptionsQuery } from "./useTypeInscriptionsQuery";
+import { useSubmitIndividualInscription } from "./useIndividualInscriptionQuery";
 
-export const useFormIndividualInscription = (eventId: string) => {
+// Schema de validação com Zod (similar ao grupo)
+const individualInscriptionSchema = z.object({
+  responsible: z
+    .string()
+    .min(2, { message: "Nome deve ter pelo menos 2 caracteres" })
+    .regex(/^[a-zA-ZÀ-ÿ\s']+$/, {
+      message: "Nome deve conter apenas letras e espaços",
+    })
+    .transform((name) =>
+      name
+        .trim()
+        .replace(/\s+/g, " ")
+        .replace(/(^\w|\s\w)/g, (l) => l.toUpperCase())
+    ),
+  phone: z
+    .string()
+    .min(1, { message: "Telefone é obrigatório" })
+    .regex(/^\(\d{2}\)\s\d{4,5}-\d{4}$/, {
+      message: "Telefone deve estar no formato (11) 99999-9999",
+    }),
+  participantName: z
+    .string()
+    .min(2, {
+      message: "Nome do participante deve ter pelo menos 2 caracteres",
+    })
+    .regex(/^[a-zA-ZÀ-ÿ\s']+$/, {
+      message: "Nome deve conter apenas letras e espaços",
+    })
+    .transform((name) =>
+      name
+        .trim()
+        .replace(/\s+/g, " ")
+        .replace(/(^\w|\s\w)/g, (l) => l.toUpperCase())
+    ),
+  birthDate: z
+    .string()
+    .min(1, { message: "Data de nascimento é obrigatória" })
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/, {
+      message: "Data deve estar no formato DD/MM/AAAA",
+    }),
+  gender: z.string().min(1, { message: "Gênero é obrigatório" }),
+  typeInscriptionId: z
+    .string()
+    .min(1, { message: "Tipo de inscrição é obrigatório" }),
+});
+
+type IndividualInscriptionFormInputs = z.infer<
+  typeof individualInscriptionSchema
+>;
+
+export function useFormIndividualInscription({
+  eventId,
+}: UseFormIndividualInscriptionProps): UseFormIndividualInscriptionReturn {
   const router = useRouter();
 
+  // Inicializar o react-hook-form com Zod
   const {
     register,
-    handleSubmit: reactHookFormHandleSubmit,
+    handleSubmit: rhfHandleSubmit,
+    formState: { errors },
     setValue,
     watch,
-    formState: { errors },
     trigger,
-  } = useForm<IndividualInscriptionFormData>({
+  } = useForm<IndividualInscriptionFormInputs>({
     resolver: zodResolver(individualInscriptionSchema),
     defaultValues: {
-      eventId,
+      responsible: "",
+      phone: "",
+      participantName: "",
+      birthDate: "",
+      gender: "",
       typeInscriptionId: "",
-      responsibleData: {
-        fullName: "",
-        phone: "",
-      },
-      personalData: {
-        fullName: "",
-        birthDate: "",
-        gender: "",
-      },
     },
     mode: "onChange",
   });
 
-  const [typeInscriptions, setTypeInscriptions] = useState<TypeInscription[]>(
-    []
-  );
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [lastSubmission, setLastSubmission] = useState<number>(0);
-
-  // Watch form values
+  // Observar os valores do formulário
   const formData = watch();
 
-  // Carregar tipos de inscrição
-  useEffect(() => {
-    const loadTypeInscriptions = async () => {
-      try {
-        const data = await getTypeInscriptions(eventId);
-        const inscriptionsArray = Array.isArray(data) ? data : [data];
-        setTypeInscriptions(inscriptionsArray);
-      } catch (error) {
-        console.error("Erro ao carregar tipos de inscrição:", error);
-        setTypeInscriptions([]);
-        toast.error("Erro ao carregar tipos de inscrição");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Usar React Query para carregar tipos de inscrição
+  const {
+    data: typeInscriptionsData,
+    isLoading: typeInscriptionsLoading,
+    error: typeInscriptionsError,
+  } = useTypeInscriptionsQuery(eventId);
 
-    loadTypeInscriptions();
-  }, [eventId]);
+  // Usar React Query para submeter inscrição
+  const submitMutation = useSubmitIndividualInscription();
 
-  // Funções para atualizar os valores do formulário
-  const updateResponsibleData = (
-    field: keyof IndividualInscriptionData["responsibleData"],
-    value: string
-  ) => {
-    setValue(`responsibleData.${field}`, value, { shouldValidate: true });
-  };
+  // Processar dados dos tipos de inscrição
+  const typeInscriptions = typeInscriptionsData
+    ? Array.isArray(typeInscriptionsData)
+      ? typeInscriptionsData
+      : [typeInscriptionsData]
+    : [];
 
-  const updatePersonalData = (
-    field: keyof IndividualInscriptionData["personalData"],
-    value: string
-  ) => {
-    setValue(`personalData.${field}`, value, { shouldValidate: true });
-  };
+  // Mostrar erro se houver
+  if (typeInscriptionsError) {
+    console.error(
+      "Erro ao carregar tipos de inscrição:",
+      typeInscriptionsError
+    );
+    toast.error("Erro ao carregar tipos de inscrição");
+  }
 
-  const setTypeInscriptionId = (id: string) => {
-    setValue("typeInscriptionId", id, { shouldValidate: true });
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    if (name === "phone") {
+      // Formatação automática do telefone
+      const formattedPhone = formatPhone(value);
+      setValue(name as keyof IndividualInscriptionFormInputs, formattedPhone);
+    } else if (name === "birthDate") {
+      // Formatação automática da data
+      const formattedDate = formatDate(value);
+      setValue(name as keyof IndividualInscriptionFormInputs, formattedDate);
+    } else {
+      setValue(name as keyof IndividualInscriptionFormInputs, value);
+    }
+
+    // Validação em tempo real
+    trigger(name as keyof IndividualInscriptionFormInputs);
   };
 
   // Função para formatar telefone
   const formatPhone = (value: string): string => {
+    // Remove tudo que não é número
     const numbers = value.replace(/\D/g, "");
 
+    // Aplica a máscara (11) 99999-9999
     if (numbers.length <= 2) {
       return numbers ? `(${numbers}` : "";
     } else if (numbers.length <= 6) {
@@ -116,8 +163,10 @@ export const useFormIndividualInscription = (eventId: string) => {
 
   // Função para formatar data
   const formatDate = (value: string): string => {
+    // Remove tudo que não é número
     const numbers = value.replace(/\D/g, "");
 
+    // Aplica a máscara DD/MM/AAAA
     if (numbers.length <= 2) {
       return numbers;
     } else if (numbers.length <= 4) {
@@ -130,147 +179,78 @@ export const useFormIndividualInscription = (eventId: string) => {
     }
   };
 
-  // Handler para mudança de telefone com formatação
-  const handlePhoneChange = (value: string) => {
-    const formattedPhone = formatPhone(value);
-    updateResponsibleData("phone", formattedPhone);
-  };
-
-  // Handler para mudança de data com formatação
-  const handleDateChange = (value: string) => {
-    const formattedDate = formatDate(value);
-    updatePersonalData("birthDate", formattedDate);
-  };
-
-  // Converter dados para formato da API
-  const convertToApiFormat = (
-    data: IndividualInscriptionFormData
-  ): IndividualInscriptionSubmit => {
-    return {
-      responsible: data.responsibleData.fullName.trim(),
-      phone: data.responsibleData.phone,
-      eventId: data.eventId,
+  const onSubmit = async (data: IndividualInscriptionFormInputs) => {
+    const apiData: IndividualInscriptionSubmit = {
+      responsible: data.responsible,
+      phone: data.phone,
+      eventId,
       participant: {
-        name: data.personalData.fullName.trim(),
-        birthDateStr: data.personalData.birthDate,
-        gender: data.personalData.gender,
+        name: data.participantName,
+        birthDateStr: data.birthDate,
+        gender: data.gender,
         typeDescriptionId: data.typeInscriptionId,
       },
     };
-  };
-
-  // Submissão principal do formulário - COM PROTEÇÃO CONTRA DUPLICATAS
-  const handleFormSubmit = async (data: IndividualInscriptionFormData) => {
-    // Proteção contra submissões rápidas (debounce de 2 segundos)
-    const now = Date.now();
-    if (now - lastSubmission < 2000) {
-      toast.warning("Aguarde um momento antes de enviar novamente");
-      return;
-    }
-
-    setSubmitting(true);
-    setSubmitError(null);
-    setLastSubmission(now);
 
     try {
-      const apiData = convertToApiFormat(data);
-      const response: IndivUploadRouteResponse =
-        await submitIndividualInscription(apiData);
+      const response = await submitMutation.mutateAsync(apiData);
 
-      if (response?.cacheKey) {
-        console.log("Resposta do individual:", response);
-
-        // SALVAR NO LOCALSTORAGE para usar na confirmação
+      // Salvar os dados completos no localStorage
+      if (response.cacheKey) {
         localStorage.setItem(
           `individual-inscription-${response.cacheKey}`,
           JSON.stringify(response)
         );
 
         toast.success(
-          "Dados enviados com sucesso! Verifique as informações antes de confirmar."
+          "Dados processados com sucesso! Verifique as informações antes de confirmar."
         );
-
-        // Codificar o cacheKey para URL
-        const encodedCacheKey = encodeURIComponent(response.cacheKey);
-        router.push(`/user/individual-inscription/confirm/${encodedCacheKey}`);
+        router.push(
+          `/user/individual-inscription/confirm/${response.cacheKey}`
+        );
       } else {
-        throw new Error("Resposta da API inválida: cacheKey não encontrado");
+        toast.success("Inscrição individual realizada com sucesso!");
+        router.push("/user/events");
       }
-
-      return response;
     } catch (error: unknown) {
-      console.error("Erro na inscrição:", error);
+      console.error("Erro:", error);
 
       // Type guard para verificar se é um erro com estrutura de resposta
       const isErrorWithResponse = (
         err: unknown
-      ): err is { response?: { data?: { message?: string } } } => {
+      ): err is {
+        response?: { status?: number; data?: { message?: string } };
+      } => {
         return typeof err === "object" && err !== null && "response" in err;
       };
 
-      // Type guard para verificar se é um Error padrão
-      const isStandardError = (err: unknown): err is Error => {
-        return err instanceof Error;
-      };
-
-      let errorMessage = "Erro ao processar inscrição. Tente novamente.";
-
-      if (isErrorWithResponse(error)) {
-        errorMessage =
-          error.response?.data?.message ||
-          "Erro ao processar inscrição. Tente novamente.";
-      } else if (isStandardError(error)) {
-        errorMessage = error.message;
-      }
-
-      setSubmitError(errorMessage);
-
-      // Mostrar mensagem mais específica para erro de duplicata
       if (
-        errorMessage.includes("Unique constraint") ||
-        errorMessage.includes("cacheKey") ||
-        errorMessage.includes("duplicat") ||
-        errorMessage.includes("já existe")
+        isErrorWithResponse(error) &&
+        error.response?.status === 400 &&
+        error.response?.data?.message
       ) {
-        toast.error(
-          "Inscrição já processada. Verifique sua confirmação ou aguarde alguns instantes."
-        );
-      } else {
-        toast.error(errorMessage);
+        toast.error(error.response.data.message);
+        return;
       }
 
-      throw error;
-    } finally {
-      setSubmitting(false);
+      toast.error("Erro ao processar inscrição. Tente novamente.");
     }
   };
 
-  // Handler para submit do formulário
-  const onSubmit = reactHookFormHandleSubmit(handleFormSubmit);
+  // Wrapper para o handleSubmit do react-hook-form
+  const handleFormSubmit = rhfHandleSubmit(onSubmit);
 
   return {
     // Estado
     formData,
     typeInscriptions,
-    loading,
-    submitting,
-    submitError,
-    errors,
+    isSubmitting: submitMutation.isPending, // Usar estado da mutation
+    formErrors: errors, // Exportando os erros do formulário
+    typeInscriptionsLoading, // Estado de loading dos tipos de inscrição
 
-    // Ações do formulário
-    register,
-    onSubmit,
-    updateResponsibleData,
-    updatePersonalData,
-    setTypeInscriptionId,
-
-    // Handlers de campos
-    handlePhoneChange,
-    handleDateChange,
-
-    // Utilitários
-    formatPhone,
-    formatDate,
-    trigger,
+    // Ações
+    handleInputChange,
+    handleSubmit: handleFormSubmit, // Usando o handleSubmit do react-hook-form
+    register, // Exportando register para usar nos inputs
   };
-};
+}
