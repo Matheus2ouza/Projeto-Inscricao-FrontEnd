@@ -5,6 +5,7 @@ import { ThemeProvider } from "../providers/theme-provider";
 import { Toaster } from "@/shared/components/ui/sonner";
 import { HeroUIProviderWrapper } from "../providers/heroui-provider";
 import { GlobalLoadingProvider } from "@/components/GlobalLoading";
+import { QueryProvider } from "../providers/query-provider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
@@ -39,26 +40,28 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        <HeroUIProviderWrapper>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <GlobalLoadingProvider>
-              <main className="h-screen">
-                {children}
-                <Toaster
-                  richColors={true}
-                  position="top-right"
-                  swipeDirections={["right", "left"]}
-                  closeButton
-                />
-              </main>
-            </GlobalLoadingProvider>
-          </ThemeProvider>
-        </HeroUIProviderWrapper>
+        <QueryProvider>
+          <HeroUIProviderWrapper>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="light"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <GlobalLoadingProvider>
+                <main className="h-screen">
+                  {children}
+                  <Toaster
+                    richColors={true}
+                    position="top-right"
+                    swipeDirections={["right", "left"]}
+                    closeButton
+                  />
+                </main>
+              </GlobalLoadingProvider>
+            </ThemeProvider>
+          </HeroUIProviderWrapper>
+        </QueryProvider>
         <SpeedInsights />
       </body>
     </html>

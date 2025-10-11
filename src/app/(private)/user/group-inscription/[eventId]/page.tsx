@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { Button } from "@/shared/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useFormInscriptionGrup } from "@/features/inscriptionGrup/hook/useFormInscriptionGrup";
+import { useFormInscriptionGrup } from "@/features/inscriptionGrup/hooks/useFormInscriptionGrup";
 import { GroupInscriptionForm } from "@/features/inscriptionGrup/components/GroupInscriptionForm";
 import { GroupInscriptionInfo } from "@/features/inscriptionGrup/components/GroupInscriptionInfo";
 

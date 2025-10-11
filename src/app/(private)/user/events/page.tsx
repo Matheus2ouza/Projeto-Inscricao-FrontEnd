@@ -123,6 +123,7 @@ export default function EventsPage() {
                         src={event.imageUrl || "/images/event-placeholder.jpg"}
                         alt={event.name}
                         fill
+                        decoding="async"
                         className="object-cover rounded-t-lg"
                         onError={(e) => {
                           // Fallback para imagem quebrada

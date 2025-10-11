@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { Button } from "@/shared/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useGroupInscriptionConfirmation } from "@/features/inscriptionGrup/hook/useGroupInscriptionConfirmation";
+import { useGroupInscriptionConfirmation } from "@/features/inscriptionGrup/hooks/useGroupInscriptionConfirmation";
 import { GroupInscriptionConfirmation } from "@/features/inscriptionGrup/components/GroupInscriptionConfirmation";
 import { PaymentConfirmation } from "@/features/inscriptionGrup/components/PaymentConfirmation";
 
@@ -78,7 +78,7 @@ export default function GroupInscriptionConfirmPage() {
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             {confirmationResult
-              ? "Sua inscrição foi realizada com sucesso"
+              ? "Sua inscrição em grupo foi realizada com sucesso"
               : "Revise os dados antes de confirmar as inscrições em grupo"}
           </p>
         </div>

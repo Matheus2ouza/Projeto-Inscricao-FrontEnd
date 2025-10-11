@@ -30,14 +30,14 @@ export default function IndividualInscriptionPage() {
         </div>
       </div>
 
-      {/* Formulário ocupando toda a largura */}
-      <div className="mb-8">
-        <IndividualInscriptionForm eventId={eventId} />
-      </div>
-
-      {/* Informações abaixo do formulário */}
-      <div>
-        <IndividualInscriptionInfo />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="lg:col-span-3">
+          <IndividualInscriptionForm eventId={eventId} />
+        </div>
+        {/* Informações - agora ocupa 1 coluna */}
+        <div className="space-y-6">
+          <IndividualInscriptionInfo />
+        </div>
       </div>
     </div>
   );
