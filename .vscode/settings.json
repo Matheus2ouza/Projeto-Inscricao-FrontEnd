@@ -12,6 +12,7 @@
   "javascript.suggest.autoImports": true,
   "typescript.suggest.autoImports": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
   }
 }

@@ -3,7 +3,7 @@
 import { Button } from "@/shared/components/ui/button";
 import { useLogout } from "@/shared/hooks/logout/logout";
 import { useUserRole } from "@/shared/hooks/useUserRole";
-import { Calendar } from "lucide-react";
+import { Calendar, CalendarCheck2, CreditCard } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function UserHome() {
@@ -23,7 +23,7 @@ export default function UserHome() {
     <div className="min-h-screen bg-background">
       {/* Header */}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-foreground mb-2">
@@ -35,25 +35,52 @@ export default function UserHome() {
         </div>
 
         {/* Main Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Eventos */}
-          <div className="bg-card rounded-xl shadow-sm border border-border p-6 hover:shadow-md transition-shadow">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 hover:shadow-md transition-shadow flex flex-col h-full">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400">
-                <Calendar className="w-6 h-6" />
+              <div className="p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
+                <CalendarCheck2 className="w-6 h-6" />
               </div>
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              Eventos
-            </h3>
-            <p className="text-muted-foreground text-sm mb-4">
-              Explore todos os eventos disponíveis
-            </p>
+            <div className="flex-grow">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Eventos
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                Explore todos os eventos disponiveis
+              </p>
+            </div>
             <Button
-              className="w-full dark: text-white"
+              variant="default"
+              className="w-full dark:text-secondary-foreground mt-auto"
               onClick={() => router.push("/user/events")}
             >
-              Ver Eventos
+              Acessar
+            </Button>
+          </div>
+
+          {/* Pagamentos */}
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 hover:shadow-md transition-shadow flex flex-col h-full">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
+                <CreditCard className="w-6 h-6" />
+              </div>
+            </div>
+            <div className="flex-grow">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Meus Pagamentos
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                Realize e acompanhe seus Pagamentos
+              </p>
+            </div>
+            <Button
+              variant="default"
+              className="w-full dark:text-secondary-foreground mt-auto"
+              onClick={() => router.push("/user/payment")}
+            >
+              Acessar
             </Button>
           </div>
         </div>
