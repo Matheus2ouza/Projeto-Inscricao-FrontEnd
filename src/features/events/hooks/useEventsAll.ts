@@ -1,51 +1,39 @@
-import { useCallback, useEffect, useState } from "react";
-import {
-  Event,
-  getAllEventsResponse,
-  UseEventsParams,
-  UseEventsResult,
-} from "../types/eventTypes";
-import { getEvents } from "../api/getEvents";
+import { useState } from "react";
+import { UseEventsParams, UseEventsResult } from "../types/eventTypes";
+import { useEventsQuery, usePrefetchEvents } from "./useEventsQuery";
 
 export function useEventsAll({
   initialPage = 1,
-  pageSize = 4,
+  pageSize = 8,
 }: UseEventsParams = {}): UseEventsResult {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(initialPage);
-  const [pageCount, setPageCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchEvents = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data: getAllEventsResponse = await getEvents({ page, pageSize });
-      console.log(data);
-      setEvents(data.events);
-      setTotal(data.total);
-      setPageCount(data.pageCount);
-    } catch (error) {
-      setError((error as Error)?.message ?? "Falha ao carregar eventos");
-    } finally {
-      setLoading(false);
-    }
-  }, [page, pageSize]);
+  // Usar React Query para buscar eventos
+  const {
+    data,
+    isLoading: loading,
+    error,
+    refetch,
+  } = useEventsQuery(page, pageSize);
 
-  useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]);
+  // Pré-carregar próxima página
+  const { prefetchNextPage } = usePrefetchEvents();
+
+  // Pré-carregar próxima página quando dados carregam
+  if (data && page < data.pageCount) {
+    prefetchNextPage(page, pageSize);
+  }
 
   return {
-    events,
-    total,
+    events: data?.events || [],
+    total: data?.total || 0,
     page,
-    pageCount,
+    pageCount: data?.pageCount || 0,
     loading,
-    error,
+    error: error?.message || null,
     setPage,
-    refetch: fetchEvents,
+    refetch: async () => {
+      await refetch();
+    },
   };
 }
