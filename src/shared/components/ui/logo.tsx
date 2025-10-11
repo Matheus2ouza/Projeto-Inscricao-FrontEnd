@@ -43,6 +43,7 @@ const Logo: React.FC<LogoProps> = ({
     <Image
       src={logoSrc}
       alt={alt}
+      decoding="async"
       className={className}
       width={200}
       height={50}
