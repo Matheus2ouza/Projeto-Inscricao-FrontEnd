@@ -1,6 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
+import { Spinner } from "@/components/ui/shadcn-io/spinner";
 
 interface LoadingContextType {
   loading: boolean;
@@ -30,10 +37,31 @@ export function GlobalLoadingProvider({ children }: { children: ReactNode }) {
 
 function GlobalLoading() {
   const ctx = useContext(LoadingContext);
+
+  // Bloqueia scroll quando loading está ativo
+  useEffect(() => {
+    if (ctx?.loading) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [ctx?.loading]);
+
   if (!ctx?.loading) return null;
+
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="animate-spin rounded-full border-8 border-t-indigo-500 border-b-purple-500 border-x-gray-200 h-20 w-20"></div>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md">
+      <div className="relative">
+        <Spinner
+          variant="infinite"
+          size={160}
+          className="text-white drop-shadow-lg"
+        />
+      </div>
     </div>
   );
 }
