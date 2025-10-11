@@ -47,6 +47,8 @@ export default function useFormLogin(): UseFormLoginType {
         password: input.password,
       });
 
+      console.log("response do login:", response);
+
       // Após login bem-sucedido, só redireciona (tokens já estão nos cookies)
       const redirectUrl = `/${response.role.toLocaleLowerCase()}/home`;
       router.push(redirectUrl);

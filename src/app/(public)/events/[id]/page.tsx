@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/shared/lib/apiClient";
 import Image from "next/image";
-import { Calendar, MapPin, Share2, Loader2 } from "lucide-react"; // Adicionei o Loader2
+import { Calendar, MapPin, Share2, Loader2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import EventMap from "@/shared/components/EventMap";

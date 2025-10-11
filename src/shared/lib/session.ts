@@ -9,8 +9,6 @@ function assertServer() {
 // Tipos para sessão e usuário
 export interface User {
   id: string;
-  username: string;
-  email: string;
   role: "USER" | "ADMIN" | "SUPER" | "MANAGER";
 }
 

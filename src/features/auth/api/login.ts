@@ -4,31 +4,16 @@ import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import { isProd } from "@/shared/lib/utils";
 import axiosInstance from "@/shared/lib/apiClient";
+import {
+  AuthResponse,
+  LoginServiceInput,
+  LoginServiceOutput,
+  RequestData,
+  SessionData,
+  AxiosError,
+} from "../types/loginTypes";
 
-export type LoginServiceInput = {
-  username: string;
-  password: string;
-};
-
-type RequestData = {
-  username: string;
-  password: string;
-};
-
-type LoginServiceOutput = {
-  role: string;
-  sessionFallback?: {
-    user: {
-      expires: string;
-      role: string;
-    };
-    tokens: {
-      authToken: string;
-      refreshToken: string;
-    };
-  };
-};
-
+// Serviço de login
 export async function loginService(
   input: LoginServiceInput
 ): Promise<LoginServiceOutput> {
@@ -36,34 +21,41 @@ export async function loginService(
     username: input.username,
     password: input.password,
   };
+
   try {
-    const { data } = await axiosInstance.post("/users/", dataToRequest);
-    const { authToken, refreshToken, role } = data;
+    const { data } = await axiosInstance.post<AuthResponse>(
+      "/users/",
+      dataToRequest
+    );
+    const { authToken, refreshToken, user } = data;
 
     const secret = new TextEncoder().encode(process.env.JWT_AUTH_SECRET);
     const { payload } = await jwtVerify(authToken, secret);
 
-    const sessionData = {
+    const sessionData: SessionData = {
       user: {
-        expires: payload.exp ? new Date(payload.exp * 1000).toISOString() : "",
-        role,
+        id: user.id,
+        role: user.role,
       },
-      tokens: { authToken, refreshToken },
+      expires: payload.exp ? new Date(payload.exp * 1000).toISOString() : "",
     };
 
     const cookieStore = await cookies();
+
     cookieStore.set("session", JSON.stringify(sessionData), {
       httpOnly: true,
       secure: isProd,
       path: "/",
       maxAge: 60 * 60 * 7, // 7 horas
     });
+
     cookieStore.set("authToken", authToken, {
       httpOnly: true,
       secure: isProd,
       path: "/",
       maxAge: 60 * 60 * 7, // 7 horas
     });
+
     cookieStore.set("refreshToken", refreshToken, {
       httpOnly: true,
       secure: isProd,
@@ -71,12 +63,9 @@ export async function loginService(
       maxAge: 60 * 60 * 7, // 7 horas
     });
 
-    return { role };
+    return { role: user.role };
   } catch (error: unknown) {
-    const axiosError = error as {
-      response?: { data?: { message?: string } };
-      message?: string;
-    };
+    const axiosError = error as AxiosError;
     throw new Error(
       axiosError.response?.data?.message ||
         "Erro inesperado. Por favor, tente novamente mais tarde."
