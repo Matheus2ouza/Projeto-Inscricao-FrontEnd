@@ -11,9 +11,10 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/shared/components/ui/pagination";
+import { BanknoteArrowDown, FileText, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ComboboxEvent } from "./ComboBoxEvent";
-import { ComboboxPeriod } from "./ComboboxPeriod"; // Importe o novo componente
+import { ComboboxPeriod } from "./ComboboxPeriod";
 
 // Dados mock (substitua pela sua API real)
 const paymentData = {
@@ -165,11 +166,12 @@ export default function PaymentTable() {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("pt-BR");
   };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "PENDING":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+      case "UNDER_REVIEW":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
       case "PAID":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
       case "CANCELLED":
@@ -195,7 +197,7 @@ export default function PaymentTable() {
               <p className="text-2xl font-bold">{formatCurrency(totalDebt)}</p>
             </div>
             <div className="p-2 bg-red-100 dark:bg-red-900 rounded-full">
-              <i className="bi bi-currency-dollar text-red-600 dark:text-red-400 text-xl"></i>
+              <BanknoteArrowDown className="h-6 w-6 text-red-600 dark:text-red-400" />
             </div>
           </div>
         </div>
@@ -209,7 +211,7 @@ export default function PaymentTable() {
               <p className="text-2xl font-bold">{totalInscription}</p>
             </div>
             <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">
-              <i className="bi bi-people text-blue-600 dark:text-blue-400 text-xl"></i>
+              <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </div>
@@ -223,7 +225,7 @@ export default function PaymentTable() {
               <p className="text-2xl font-bold">{totalParticipant}</p>
             </div>
             <div className="p-2 bg-green-100 dark:bg-green-900 rounded-full">
-              <i className="bi bi-person-check text-green-600 dark:text-green-400 text-xl"></i>
+              <Users className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
           </div>
         </div>
@@ -336,6 +338,8 @@ export default function PaymentTable() {
                   >
                     {inscription.status === "PENDING"
                       ? "PENDENTE"
+                      : inscription.status === "UNDER_REVIEW"
+                      ? "EM ANALISE"
                       : inscription.status === "PAID"
                       ? "PAGO"
                       : inscription.status === "CANCELLED"
