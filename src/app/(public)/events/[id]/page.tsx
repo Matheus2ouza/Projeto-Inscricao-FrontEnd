@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/shared/lib/apiClient";
 import Image from "next/image";
-import { Calendar, MapPin, Share2 } from "lucide-react";
+import { Calendar, MapPin, Share2, Loader2 } from "lucide-react"; // Adicionei o Loader2
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import EventMap from "@/shared/components/EventMap";
+import { useGlobalLoading } from "@/components/GlobalLoading";
 
 type EventDetail = {
   id: string;
@@ -31,8 +32,9 @@ export default function EventPage({
 }) {
   const router = useRouter();
   const [event, setEvent] = useState<EventDetail | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [imageLoading, setImageLoading] = useState(true); // Estado específico para imagem
+  const { setLoading } = useGlobalLoading();
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -53,6 +55,17 @@ export default function EventPage({
 
     fetchEvent();
   }, [params]);
+
+  // Função para quando a imagem carregar
+  const handleImageLoad = () => {
+    setImageLoading(false);
+  };
+
+  // Função para tratar erro no carregamento da imagem
+  const handleImageError = () => {
+    setImageLoading(false);
+    // Você pode adicionar lógica adicional aqui se quiser
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("pt-BR", {
@@ -144,21 +157,18 @@ export default function EventPage({
     window.open(calendarUrl, "_blank");
   };
 
-  const handleSubscribe = () => {
-    // Redireciona para a página de login com o evento ID como parâmetro
-    router.push(`/login`);
+  const handleOpenRoute = () => {
+    if (!event) return;
+
+    const destination = `${event.latitude}, ${event.longitude}`;
+    const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+
+    window.open(mapsUrl, "_blank");
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando evento...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleSubscribe = () => {
+    router.push(`/login`);
+  };
 
   if (error || !event) {
     return (
@@ -183,15 +193,29 @@ export default function EventPage({
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
         {/* Header com imagem - MAIS ESPAÇO VERTICAL */}
         <div className="relative rounded-xl lg:rounded-2xl overflow-hidden mb-8 lg:mb-10">
-          <div className="relative w-full aspect-[2/1] sm:aspect-[3/1] lg:aspect-[4/1] bg-muted">
+          <div className="relative w-full max-h-[400px] aspect-[3/2] bg-muted">
             {event.imageUrl ? (
-              <Image
-                src={event.imageUrl}
-                alt={event.name}
-                fill
-                className="object-cover"
-                priority
-              />
+              <>
+                {/* Loading overlay para a imagem */}
+                {imageLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+
+                <Image
+                  src={event.imageUrl}
+                  alt={event.name}
+                  fill
+                  decoding="async"
+                  className={`object-cover ${
+                    imageLoading ? "opacity-0" : "opacity-100"
+                  } transition-opacity duration-300`}
+                  priority
+                  onLoad={handleImageLoad}
+                  onError={handleImageError}
+                />
+              </>
             ) : (
               <div className="w-full h-full bg-muted flex items-center justify-center">
                 <span className="text-muted-foreground text-sm sm:text-xl">
@@ -211,19 +235,19 @@ export default function EventPage({
             </div>
 
             {/* Conteúdo do header - posição responsiva com MAIS ESPAÇO */}
-            <div className="absolute bottom-6 left-4 sm:bottom-10 sm:left-8 lg:bottom-12 lg:left-10">
-              <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-white mb-3 sm:mb-4 lg:mb-5 line-clamp-2">
+            <div className="absolute bottom-6 left-4 sm:bottom-10 sm:left-8 lg:bottom-6 lg:left-10">
+              <h1 className="sm:text-3xl lg:text-4xl font-bold text-white mb-3 sm:mb-4 lg:mb-5 line-clamp-2">
                 {event.name}
               </h1>
-              <div className="flex items-center gap-2 text-white/90 text-base sm:text-lg lg:text-xl">
-                <MapPin className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7" />
+              <div className="flex items-center gap-2 text-white/90 text-sm sm:text-lg lg:text-xl">
+                <MapPin className="h-4 w-4 sm:h-6 sm:w-6 lg:h-7 lg:w-7" />
                 <span>{event.regionName}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Ações rápidas - Layout responsivo */}
+        {/* Resto do código permanece igual */}
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 lg:mb-8">
           <Button
             variant="outline"
@@ -240,6 +264,14 @@ export default function EventPage({
           >
             <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
             Adicionar à Agenda
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1 justify-center gap-2 sm:gap-3 py-4 sm:py-6 text-sm sm:text-base"
+            onClick={handleOpenRoute}
+          >
+            <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
+            Traçar Rota
           </Button>
         </div>
 
