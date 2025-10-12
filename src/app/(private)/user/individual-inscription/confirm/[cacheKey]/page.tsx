@@ -1,11 +1,11 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { Button } from "@/shared/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useIndividualInscriptionConfirmation } from "@/features/individualInscription/hooks/useIndividualInscriptionConfirmation";
 import IndividualInscriptionConfirmation from "@/features/individualInscription/components/IndividualInscriptionConfirmation";
 import { IndividualPaymentConfirmation } from "@/features/individualInscription/components/IndividualPaymentConfirmation";
+import { useIndividualInscriptionConfirmation } from "@/features/individualInscription/hooks/useIndividualInscriptionConfirmation";
+import { Button } from "@/shared/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useParams } from "next/navigation";
 
 export default function IndividualInscriptionConfirmPage() {
   const params = useParams();
@@ -14,7 +14,6 @@ export default function IndividualInscriptionConfirmPage() {
   const {
     confirmationData,
     confirmationResult,
-    loading,
     confirming,
     error,
     timeRemaining,
@@ -23,21 +22,6 @@ export default function IndividualInscriptionConfirmPage() {
     handlePayment,
     handleSkipPayment,
   } = useIndividualInscriptionConfirmation(cacheKey);
-
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="w-8 h-8 border-4 border-gray-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">
-              Carregando dados da inscrição...
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (error || (!confirmationData && !confirmationResult)) {
     return (

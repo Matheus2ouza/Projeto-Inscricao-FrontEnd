@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
+import { getAllRegions } from "../api/getRegions";
 import {
   RegionsDto,
   UseRegionsParams,
   UseRegionsResult,
   getAllRegionsResponse,
 } from "../types/regionsTypes";
-import { getAllRegions } from "../api/getRegions";
 
 export function useRegionsAll({
   initialPage = 1,

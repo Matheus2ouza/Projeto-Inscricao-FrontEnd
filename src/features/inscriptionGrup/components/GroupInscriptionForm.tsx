@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
 import {
   Card,
   CardContent,
@@ -17,17 +16,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
+import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
+import { cn } from "@/shared/lib/utils";
 import {
+  AlertCircle,
   Download,
-  Upload,
-  User,
   Phone,
   Trash2,
-  AlertCircle,
+  Upload,
+  User,
   X,
 } from "lucide-react";
-import { cn } from "@/shared/lib/utils";
 import { UseFormInscriptionGrupReturn } from "../types/inscriptionGrupTypes";
 
 interface GroupInscriptionFormProps {

@@ -1,25 +1,25 @@
 "use client";
 
-import React from "react";
+import Logo from "@/shared/components/ui/logo";
 import {
-  SidebarProvider,
   Sidebar,
   SidebarContent,
   SidebarMenu,
-  SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
   SidebarSeparator,
 } from "@/shared/components/ui/sidebar";
-import Logo from "@/shared/components/ui/logo";
+import { useLogout } from "@/shared/hooks/logout/logout";
 import {
   CalendarCheck2,
-  Users,
-  Map,
-  ScrollText,
+  FileText,
   House,
   LogOut,
+  ScrollText,
+  Users,
 } from "lucide-react";
-import { useLogout } from "@/shared/hooks/logout/logout";
+import React from "react";
 
 // Itens do menu lateral
 const items = [
@@ -48,6 +48,12 @@ const items = [
     title: "Eventos",
     url: "/user/events",
     icon: CalendarCheck2,
+    visible: true,
+  },
+  {
+    title: "Minhas Inscrições",
+    url: "/user/MyInscriptions",
+    icon: FileText,
     visible: true,
   },
 ];

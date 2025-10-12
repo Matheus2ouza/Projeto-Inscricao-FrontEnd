@@ -1,31 +1,31 @@
 "use client";
 
-import React, { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/shared/components/ui/button";
+import TypeInscriptionDialog from "@/features/typeInscription/components/TypeInscriptionDialog";
+import { useTypeInscriptions } from "@/features/typeInscription/hook/useTypeInscriptions";
+import { TypeInscriptions } from "@/features/typeInscription/types/typesInscriptionsTypes";
 import { Badge } from "@/shared/components/ui/badge";
+import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
 import {
+  ArrowLeft,
   Calendar,
-  MapPin,
-  Users,
   DollarSign,
+  Edit3,
   Eye,
   EyeClosed,
-  Save,
-  ArrowLeft,
-  Trash2,
-  Edit3,
-  Tag,
+  MapPin,
   Plus,
+  Save,
+  Tag,
+  Trash2,
+  Users,
 } from "lucide-react";
-import { Event } from "../types/eventTypes";
+import Image from "next/image";
+import Link from "next/link";
+import React, { useState } from "react";
 import { useFormEditEvent } from "../hooks/useFormEditEvent";
-import { TypeInscriptions } from "@/features/typeInscription/types/typesInscriptionsTypes";
-import { useTypeInscriptions } from "@/features/typeInscription/hook/useTypeInscriptions";
-import TypeInscriptionDialog from "@/features/typeInscription/components/TypeInscriptionDialog";
+import { Event } from "../types/eventTypes";
 
 interface EventManagementProps {
   event: Event;

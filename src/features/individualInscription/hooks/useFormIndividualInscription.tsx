@@ -1,74 +1,27 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useGlobalLoading } from "@/components/GlobalLoading";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+import {
+  IndividualInscriptionFormInputs,
+  individualInscriptionSchema,
+} from "../schemas/individualInscriptionSchema";
 import {
   IndividualInscriptionSubmit,
-  IndivUploadRouteResponse,
   UseFormIndividualInscriptionProps,
   UseFormIndividualInscriptionReturn,
 } from "../types/individualInscriptionTypes";
-import { useTypeInscriptionsQuery } from "./useTypeInscriptionsQuery";
 import { useSubmitIndividualInscription } from "./useIndividualInscriptionQuery";
-
-// Schema de validação com Zod (similar ao grupo)
-const individualInscriptionSchema = z.object({
-  responsible: z
-    .string()
-    .min(2, { message: "Nome deve ter pelo menos 2 caracteres" })
-    .regex(/^[a-zA-ZÀ-ÿ\s']+$/, {
-      message: "Nome deve conter apenas letras e espaços",
-    })
-    .transform((name) =>
-      name
-        .trim()
-        .replace(/\s+/g, " ")
-        .replace(/(^\w|\s\w)/g, (l) => l.toUpperCase())
-    ),
-  phone: z
-    .string()
-    .min(1, { message: "Telefone é obrigatório" })
-    .regex(/^\(\d{2}\)\s\d{4,5}-\d{4}$/, {
-      message: "Telefone deve estar no formato (11) 99999-9999",
-    }),
-  participantName: z
-    .string()
-    .min(2, {
-      message: "Nome do participante deve ter pelo menos 2 caracteres",
-    })
-    .regex(/^[a-zA-ZÀ-ÿ\s']+$/, {
-      message: "Nome deve conter apenas letras e espaços",
-    })
-    .transform((name) =>
-      name
-        .trim()
-        .replace(/\s+/g, " ")
-        .replace(/(^\w|\s\w)/g, (l) => l.toUpperCase())
-    ),
-  birthDate: z
-    .string()
-    .min(1, { message: "Data de nascimento é obrigatória" })
-    .regex(/^\d{2}\/\d{2}\/\d{4}$/, {
-      message: "Data deve estar no formato DD/MM/AAAA",
-    }),
-  gender: z.string().min(1, { message: "Gênero é obrigatório" }),
-  typeInscriptionId: z
-    .string()
-    .min(1, { message: "Tipo de inscrição é obrigatório" }),
-});
-
-type IndividualInscriptionFormInputs = z.infer<
-  typeof individualInscriptionSchema
->;
+import { useTypeInscriptionsQuery } from "./useTypeInscriptionsQuery";
 
 export function useFormIndividualInscription({
   eventId,
 }: UseFormIndividualInscriptionProps): UseFormIndividualInscriptionReturn {
   const router = useRouter();
+  const { setLoading } = useGlobalLoading();
 
   // Inicializar o react-hook-form com Zod
   const {
@@ -95,11 +48,8 @@ export function useFormIndividualInscription({
   const formData = watch();
 
   // Usar React Query para carregar tipos de inscrição
-  const {
-    data: typeInscriptionsData,
-    isLoading: typeInscriptionsLoading,
-    error: typeInscriptionsError,
-  } = useTypeInscriptionsQuery(eventId);
+  const { data: typeInscriptionsData, error: typeInscriptionsError } =
+    useTypeInscriptionsQuery(eventId);
 
   // Usar React Query para submeter inscrição
   const submitMutation = useSubmitIndividualInscription();
@@ -192,6 +142,7 @@ export function useFormIndividualInscription({
       },
     };
 
+    setLoading(true);
     try {
       const response = await submitMutation.mutateAsync(apiData);
 
@@ -224,16 +175,43 @@ export function useFormIndividualInscription({
         return typeof err === "object" && err !== null && "response" in err;
       };
 
-      if (
-        isErrorWithResponse(error) &&
-        error.response?.status === 400 &&
-        error.response?.data?.message
-      ) {
-        toast.error(error.response.data.message);
-        return;
+      // Type guard para verificar se é um erro do Next.js Server Action
+      const isServerActionError = (
+        err: unknown
+      ): err is { message?: string; name?: string } => {
+        return (
+          typeof err === "object" &&
+          err !== null &&
+          "message" in err &&
+          "name" in err
+        );
+      };
+
+      // Type guard para verificar se é um Error padrão
+      const isStandardError = (err: unknown): err is Error => {
+        return err instanceof Error;
+      };
+
+      let errorMessage =
+        "Erro ao processar inscrição, verifique os dados e tente novamente.";
+
+      if (isErrorWithResponse(error) && error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (isServerActionError(error)) {
+        // Tratar erros específicos do Next.js Server Actions
+        if (error.message?.includes("UnrecognizedActionError")) {
+          errorMessage =
+            "Erro de conexão com o servidor. Tente novamente em alguns instantes.";
+        } else {
+          errorMessage = error.message || "Erro desconhecido do servidor.";
+        }
+      } else if (isStandardError(error)) {
+        errorMessage = error.message;
       }
 
-      toast.error("Erro ao processar inscrição. Tente novamente.");
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -246,7 +224,6 @@ export function useFormIndividualInscription({
     typeInscriptions,
     isSubmitting: submitMutation.isPending, // Usar estado da mutation
     formErrors: errors, // Exportando os erros do formulário
-    typeInscriptionsLoading, // Estado de loading dos tipos de inscrição
 
     // Ações
     handleInputChange,

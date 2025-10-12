@@ -10,7 +10,6 @@ export interface UseFormIndividualInscriptionReturn {
   typeInscriptions: TypeInscription[];
   isSubmitting: boolean;
   formErrors: any;
-  typeInscriptionsLoading: boolean;
 
   // Ações
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;

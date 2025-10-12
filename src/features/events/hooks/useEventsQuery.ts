@@ -1,6 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getEvents } from "../api/getEvents";
-import { getAllEventsResponse } from "../types/eventTypes";
 
 // Chaves de query para organização
 export const eventsKeys = {

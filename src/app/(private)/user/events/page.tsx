@@ -1,7 +1,6 @@
 "use client";
 
 import { useEventsAll } from "@/features/events/hooks/useEventsAll";
-import { Card, CardBody, CardFooter } from "@heroui/react";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -9,16 +8,19 @@ import {
   PaginationContent,
   PaginationItem,
   PaginationLink,
-  PaginationPrevious,
   PaginationNext,
+  PaginationPrevious,
 } from "@/shared/components/ui/pagination";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { Calendar, MapPin, User, Users } from "lucide-react";
+import { Card, CardBody, CardFooter } from "@heroui/react";
+import { Calendar, Loader2, MapPin, User, Users } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function EventsPage() {
   const router = useRouter();
+  const [imageLoading, setImageLoading] = useState(true);
   const { events, loading, error, page, pageCount, setPage } = useEventsAll({
     initialPage: 1,
     pageSize: 8,
@@ -28,13 +30,17 @@ export default function EventsPage() {
     router.push(`/user/individual-inscription/${eventId}`);
   };
 
-  // No arquivo EventsPage, substitua a função handleGroupInscription:
   const handleGroupInscription = (eventId: string) => {
     router.push(`/user/group-inscription/${eventId}`);
   };
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
+  };
+
+  // Função para quando a imagem carregar
+  const handleImageLoad = () => {
+    setImageLoading(false);
   };
 
   // Função para determinar o status do evento
@@ -65,6 +71,30 @@ export default function EventsPage() {
           disabled: true,
         };
     }
+  };
+
+  // Função para gerar gradiente baseado no nome do evento
+  const generateGradient = (eventName: string) => {
+    // Gerar cores baseadas no nome do evento para consistência
+    const colors = [
+      "from-purple-500 to-pink-500",
+      "from-blue-500 to-cyan-500",
+      "from-green-500 to-emerald-500",
+      "from-orange-500 to-red-500",
+      "from-indigo-500 to-purple-500",
+      "from-teal-500 to-blue-500",
+      "from-yellow-500 to-orange-500",
+      "from-pink-500 to-rose-500",
+    ];
+
+    // Gerar índice baseado no nome do evento
+    let hash = 0;
+    for (let i = 0; i < eventName.length; i++) {
+      hash = eventName.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % colors.length;
+
+    return colors[index];
   };
 
   if (error) {
@@ -111,6 +141,7 @@ export default function EventsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {events.map((event) => {
               const statusInfo = getEventStatusInfo(event.status);
+              const gradientClass = generateGradient(event.name);
 
               return (
                 <Card
@@ -119,18 +150,46 @@ export default function EventsPage() {
                 >
                   <CardBody className="p-0 relative">
                     <div className="w-full h-48 relative">
-                      <Image
-                        src={event.imageUrl || "/images/event-placeholder.jpg"}
-                        alt={event.name}
-                        fill
-                        decoding="async"
-                        className="object-cover rounded-t-lg"
-                        onError={(e) => {
-                          // Fallback para imagem quebrada
-                          const target = e.target as HTMLImageElement;
-                          target.src = "/images/event-placeholder.jpg";
-                        }}
-                      />
+                      {event.imageUrl ? (
+                        <>
+                          {/* Loading overlay para a imagem */}
+                          {imageLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
+                              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                            </div>
+                          )}
+                          <Image
+                            src={event.imageUrl}
+                            alt={event.name}
+                            fill
+                            sizes="(max-width: 768px) 100vw,
+                                (max-width: 1200px) 50vw,
+                                25vw"
+                            priority={true}
+                            loading="eager"
+                            decoding="async"
+                            className="object-cover rounded-t-lg"
+                            onLoad={handleImageLoad}
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = "none";
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = `
+                                <div class="w-full h-full rounded-t-lg bg-gradient-to-br ${gradientClass} flex items-center justify-center">
+                                <span class="text-white font-bold text-lg text-center px-4">${event.name}</span>
+                                </div>
+                                `;
+                              }
+                            }}
+                          />
+                        </>
+                      ) : (
+                        // Gradiente quando não há imagem
+                        <div
+                          className={`w-full h-full rounded-t-lg bg-gradient-to-br ${gradientClass} flex items-center justify-center`}
+                        ></div>
+                      )}
                     </div>
                     <div className="absolute top-2 right-2">
                       <Badge className={statusInfo.badgeClass}>

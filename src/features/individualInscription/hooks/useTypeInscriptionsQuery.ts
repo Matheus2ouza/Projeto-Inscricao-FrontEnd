@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { getTypeInscriptions } from "../api/getTypeInscriptions";
-import { TypeInscription } from "../types/individualInscriptionTypes";
 
 // Chaves de query para tipos de inscrição
 export const typeInscriptionsKeys = {

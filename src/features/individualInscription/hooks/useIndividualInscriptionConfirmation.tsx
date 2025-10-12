@@ -1,12 +1,13 @@
 // useIndividualInscriptionConfirmation.tsx - COM CONTADOR DE TEMPO
-import { useState, useEffect } from "react";
+import { useGlobalLoading } from "@/components/GlobalLoading";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { IndivUploadRouteResponse } from "../types/individualInscriptionTypes";
 import {
   confirmIndividualInscription,
   ConfirmIndividualInscriptionResponse,
 } from "../api/confirmIndividualInscription";
+import { IndivUploadRouteResponse } from "../types/individualInscriptionTypes";
 
 export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
   const router = useRouter();
@@ -15,7 +16,7 @@ export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
     useState<IndivUploadRouteResponse | null>(null);
   const [confirmationResult, setConfirmationResult] =
     useState<ConfirmIndividualInscriptionResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { setLoading } = useGlobalLoading();
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(30 * 60); // 30 minutos em segundos
@@ -112,6 +113,7 @@ export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
   // Função para confirmar inscrição
   const handleConfirm = async () => {
     setConfirming(true);
+    setLoading(true);
     try {
       // Decodificar o cacheKey para a API
       const decodedCacheKey = decodeURIComponent(cacheKey);
@@ -154,6 +156,7 @@ export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
       throw error;
     } finally {
       setConfirming(false);
+      setLoading(false);
     }
   };
 
@@ -188,7 +191,6 @@ export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
     // Estado
     confirmationData,
     confirmationResult,
-    loading,
     confirming,
     error,
     timeRemaining: minutesRemaining,

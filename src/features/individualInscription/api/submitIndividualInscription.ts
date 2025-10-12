@@ -1,8 +1,8 @@
-"use server";
-
 import axiosInstance from "@/shared/lib/apiClient";
-import { IndividualInscriptionSubmit } from "../types/individualInscriptionTypes";
-import { IndivUploadRouteResponse } from "../types/individualInscriptionTypes";
+import {
+  IndividualInscriptionSubmit,
+  IndivUploadRouteResponse,
+} from "../types/individualInscriptionTypes";
 
 export const submitIndividualInscription = async (
   data: IndividualInscriptionSubmit
@@ -13,6 +13,7 @@ export const submitIndividualInscription = async (
       data
     );
 
+    console.log(response.data);
     return response.data;
   } catch (error: unknown) {
     console.error("Erro ao enviar inscrição individual:", error);
