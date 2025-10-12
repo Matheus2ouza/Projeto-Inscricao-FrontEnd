@@ -1,6 +1,5 @@
 "use client";
 
-import { useGlobalLoading } from "@/components/GlobalLoading";
 import EventMap from "@/shared/components/EventMap";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -34,7 +33,7 @@ export default function EventPage({
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(true);
-  const { setLoading } = useGlobalLoading();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -359,8 +358,8 @@ export default function EventPage({
                     subscriptionStatus.status === "open"
                       ? "text-green-600"
                       : subscriptionStatus.status === "closed"
-                      ? "text-yellow-600"
-                      : "text-red-600"
+                        ? "text-yellow-600"
+                        : "text-red-600"
                   }`}
                 >
                   {subscriptionStatus.label}
@@ -382,8 +381,8 @@ export default function EventPage({
                 {subscriptionStatus.status === "finalized"
                   ? "Evento Encerrado"
                   : subscriptionStatus.status === "closed"
-                  ? "Inscrições Fechadas"
-                  : "Inscrever-se"}
+                    ? "Inscrições Fechadas"
+                    : "Inscrever-se"}
               </Button>
             </div>
           </div>

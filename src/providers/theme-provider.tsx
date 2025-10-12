@@ -1,6 +1,5 @@
 "use client";
 
-import { useGlobalLoading } from "@/components/GlobalLoading";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import * as React from "react";
 
@@ -12,15 +11,12 @@ export function ThemeProvider({
   const [defaultTheme, setDefaultTheme] = React.useState<"light" | "dark">(
     "light"
   );
-  const { setLoading } = useGlobalLoading();
 
   React.useEffect(() => {
-    setLoading(true);
     const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
     if (savedTheme) setDefaultTheme(savedTheme);
     setMounted(true);
-    setLoading(false);
-  }, [setLoading]);
+  }, []);
 
   if (!mounted) {
     return null;

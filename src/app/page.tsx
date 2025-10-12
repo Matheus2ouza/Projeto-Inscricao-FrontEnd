@@ -1,15 +1,55 @@
 "use client";
 
-import React from "react";
+import { usePublicEvents } from "@/features/events/hooks/usePublicEvents";
 import PublicNavbar from "@/shared/components/layout/public-navbar";
 import { Button } from "@/shared/components/ui/button";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/shared/components/ui/carousel";
+import { MapPin } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
   const router = useRouter();
+  const {
+    data: events,
+    isLoading: eventsLoading,
+    error: eventsError,
+  } = usePublicEvents();
 
   const handleLoginClick = () => {
     router.push("/login");
+  };
+
+  const handleEventClick = (eventId: string) => {
+    router.push(`/events/${eventId}`);
+  };
+
+  // Função para gerar gradiente baseado no nome do evento
+  const generateGradient = (eventName: string) => {
+    const colors = [
+      "from-purple-500 to-pink-500",
+      "from-blue-500 to-cyan-500",
+      "from-green-500 to-emerald-500",
+      "from-orange-500 to-red-500",
+      "from-indigo-500 to-purple-500",
+      "from-teal-500 to-blue-500",
+      "from-yellow-500 to-orange-500",
+      "from-pink-500 to-rose-500",
+    ];
+
+    let hash = 0;
+    for (let i = 0; i < eventName.length; i++) {
+      hash = eventName.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
   };
 
   return (
@@ -32,9 +72,8 @@ export default function Home() {
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-              Gerencie eventos, conferências e workshops de forma simples e
-              eficiente. Uma plataforma completa para organizadores e
-              participantes.
+              Gerencie eventos e conferências de forma simples e eficiente. Uma
+              plataforma completa para organizadores e participantes.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -48,17 +87,221 @@ export default function Home() {
                 variant="outline"
                 className="border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-600 hover:text-white font-semibold px-8 py-4 rounded-xl transition-all duration-200 text-lg"
                 onClick={() => {
-                  const element = document.getElementById("sobre");
+                  const element = document.getElementById("eventos");
                   if (element) {
                     element.scrollIntoView({ behavior: "smooth" });
                   }
                 }}
               >
-                <i className="bi bi-info-circle mr-2"></i>
-                Saiba Mais
+                <i className="bi bi-calendar-event mr-2"></i>
+                Ver Eventos
               </Button>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Eventos Section */}
+      <section
+        id="eventos"
+        className="min-h-screen flex items-center justify-center px-4 py-16"
+      >
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+              Próximos Eventos
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Confira os eventos que estão acontecendo e as próximas
+              oportunidades
+            </p>
+          </div>
+
+          {eventsLoading ? (
+            <div className="flex justify-center items-center min-h-96">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Carregando eventos...
+                </p>
+              </div>
+            </div>
+          ) : eventsError ? (
+            <div className="flex justify-center items-center min-h-96">
+              <div className="text-center">
+                <h3 className="text-xl font-semibold text-red-600 mb-2">
+                  Erro ao carregar eventos
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Não foi possível carregar os eventos no momento.
+                </p>
+              </div>
+            </div>
+          ) : events && events.length > 0 ? (
+            <div className="w-full">
+              {events.length > 3 ? (
+                <Carousel
+                  opts={{
+                    align: "start",
+                    loop: true,
+                  }}
+                  className="w-full"
+                >
+                  <CarouselContent className="-ml-2 md:-ml-4">
+                    {events.map((event) => {
+                      const gradientClass = generateGradient(event.name);
+                      return (
+                        <CarouselItem
+                          key={event.id}
+                          className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3"
+                        >
+                          <Card
+                            className="h-full hover:shadow-lg transition-shadow cursor-pointer p-0"
+                            onClick={() => handleEventClick(event.id)}
+                          >
+                            <CardContent className="p-0">
+                              <div className="w-full h-48 relative overflow-hidden rounded-t-lg">
+                                {event.image ? (
+                                  <Image
+                                    src={event.image}
+                                    alt={event.name}
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    className="object-cover object-center"
+                                    onError={(e) => {
+                                      const target =
+                                        e.target as HTMLImageElement;
+                                      target.style.display = "none";
+                                      const parent = target.parentElement;
+                                      if (parent) {
+                                        parent.innerHTML = `
+                                        <div class="w-full h-full bg-gradient-to-br ${gradientClass} flex items-center justify-center">
+                                        <span class="text-white font-bold text-lg text-center px-4">${event.name}</span>
+                                        </div>
+                                        `;
+                                      }
+                                    }}
+                                  />
+                                ) : (
+                                  <div
+                                    className={`w-full h-full bg-gradient-to-br ${gradientClass} flex items-center justify-center`}
+                                  >
+                                    <span className="text-white font-bold text-lg text-center px-4">
+                                      {event.name}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="p-4">
+                                <h3 className="font-bold text-lg mb-2 line-clamp-2">
+                                  {event.name}
+                                </h3>
+                                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                  <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
+                                  <span className="line-clamp-1">
+                                    {event.location}
+                                  </span>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  className="w-full mt-3 text-white dark:text-white"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEventClick(event.id);
+                                  }}
+                                >
+                                  Ver Detalhes
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </CarouselItem>
+                      );
+                    })}
+                  </CarouselContent>
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </Carousel>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {events.map((event) => {
+                    const gradientClass = generateGradient(event.name);
+                    return (
+                      <Card
+                        key={event.id}
+                        className="h-full hover:shadow-lg transition-shadow cursor-pointer p-0"
+                        onClick={() => handleEventClick(event.id)}
+                      >
+                        <CardContent className="p-0">
+                          <div className="w-full h-48 relative overflow-hidden rounded-t-lg">
+                            {event.image ? (
+                              <Image
+                                src={event.image}
+                                alt={event.name}
+                                fill
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                className="object-cover object-center"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = "none";
+                                  const parent = target.parentElement;
+                                  if (parent) {
+                                    parent.innerHTML = `
+                                    <div class="w-full h-full bg-gradient-to-br ${gradientClass} flex items-center justify-center">
+                                    <span class="text-white font-bold text-lg text-center px-4">${event.name}</span>
+                                    </div>
+                                    `;
+                                  }
+                                }}
+                              />
+                            ) : (
+                              <div
+                                className={`w-full h-full bg-gradient-to-br ${gradientClass} flex items-center justify-center`}
+                              >
+                                <span className="text-white font-bold text-lg text-center px-4">
+                                  {event.name}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="p-4">
+                            <h3 className="font-bold text-lg mb-2 line-clamp-2">
+                              {event.name}
+                            </h3>
+                            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
+                              <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
+                              <span className="line-clamp-1">
+                                {event.location}
+                              </span>
+                            </div>
+                            <Button
+                              size="sm"
+                              className="w-full mt-3 dark:text-white"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEventClick(event.id);
+                              }}
+                            >
+                              Ver Detalhes
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                Nenhum evento encontrado
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 mt-2">
+                Não há eventos disponíveis no momento.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -100,7 +343,7 @@ export default function Home() {
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
                 Crie e gerencie eventos com facilidade, definindo datas, locais
-                e capacidades.
+                e muito mais.
               </p>
             </div>
 
@@ -115,98 +358,6 @@ export default function Home() {
                 Acompanhe métricas importantes e gere relatórios detalhados dos
                 seus eventos.
               </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Eventos Section */}
-      <section
-        id="eventos"
-        className="min-h-screen flex items-center justify-center px-4"
-      >
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              Próximos Eventos
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Confira os eventos que estão acontecendo e as próximas
-              oportunidades
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="bg-white/80 dark:bg-gray-900/80 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-              <div className="h-48 bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center">
-                <i className="bi bi-calendar-check text-white text-6xl"></i>
-              </div>
-              <div className="p-6">
-                <div className="flex items-center mb-2">
-                  <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm font-semibold px-3 py-1 rounded-full">
-                    Em Andamento
-                  </span>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                  Conferência de Tecnologia 2025
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  Evento anual com palestras sobre as últimas tendências em
-                  tecnologia.
-                </p>
-                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                  <i className="bi bi-calendar mr-2"></i>
-                  <span>15-17 Jan 2025</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/80 dark:bg-gray-900/80 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-              <div className="h-48 bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center">
-                <i className="bi bi-laptop text-white text-6xl"></i>
-              </div>
-              <div className="p-6">
-                <div className="flex items-center mb-2">
-                  <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm font-semibold px-3 py-1 rounded-full">
-                    Em Breve
-                  </span>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                  Workshop de Desenvolvimento
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  Workshop prático sobre desenvolvimento web moderno e boas
-                  práticas.
-                </p>
-                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                  <i className="bi bi-calendar mr-2"></i>
-                  <span>25 Jan 2025</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/80 dark:bg-gray-900/80 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-              <div className="h-48 bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center">
-                <i className="bi bi-people text-white text-6xl"></i>
-              </div>
-              <div className="p-6">
-                <div className="flex items-center mb-2">
-                  <span className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-sm font-semibold px-3 py-1 rounded-full">
-                    Planejado
-                  </span>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                  Networking Empresarial
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  Evento de networking para profissionais e empreendedores da
-                  região.
-                </p>
-                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                  <i className="bi bi-calendar mr-2"></i>
-                  <span>10 Fev 2025</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -256,18 +407,18 @@ export default function Home() {
               <ul className="space-y-2">
                 <li>
                   <a
-                    href="#sobre"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Sobre
-                  </a>
-                </li>
-                <li>
-                  <a
                     href="#eventos"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Eventos
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#sobre"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Sobre
                   </a>
                 </li>
                 <li>

@@ -59,6 +59,8 @@
     "daisyui": "^5.2.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-unused-imports": "^4.2.0",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.7",
     "typescript": "^5"

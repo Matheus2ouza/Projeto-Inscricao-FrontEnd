@@ -3,7 +3,7 @@
 import { useGlobalLoading } from "@/components/GlobalLoading";
 import { loginService } from "@/features/auth/api/login";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Frown, ThumbsUp } from "lucide-react";
+import { ThumbsUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
