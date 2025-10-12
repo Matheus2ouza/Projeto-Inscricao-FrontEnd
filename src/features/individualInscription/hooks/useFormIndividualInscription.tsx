@@ -1,15 +1,17 @@
+// hooks/useFormIndividualInscription.tsx
 "use client";
 
 import { useGlobalLoading } from "@/components/GlobalLoading";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, UseFormRegister } from "react-hook-form";
 import { toast } from "sonner";
 import {
   IndividualInscriptionFormInputs,
   individualInscriptionSchema,
 } from "../schemas/individualInscriptionSchema";
 import {
+  FormErrors,
   IndividualInscriptionSubmit,
   UseFormIndividualInscriptionProps,
   UseFormIndividualInscriptionReturn,
@@ -222,12 +224,12 @@ export function useFormIndividualInscription({
     // Estado
     formData,
     typeInscriptions,
-    isSubmitting: submitMutation.isPending, // Usar estado da mutation
-    formErrors: errors, // Exportando os erros do formulário
+    isSubmitting: submitMutation.isPending,
+    formErrors: errors as FormErrors,
 
     // Ações
     handleInputChange,
-    handleSubmit: handleFormSubmit, // Usando o handleSubmit do react-hook-form
-    register, // Exportando register para usar nos inputs
+    handleSubmit: handleFormSubmit,
+    register: register as UseFormRegister<IndividualInscriptionFormInputs>,
   };
 }

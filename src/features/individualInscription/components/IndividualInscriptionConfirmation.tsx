@@ -1,6 +1,5 @@
 "use client";
 
-import { useIndividualInscriptionConfirmation } from "../hooks/useIndividualInscriptionConfirmation";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,
@@ -9,20 +8,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { Badge } from "@/shared/components/ui/badge";
+import { cn } from "@/shared/lib/utils";
 import {
-  ArrowLeft,
-  User,
+  AlertTriangle,
   Calendar,
-  VenusAndMars,
-  Tag,
-  DollarSign,
   CheckCircle,
   Clock,
-  AlertTriangle,
+  DollarSign,
+  Tag,
+  User,
+  VenusAndMars,
 } from "lucide-react";
-import { cn } from "@/shared/lib/utils";
-import { IndividualPaymentConfirmation } from "./IndividualPaymentConfirmation";
 
 // Sistema de cores para tipos de inscrição (mesmo do grupo)
 const getTypeInscriptionColor = (typeDescription: string) => {
