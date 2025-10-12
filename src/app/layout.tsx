@@ -1,12 +1,12 @@
+import { GlobalLoadingProvider } from "@/components/GlobalLoading";
+import { Toaster } from "@/shared/components/ui/sonner";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Roboto } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "../providers/theme-provider";
-import { Toaster } from "@/shared/components/ui/sonner";
 import { HeroUIProviderWrapper } from "../providers/heroui-provider";
-import { GlobalLoadingProvider } from "@/components/GlobalLoading";
 import { QueryProvider } from "../providers/query-provider";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import { ThemeProvider } from "../providers/theme-provider";
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,14 +41,14 @@ export default function RootLayout({
         suppressHydrationWarning={true}
       >
         <QueryProvider>
-          <HeroUIProviderWrapper>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="light"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <GlobalLoadingProvider>
+          <GlobalLoadingProvider>
+            <HeroUIProviderWrapper>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="light"
+                enableSystem
+                disableTransitionOnChange
+              >
                 <main className="h-screen">
                   {children}
                   <Toaster
@@ -58,9 +58,9 @@ export default function RootLayout({
                     closeButton
                   />
                 </main>
-              </GlobalLoadingProvider>
-            </ThemeProvider>
-          </HeroUIProviderWrapper>
+              </ThemeProvider>
+            </HeroUIProviderWrapper>
+          </GlobalLoadingProvider>
         </QueryProvider>
         <SpeedInsights />
       </body>

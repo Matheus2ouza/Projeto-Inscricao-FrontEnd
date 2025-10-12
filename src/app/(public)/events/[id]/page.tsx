@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import axiosInstance from "@/shared/lib/apiClient";
-import Image from "next/image";
-import { Calendar, MapPin, Share2, Loader2 } from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
-import { Badge } from "@/shared/components/ui/badge";
 import EventMap from "@/shared/components/EventMap";
-import { useGlobalLoading } from "@/components/GlobalLoading";
+import { Badge } from "@/shared/components/ui/badge";
+import { Button } from "@/shared/components/ui/button";
+import axiosInstance from "@/shared/lib/apiClient";
+import { Calendar, Loader2, MapPin, Share2 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type EventDetail = {
   id: string;
@@ -33,8 +32,8 @@ export default function EventPage({
   const router = useRouter();
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [imageLoading, setImageLoading] = useState(true); // Estado específico para imagem
-  const { setLoading } = useGlobalLoading();
+  const [imageLoading, setImageLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -359,8 +358,8 @@ export default function EventPage({
                     subscriptionStatus.status === "open"
                       ? "text-green-600"
                       : subscriptionStatus.status === "closed"
-                      ? "text-yellow-600"
-                      : "text-red-600"
+                        ? "text-yellow-600"
+                        : "text-red-600"
                   }`}
                 >
                   {subscriptionStatus.label}
@@ -382,8 +381,8 @@ export default function EventPage({
                 {subscriptionStatus.status === "finalized"
                   ? "Evento Encerrado"
                   : subscriptionStatus.status === "closed"
-                  ? "Inscrições Fechadas"
-                  : "Inscrever-se"}
+                    ? "Inscrições Fechadas"
+                    : "Inscrever-se"}
               </Button>
             </div>
           </div>

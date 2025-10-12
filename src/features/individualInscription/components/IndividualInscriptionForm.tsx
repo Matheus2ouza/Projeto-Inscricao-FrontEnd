@@ -1,14 +1,13 @@
 "use client";
 
-import { useFormIndividualInscription } from "../hooks/useFormIndividualInscription";
 import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import {
   Select,
@@ -18,7 +17,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { cn } from "@/shared/lib/utils";
-import { UseFormIndividualInscriptionReturn } from "../types/individualInscriptionTypes";
+import { useFormIndividualInscription } from "../hooks/useFormIndividualInscription";
 
 interface IndividualInscriptionFormProps {
   eventId: string;
@@ -32,21 +31,10 @@ export default function IndividualInscriptionForm({
     typeInscriptions,
     isSubmitting,
     formErrors,
-    typeInscriptionsLoading,
     handleInputChange,
     handleSubmit,
     register,
   } = useFormIndividualInscription({ eventId });
-
-  if (typeInscriptionsLoading) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center">Carregando tipos de inscrição...</div>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <Card>

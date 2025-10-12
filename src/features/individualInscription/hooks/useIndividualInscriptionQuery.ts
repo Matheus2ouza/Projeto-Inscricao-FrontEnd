@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { submitIndividualInscription } from "../api/submitIndividualInscription";
-import { confirmIndividualInscription } from "../api/confirmIndividualInscription";
 import { eventsKeys } from "@/features/events/hooks/useEventsQuery";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { confirmIndividualInscription } from "../api/confirmIndividualInscription";
+import { submitIndividualInscription } from "../api/submitIndividualInscription";
 
 // Chaves de query para inscrições individuais
 export const individualInscriptionKeys = {
@@ -23,6 +23,8 @@ export function useSubmitIndividualInscription() {
     },
     onError: (error) => {
       console.error("Erro ao submeter inscrição individual:", error);
+      // Re-throw o erro para que seja capturado no componente
+      throw error;
     },
   });
 }

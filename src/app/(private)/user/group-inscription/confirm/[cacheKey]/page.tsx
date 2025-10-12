@@ -1,11 +1,11 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { Button } from "@/shared/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useGroupInscriptionConfirmation } from "@/features/inscriptionGrup/hooks/useGroupInscriptionConfirmation";
 import { GroupInscriptionConfirmation } from "@/features/inscriptionGrup/components/GroupInscriptionConfirmation";
 import { PaymentConfirmation } from "@/features/inscriptionGrup/components/PaymentConfirmation";
+import { useGroupInscriptionConfirmation } from "@/features/inscriptionGrup/hooks/useGroupInscriptionConfirmation";
+import { Button } from "@/shared/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useParams } from "next/navigation";
 
 export default function GroupInscriptionConfirmPage() {
   const params = useParams();
@@ -15,28 +15,12 @@ export default function GroupInscriptionConfirmPage() {
     confirmationData,
     confirmationResult, // Adicione esta linha
     isConfirming,
-    isLoading,
     timeRemaining,
     handleConfirm,
     handleCancel,
     handlePayment, // Adicione esta linha
     handleSkipPayment, // Adicione esta linha
   } = useGroupInscriptionConfirmation({ cacheKey });
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="w-8 h-8 border-4 border-gray-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">
-              Carregando dados da inscrição...
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (!confirmationData && !confirmationResult) {
     return (

@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,
@@ -8,17 +9,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { Badge } from "@/shared/components/ui/badge";
+import { cn } from "@/shared/lib/utils";
 import {
-  CheckCircle,
-  CreditCard,
-  Clock,
   AlertCircle,
   Calendar,
-  User,
+  CheckCircle,
+  Clock,
+  CreditCard,
   MessageCircle,
+  User,
 } from "lucide-react";
-import { cn } from "@/shared/lib/utils";
 
 interface IndividualPaymentConfirmationProps {
   inscriptionId: string;

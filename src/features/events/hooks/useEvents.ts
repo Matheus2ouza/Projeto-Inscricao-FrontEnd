@@ -1,8 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getEvents } from "../api/getEvents";
-import { EventDto, UseEventsResult } from "../types/eventsTypes";
+import { getEventsName } from "../api/getEvents";
+import { EventDto } from "../types/eventTypes";
+
+type UseEventsResult = {
+  events: EventDto[];
+  loading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+};
 
 export function useEvents(): UseEventsResult {
   const [events, setEvents] = useState<EventDto[]>([]);
@@ -13,7 +20,7 @@ export function useEvents(): UseEventsResult {
     setLoading(true);
     setError(null);
     try {
-      const data = await getEvents();
+      const data = await getEventsName();
       setEvents(data);
     } catch (e: unknown) {
       const errorMessage =

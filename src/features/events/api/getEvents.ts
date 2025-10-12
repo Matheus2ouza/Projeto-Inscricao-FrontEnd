@@ -1,5 +1,5 @@
 import axiosInstance from "@/shared/lib/apiClient";
-import { getAllEventsResponse } from "../types/eventTypes";
+import { EventDto, getAllEventsResponse } from "../types/eventTypes";
 
 export async function getEvents(params: {
   page: number;
@@ -8,5 +8,10 @@ export async function getEvents(params: {
   const { data } = await axiosInstance.get<getAllEventsResponse>("/events", {
     params: { page: params.page, pageSize: params.pageSize },
   });
+  return data;
+}
+
+export async function getEventsName(): Promise<EventDto[]> {
+  const { data } = await axiosInstance.get<EventDto[]>("/events/all/names");
   return data;
 }

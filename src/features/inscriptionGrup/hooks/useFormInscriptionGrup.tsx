@@ -1,19 +1,17 @@
 "use client";
 
-import { useState, useRef, useCallback, RefObject } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { RefObject, useCallback, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 import { submitGroupInscription } from "../api/submitGroupInscription";
 import {
-  GroupInscriptionFormData,
   UseFormInscriptionGrupProps,
   UseFormInscriptionGrupReturn,
   ValidationError,
-  GroupInscriptionConfirmationData,
 } from "../types/inscriptionGrupTypes";
-import { toast } from "sonner";
 
 // Schema de validação com Zod
 const groupInscriptionSchema = z.object({
@@ -111,13 +109,10 @@ export function useFormInscriptionGrup({
   };
 
   const downloadTemplate = () => {
-    const fileUrl = "/xlsx/Inscrições Aperfeiçoamento para Serviços.xlsx";
+    const fileUrl = `/xlsx/${eventId}.xlsx`;
     const link = document.createElement("a");
     link.href = fileUrl;
-    link.setAttribute(
-      "download",
-      "Inscrições Aperfeiçoamento para Serviços.xlsx"
-    );
+    link.setAttribute("download", "Template das Inscrições.xlsx");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

@@ -1,10 +1,8 @@
 "use client";
 
-import React from "react";
 import { Button } from "@/shared/components/ui/button";
-import { useRouter } from "next/navigation";
-import { ModeToggle } from "@/shared/components/ui/mode-toggle";
 import Logo from "@/shared/components/ui/logo";
+import { ModeToggle } from "@/shared/components/ui/mode-toggle";
 import { SidebarTrigger } from "@/shared/components/ui/sidebar";
 import { useLogout } from "@/shared/hooks/logout/logout";
 

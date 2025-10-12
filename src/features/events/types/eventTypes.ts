@@ -24,6 +24,22 @@ export type Event = {
   address?: string;
 };
 
+export type EventDto = {
+  id: string;
+  name: string;
+};
+
+export type UseEventsNameResult = {
+  events: EventDto[];
+  total: number;
+  page: number;
+  pageCount: number;
+  loading: boolean;
+  error: string | null;
+  setPage: (p: number) => void;
+  refetch: () => Promise<void>;
+};
+
 export type UseEventsParams = {
   initialPage?: number;
   pageSize?: number;

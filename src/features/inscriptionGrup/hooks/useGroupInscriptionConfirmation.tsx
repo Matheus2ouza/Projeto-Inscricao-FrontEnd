@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useGlobalLoading } from "@/components/GlobalLoading";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { confirmGroupInscription } from "../api/confirmGroupInscription";
 import { GroupInscriptionConfirmationData } from "../types/inscriptionGrupTypes";
-import { toast } from "sonner";
 
 interface UseGroupInscriptionConfirmationProps {
   cacheKey: string;
@@ -20,7 +21,7 @@ export function useGroupInscriptionConfirmation({
 }: UseGroupInscriptionConfirmationProps) {
   const router = useRouter();
   const [isConfirming, setIsConfirming] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { setLoading } = useGlobalLoading();
   const [timeRemaining, setTimeRemaining] = useState(30); // 30 minutos
   const [confirmationResult, setConfirmationResult] =
     useState<ConfirmGroupResponse | null>(null);
@@ -57,7 +58,7 @@ export function useGroupInscriptionConfirmation({
   useEffect(() => {
     const loadConfirmationData = () => {
       try {
-        setIsLoading(true);
+        setLoading(true);
         const storedData = localStorage.getItem(
           `group-inscription-${decodedCacheKey}`
         );
@@ -76,7 +77,7 @@ export function useGroupInscriptionConfirmation({
         toast.error("Erro ao carregar dados da inscrição.");
         router.push("/user/events");
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
@@ -141,7 +142,6 @@ export function useGroupInscriptionConfirmation({
     confirmationData,
     confirmationResult,
     isConfirming,
-    isLoading,
     timeRemaining,
     handleConfirm,
     handleCancel,
