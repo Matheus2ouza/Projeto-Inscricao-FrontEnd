@@ -1,17 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import CookieConsent from "../../../components/cookie/CookieConsent";
-import { Input } from "@/shared/components/ui/input";
-import { Button } from "@/shared/components/ui/button";
 import {
   Alert,
-  AlertTitle,
   AlertDescription,
+  AlertTitle,
 } from "@/shared/components/ui/alert";
 import Background from "@/shared/components/ui/background";
-import Logo from "@/shared/components/ui/logo";
-import "bootstrap-icons/font/bootstrap-icons.css";
+import { Button } from "@/shared/components/ui/button";
 import {
   Form,
   FormControl,
@@ -20,6 +15,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/shared/components/ui/form";
+import { Input } from "@/shared/components/ui/input";
+import Logo from "@/shared/components/ui/logo";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import { useEffect, useState } from "react";
+import CookieConsent from "../../../components/cookie/CookieConsent";
 import useFormLogin from "./hooks/useFormLogin";
 
 export default function Login() {
@@ -41,16 +41,26 @@ export default function Login() {
     setShowPassword(!showPassword);
   };
 
+  // Função para redirecionar para o WhatsApp
+  const redirectToWhatsApp = () => {
+    const phoneNumber = "91992587483";
+    const message = "Olá! Gostaria de obter uma conta no sistema de inscrição.";
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
+  };
+
   return (
     <Background className="min-h-screen">
       <CookieConsent onAccept={() => setCookieAccepted(true)} />
       {/* Pop-up de sessão expirada */}
       <div className="min-h-screen flex flex-col">
         {/* Main content */}
-        <div className="flex-1 flex flex-col items-center justify-center p-4">
+        <div className="flex-1 flex flex-col items-center justify-center p-0 mb-16">
+          {" "}
+          {/* Aumentei o margin-bottom */}
           {/* Logo acima do card */}
-          <Logo className="w-48 h-48 object-contain mx-auto mb-8" />
-
+          <Logo className="w-48 h-48 object-contain mx-auto mb-8" />{" "}
+          {/* Adicionei margin-bottom na logo */}
           {/* Card de Login */}
           <div className="w-full max-w-md p-8 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-2xl rounded-2xl border border-white/30 dark:border-gray-700/30 hover:shadow-3xl transition-all duration-300">
             {/* Header */}
@@ -164,16 +174,22 @@ export default function Login() {
 
             {/* Alert de Ajuda */}
             <div className="mt-8">
-              <Alert className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200/50 dark:border-blue-700/30 backdrop-blur-sm rounded-xl !grid-cols-1">
+              <Alert
+                className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200/50 dark:border-blue-700/30 backdrop-blur-sm rounded-xl !grid-cols-1 cursor-pointer hover:from-blue-100/80 hover:to-indigo-100/80 dark:hover:from-blue-800/20 dark:hover:to-indigo-800/20 transition-all duration-200"
+                onClick={redirectToWhatsApp}
+              >
                 <div className="flex items-start w-full">
                   <div className="flex-1 min-w-0">
-                    <AlertTitle className="text-blue-800 dark:text-blue-200 font-semibold !col-start-1">
-                      Precisar de ajuda?
+                    <AlertTitle className="text-blue-800 dark:text-blue-200 font-semibold !col-start-1 flex items-center">
+                      <i className="bi bi-whatsapp text-green-500 mr-2"></i>
+                      Ainda não tem uma conta?
                     </AlertTitle>
                     <AlertDescription className="text-blue-700 dark:text-blue-300 mt-1 !col-start-1">
-                      Entre em contato com o suporte para obter assistência.
+                      Clique aqui para entrar em contato com o suporte via
+                      WhatsApp e obter assistência.
                     </AlertDescription>
                   </div>
+                  <i className="bi bi-arrow-up-right text-blue-500 ml-2 mt-1"></i>
                 </div>
               </Alert>
             </div>
@@ -181,7 +197,9 @@ export default function Login() {
         </div>
 
         {/* Footer */}
-        <footer className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-white/20 dark:border-gray-700/20 py-4 px-6 flex-shrink-0">
+        <footer className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-white/20 dark:border-gray-700/20 py-6 px-6 flex-shrink-0 mt-auto">
+          {" "}
+          {/* Adicionei mt-auto */}
           <div className="max-w-7xl mx-auto flex flex-col items-center space-y-3">
             {/* Primeira linha: Sistema de Inscrição */}
             <p className="text-[17px] text-gray-700 dark:text-gray-300 font-medium">
