@@ -197,13 +197,9 @@ export function IndividualPaymentConfirmation({
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="mt-1 flex-shrink-0">•</span>
-                          <span>O pagamento garante sua vaga no evento</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="mt-1 flex-shrink-0">•</span>
                           <span>
-                            Após o pagamento, você receberá uma confirmação por
-                            e-mail
+                            O pagamento poderá ser feito via pix ou depósito
+                            bancário
                           </span>
                         </li>
                       </>
@@ -259,7 +255,7 @@ export function IndividualPaymentConfirmation({
               </p>
               <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                 {paymentEnabled
-                  ? "Realize o pagamento para garantir sua participação no evento"
+                  ? "Realize o pagamento antes da data limite"
                   : "Aguarde a liberação dos pagamentos pelos organizadores para realizar o pagamento"}
               </p>
             </div>
