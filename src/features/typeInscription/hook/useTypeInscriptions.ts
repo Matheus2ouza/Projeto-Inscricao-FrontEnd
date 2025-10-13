@@ -4,13 +4,11 @@ import {
   createTypeInscription,
   CreateTypeInscriptionInput,
 } from "../api/createTypeInscription";
+import { deleteTypeInscription } from "../api/deleteTypeInscription";
 import {
   updateTypeInscription,
   UpdateTypeInscriptionInput,
 } from "../api/updateTypeInscription";
-import { deleteTypeInscription } from "../api/deleteTypeInscription";
-import { TypeInscriptions } from "../types/typesInscriptionsTypes";
-import { describe } from "node:test";
 
 export function useTypeInscriptions(eventId: string) {
   const [loading, setLoading] = useState(false);

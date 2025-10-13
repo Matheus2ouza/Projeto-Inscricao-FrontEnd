@@ -1,25 +1,22 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import { ComboboxRole } from "@/features/accounts/components/ComboboxRole";
+import useFormCreateAccount, {
+  ROLES,
+} from "@/features/accounts/hooks/useFormCreateAccount";
+import { useUsers } from "@/features/accounts/hooks/useUsers";
+import { ComboboxRegion } from "@/features/regions/components/ComboboxRegion";
+import { MultiSelectRegion } from "@/features/regions/components/MultiSelectRegion";
+import { useRegions } from "@/features/regions/hooks/useRegions";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogClose,
 } from "@/shared/components/ui/dialog";
-import { ComboboxRole } from "@/features/accounts/components/ComboboxRole";
-import { Input } from "@/shared/components/ui/input";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationPrevious,
-  PaginationNext,
-} from "@/shared/components/ui/pagination";
 import {
   FormControl,
   FormField,
@@ -27,14 +24,18 @@ import {
   FormLabel,
   FormMessage,
 } from "@/shared/components/ui/form";
-import { FormProvider } from "react-hook-form";
-import { ROLES } from "@/features/accounts/hooks/useFormCreateAccount";
-import { MultiSelectRegion } from "@/features/regions/components/MultiSelectRegion";
-import { ComboboxRegion } from "@/features/regions/components/ComboboxRegion";
+import { Input } from "@/shared/components/ui/input";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/shared/components/ui/pagination";
 import { Switch } from "@/shared/components/ui/switch";
-import useFormCreateAccount from "@/features/accounts/hooks/useFormCreateAccount";
-import { useRegions } from "@/features/regions/hooks/useRegions";
-import { useUsers } from "@/features/accounts/hooks/useUsers";
+import React, { useMemo, useState } from "react";
+import { FormProvider } from "react-hook-form";
 
 export default function AccountsTable() {
   const [open, setOpen] = useState(false);

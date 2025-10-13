@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { getEvent } from "../api/getEvent";
 import { getTypeInscriptionsByEvent } from "@/features/typeInscription/api/getTypeInscriptionsByEvent";
+import { useEffect, useState } from "react";
+import { getEvent } from "../api/getEvent";
 import { Event } from "../types/eventTypes";
 
 export function useEvent(eventId: string) {
@@ -16,8 +16,6 @@ export function useEvent(eventId: string) {
       // Buscar dados básicos do evento
       const eventData = await getEvent(eventId);
 
-      console.log("O eventId");
-      console.log(eventId);
       // Buscar tipos de inscrição em paralelo
       const typesInscriptionsPromise = getTypeInscriptionsByEvent(eventId);
 
