@@ -171,12 +171,7 @@ export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
 
   // Função para pagamento
   const handlePayment = () => {
-    console.log(
-      "Iniciando processo de pagamento para inscrição:",
-      confirmationResult?.inscriptionId
-    );
-    // TODO: Implementar navegação para tela de pagamento
-    toast.info("Funcionalidade de pagamento em desenvolvimento");
+    router.replace("/user/MyInscriptions");
   };
 
   // Função para pular pagamento
