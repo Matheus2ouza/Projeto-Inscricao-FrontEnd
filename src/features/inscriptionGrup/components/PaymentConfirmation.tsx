@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,
@@ -8,17 +9,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { Badge } from "@/shared/components/ui/badge";
+import { cn } from "@/shared/lib/utils";
 import {
-  CheckCircle,
-  CreditCard,
-  Clock,
   AlertCircle,
   Calendar,
-  Users,
+  CheckCircle,
+  Clock,
+  CreditCard,
   MessageCircle,
+  Users,
 } from "lucide-react";
-import { cn } from "@/shared/lib/utils";
 
 interface PaymentConfirmationProps {
   inscriptionId: string;
@@ -197,13 +197,8 @@ export function PaymentConfirmation({
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="mt-1 flex-shrink-0">•</span>
-                          <span>O pagamento garante sua vaga no evento</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="mt-1 flex-shrink-0">•</span>
                           <span>
-                            Após o pagamento, você receberá uma confirmação por
-                            e-mail
+                            O é feito somente via pix ou depósito bancário
                           </span>
                         </li>
                       </>
@@ -259,7 +254,7 @@ export function PaymentConfirmation({
               </p>
               <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                 {paymentEnabled
-                  ? "Realize o pagamento para garantir sua participação no evento"
+                  ? "Realize o pagamento antes do prazo limite, caso contrario poderá ocorrer acrescimos"
                   : "Aguarde a liberação dos pagamentos pelos organizadores para realizar o pagamento"}
               </p>
             </div>

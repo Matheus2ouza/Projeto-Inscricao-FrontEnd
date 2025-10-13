@@ -35,12 +35,15 @@ export function useGroupInscriptionConfirmation({
 
   // Timer de 30 minutos com setTimeout único
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      // Limpar dados do localStorage ao expirar
-      localStorage.removeItem(`group-inscription-${decodedCacheKey}`);
-      toast.error("Tempo esgotado! A inscrição foi cancelada.");
-      router.push("/user/events");
-    }, 30 * 60 * 1000); // 30 minutos em milissegundos
+    const timeout = setTimeout(
+      () => {
+        // Limpar dados do localStorage ao expirar
+        localStorage.removeItem(`group-inscription-${decodedCacheKey}`);
+        toast.error("Tempo esgotado! A inscrição foi cancelada.");
+        router.push("/user/events");
+      },
+      30 * 60 * 1000
+    ); // 30 minutos em milissegundos
 
     return () => clearTimeout(timeout);
   }, [router, decodedCacheKey]);
@@ -120,12 +123,7 @@ export function useGroupInscriptionConfirmation({
   };
 
   const handlePayment = () => {
-    console.log(
-      "Iniciando processo de pagamento para inscrição:",
-      confirmationResult?.inscriptionId
-    );
-    // TODO: Implementar navegação para tela de pagamento
-    toast.info("Funcionalidade de pagamento em desenvolvimento");
+    router.replace("/user/MyInscriptions");
   };
 
   const handleSkipPayment = () => {
