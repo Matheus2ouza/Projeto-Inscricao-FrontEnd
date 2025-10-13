@@ -1,11 +1,10 @@
 "use client";
 
-import React from "react";
+import EventManagement from "@/features/events/components/EventManagement";
+import { useEvent } from "@/features/events/hooks/useEvent";
+import { Button } from "@/shared/components/ui/button";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEvent } from "@/features/events/hooks/useEvent";
-import EventManagement from "@/features/events/components/EventManagement";
-import { Button } from "@/shared/components/ui/button";
 
 export default function EventManagementPage() {
   const params = useParams();

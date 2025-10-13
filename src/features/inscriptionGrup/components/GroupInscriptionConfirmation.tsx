@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,
@@ -8,18 +9,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { Badge } from "@/shared/components/ui/badge";
+import { cn } from "@/shared/lib/utils";
 import {
+  AlertTriangle,
+  Calendar,
   CheckCircle,
   Clock,
-  Users,
   DollarSign,
-  Calendar,
   User,
-  AlertTriangle,
+  Users,
 } from "lucide-react";
 import { GroupInscriptionConfirmationData } from "../types/inscriptionGrupTypes";
-import { cn } from "@/shared/lib/utils";
 
 interface GroupInscriptionConfirmationProps {
   data: GroupInscriptionConfirmationData;
