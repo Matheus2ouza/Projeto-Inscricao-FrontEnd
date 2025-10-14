@@ -1,5 +1,6 @@
 import { GlobalLoadingProvider } from "@/components/GlobalLoading";
 import { Toaster } from "@/shared/components/ui/sonner";
+import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Roboto } from "next/font/google";
@@ -63,6 +64,7 @@ export default function RootLayout({
           </GlobalLoadingProvider>
         </QueryProvider>
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
