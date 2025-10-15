@@ -42,30 +42,28 @@ export default function useFormLogin(): UseFormLoginType {
   async function onLoginForm(input: LoginFormType) {
     setLoading(true);
     try {
-      const response = await loginService({
+      const result = await loginService({
         username: input.username,
         password: input.password,
       });
 
-      console.log("response do login:", response);
-
-      // Após login bem-sucedido, só redireciona (tokens já estão nos cookies)
-      const redirectUrl = `/${response.role.toLocaleLowerCase()}/home`;
-      router.push(redirectUrl);
-
-      toast.success("Login feito com sucesso", {
-        description: "Login feito com sucesso",
-        icon: <ThumbsUp />,
-      });
-    } catch (error) {
-      // Captura a mensagem específica do erro
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Verifique os dados e tente novamente";
+      if (result.ok) {
+        const redirectUrl = `/${result.role.toLocaleLowerCase()}/home`;
+        router.push(redirectUrl);
+        toast.success("Login feito com sucesso", {
+          description: "Login feito com sucesso",
+          icon: <ThumbsUp />,
+        });
+        return;
+      }
 
       toast.error("Erro no Login", {
-        description: errorMessage,
+        description: result.errorMessage,
+      });
+    } catch (error) {
+      // fallback de segurança (não deve chegar aqui com o novo formato)
+      toast.error("Erro no Login", {
+        description: "Verifique os dados e tente novamente",
       });
       return;
     } finally {
