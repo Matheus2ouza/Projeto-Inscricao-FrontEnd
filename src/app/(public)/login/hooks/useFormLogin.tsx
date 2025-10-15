@@ -58,8 +58,14 @@ export default function useFormLogin(): UseFormLoginType {
         icon: <ThumbsUp />,
       });
     } catch (error) {
-      toast.error("Dados Inválidos", {
-        description: "Verifique os dados e tente novamente",
+      // Captura a mensagem específica do erro
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Verifique os dados e tente novamente";
+
+      toast.error("Erro no Login", {
+        description: errorMessage,
       });
       return;
     } finally {
