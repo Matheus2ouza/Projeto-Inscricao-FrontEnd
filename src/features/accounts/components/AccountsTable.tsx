@@ -34,17 +34,20 @@ import {
   PaginationPrevious,
 } from "@/shared/components/ui/pagination";
 import { Switch } from "@/shared/components/ui/switch";
+import { Copy } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { FormProvider } from "react-hook-form";
 
 export default function AccountsTable() {
   const [open, setOpen] = useState(false);
+  const [openCreds, setOpenCreds] = useState(false);
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [appliedRegions, setAppliedRegions] = useState<string[]>([]); // Filtro aplicado
   const [showPassword, setShowPassword] = useState(false);
   const [hasRegion, setHasRegion] = useState(false);
 
-  const { form, onSubmit } = useFormCreateAccount();
+  const { form, onSubmit, createdCredentials, clearCreatedCredentials } =
+    useFormCreateAccount();
   const { regions: fetchedRegions } = useRegions();
   const { users, total, page, pageCount, setPage } = useUsers({ pageSize: 20 });
 
@@ -113,7 +116,10 @@ export default function AccountsTable() {
   // Função para lidar com o submit e fechar o dialog se sucesso
   const handleSubmit = async (event: React.FormEvent) => {
     const success = await onSubmit(event);
-    if (success) setOpen(false);
+    if (success) {
+      setOpen(false);
+      setOpenCreds(true);
+    }
   };
 
   return (
@@ -405,6 +411,66 @@ export default function AccountsTable() {
               </DialogFooter>
             </form>
           </FormProvider>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de credenciais criadas */}
+      <Dialog
+        open={openCreds}
+        onOpenChange={(v) => {
+          setOpenCreds(v);
+          if (!v) clearCreatedCredentials();
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-primary">
+              Credenciais do usuário criado
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">Usuário</div>
+              <div className="font-medium">
+                {createdCredentials?.username ?? "-"}
+              </div>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() =>
+                  createdCredentials?.username &&
+                  navigator.clipboard.writeText(createdCredentials.username)
+                }
+                aria-label="Copiar usuário"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">Senha</div>
+              <div className="font-medium">
+                {createdCredentials?.password ?? "-"}
+              </div>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() =>
+                  createdCredentials?.password &&
+                  navigator.clipboard.writeText(createdCredentials.password)
+                }
+                aria-label="Copiar senha"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="default">
+                Fechar
+              </Button>
+            </DialogClose>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

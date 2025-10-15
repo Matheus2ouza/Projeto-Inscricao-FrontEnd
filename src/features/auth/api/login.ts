@@ -1,16 +1,16 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
-import { isProd } from "@/shared/lib/utils";
 import axiosInstance from "@/shared/lib/apiClient";
+import { isProd } from "@/shared/lib/utils";
+import { jwtVerify } from "jose";
+import { cookies } from "next/headers";
 import {
   AuthResponse,
+  AxiosError,
   LoginServiceInput,
   LoginServiceOutput,
   RequestData,
   SessionData,
-  AxiosError,
 } from "../types/loginTypes";
 
 // Serviço de login
@@ -66,9 +66,12 @@ export async function loginService(
     return { role: user.role };
   } catch (error: unknown) {
     const axiosError = error as AxiosError;
-    throw new Error(
+
+    // Lança um erro com a mensagem específica da API
+    const errorMessage =
       axiosError.response?.data?.message ||
-        "Erro inesperado. Por favor, tente novamente mais tarde."
-    );
+      "Erro inesperado. Por favor, tente novamente mais tarde.";
+
+    throw new Error(errorMessage);
   }
 }

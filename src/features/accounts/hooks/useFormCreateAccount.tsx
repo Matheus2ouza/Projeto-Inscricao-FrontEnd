@@ -1,11 +1,14 @@
 "use client";
 
-import { z } from "zod";
+import { useGlobalLoading } from "@/components/GlobalLoading";
+import { usersKeys } from "@/features/accounts/hooks/useUsers";
+import { registerAccount } from "@/features/auth/api/registerAccount";
+import { useQueryClient } from "@tanstack/react-query";
+import { ThumbsDown, ThumbsUp } from "lucide-react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { registerAccount } from "@/features/auth/api/registerAccount";
-import { ThumbsDown, ThumbsUp } from "lucide-react";
-import { useGlobalLoading } from "@/components/GlobalLoading";
+import { z } from "zod";
 
 export const ROLES = [
   {
@@ -34,10 +37,17 @@ type AcccountFormType = z.infer<typeof AccountSchema>;
 export type useFormCreateAccount = {
   form: ReturnType<typeof useForm<AcccountFormType>>;
   onSubmit: (event?: React.BaseSyntheticEvent) => Promise<boolean>;
+  createdCredentials: { username: string; password: string } | null;
+  clearCreatedCredentials: () => void;
 };
 
 export default function useFormCreateAccount(): useFormCreateAccount {
   const { setLoading } = useGlobalLoading();
+  const queryClient = useQueryClient();
+  const [createdCredentials, setCreatedCredentials] = React.useState<{
+    username: string;
+    password: string;
+  } | null>(null);
   const form = useForm<AcccountFormType>({
     defaultValues: {
       username: "",
@@ -58,6 +68,13 @@ export default function useFormCreateAccount(): useFormCreateAccount {
         role: input.role as string,
         region: regionValue,
       });
+      // guardar credenciais para exibir na modal de cópia
+      setCreatedCredentials({
+        username: input.username,
+        password: input.password,
+      });
+      // invalidar cache de usuários para atualizar lista
+      await queryClient.invalidateQueries({ queryKey: usersKeys.lists() });
       // reset form to default values after successful creation
       form.reset();
       toast.success("Usuario criado com sucesso", {
@@ -88,6 +105,8 @@ export default function useFormCreateAccount(): useFormCreateAccount {
   const output = {
     form,
     onSubmit,
+    createdCredentials,
+    clearCreatedCredentials: () => setCreatedCredentials(null),
   };
 
   return output;

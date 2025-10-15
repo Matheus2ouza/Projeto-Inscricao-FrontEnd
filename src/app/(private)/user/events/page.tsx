@@ -124,9 +124,9 @@ export default function EventsPage() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, index) => (
-            <Card key={index} className="w-full">
+            <Card key={index} className="w-full border-0 shadow-md">
               <CardBody className="p-0">
-                <Skeleton className="w-full h-48 rounded-lg" />
+                <Skeleton className="w-full h-48 rounded-t-xl" />
               </CardBody>
               <CardFooter className="flex flex-col items-start p-4">
                 <Skeleton className="h-6 w-3/4 mb-2" />
@@ -146,7 +146,7 @@ export default function EventsPage() {
               return (
                 <Card
                   key={event.id}
-                  className="w-full hover:shadow-lg transition-shadow"
+                  className="w-full hover:shadow-xl transition-all duration-300 border-0 shadow-md rounded-xl overflow-hidden hover:scale-[1.02]"
                 >
                   <CardBody className="p-0 relative">
                     <div className="w-full h-48 relative">
@@ -168,7 +168,7 @@ export default function EventsPage() {
                             priority={true}
                             loading="eager"
                             decoding="async"
-                            className="object-cover rounded-t-lg"
+                            className="object-cover rounded-t-xl"
                             onLoad={handleImageLoad}
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
@@ -176,7 +176,7 @@ export default function EventsPage() {
                               const parent = target.parentElement;
                               if (parent) {
                                 parent.innerHTML = `
-                                <div class="w-full h-full rounded-t-lg bg-gradient-to-br ${gradientClass} flex items-center justify-center">
+                                <div class="w-full h-full rounded-t-xl bg-gradient-to-br ${gradientClass} flex items-center justify-center">
                                 <span class="text-white font-bold text-lg text-center px-4">${event.name}</span>
                                 </div>
                                 `;
@@ -187,12 +187,12 @@ export default function EventsPage() {
                       ) : (
                         // Gradiente quando não há imagem
                         <div
-                          className={`w-full h-full rounded-t-lg bg-gradient-to-br ${gradientClass} flex items-center justify-center`}
+                          className={`w-full h-full rounded-t-xl bg-gradient-to-br ${gradientClass} flex items-center justify-center`}
                         ></div>
                       )}
                     </div>
                     <div className="absolute top-2 right-2">
-                      <Badge className={statusInfo.badgeClass}>
+                      <Badge className={`${statusInfo.badgeClass} border-0`}>
                         {statusInfo.label}
                       </Badge>
                     </div>
@@ -219,7 +219,7 @@ export default function EventsPage() {
                     <div className="flex flex-col w-full gap-2 mt-2">
                       <Button
                         size="sm"
-                        className="w-full dark:text-white"
+                        className="w-full dark:text-white rounded-lg"
                         onClick={() => handleIndividualInscription(event.id)}
                         disabled={statusInfo.disabled}
                       >
@@ -230,7 +230,7 @@ export default function EventsPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="w-full"
+                        className="w-full rounded-lg border-2"
                         onClick={() => handleGroupInscription(event.id)}
                         disabled={statusInfo.disabled}
                       >
@@ -246,13 +246,16 @@ export default function EventsPage() {
                             <Badge
                               key={type.id}
                               variant="outline"
-                              className="text-xs"
+                              className="text-xs rounded-md border"
                             >
                               {type.description}
                             </Badge>
                           ))}
                           {event.typesInscriptions.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge
+                              variant="outline"
+                              className="text-xs rounded-md border"
+                            >
                               +{event.typesInscriptions.length - 3}
                             </Badge>
                           )}

@@ -1,11 +1,22 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import {
   getUsers,
   type GetUsersResponse,
   type UserDto,
 } from "@/features/accounts/api/getUsers";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+
+// Chaves de cache para usuários (padrão similar a events)
+export const usersKeys = {
+  all: ["users"] as const,
+  lists: () => [...usersKeys.all, "list"] as const,
+  list: (page: number, pageSize: number) =>
+    [...usersKeys.lists(), { page, pageSize }] as const,
+  details: () => [...usersKeys.all, "detail"] as const,
+  detail: (id: string) => [...usersKeys.details(), id] as const,
+};
 
 type UseUsersParams = {
   initialPage?: number;
@@ -27,42 +38,38 @@ export function useUsers({
   initialPage = 1,
   pageSize = 20,
 }: UseUsersParams = {}): UseUsersResult {
-  const [users, setUsers] = useState<UserDto[]>([]);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(initialPage);
-  const [pageCount, setPageCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data: GetUsersResponse = await getUsers({ page, pageSize });
-      setUsers(data.users);
-      setTotal(data.total);
-      setPageCount(data.pageCount);
-    } catch (e: unknown) {
-      const errorMessage =
-        e instanceof Error ? e.message : "Falha ao carregar usuários";
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, pageSize]);
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: usersKeys.list(page, pageSize),
+    queryFn: async (): Promise<GetUsersResponse> =>
+      await getUsers({ page, pageSize }),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 2,
+    refetchOnWindowFocus: false,
+  });
 
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+  // Pré-carregar próxima página quando possível
+  if (data && page < (data.pageCount ?? 0)) {
+    void queryClient.prefetchQuery({
+      queryKey: usersKeys.list(page + 1, pageSize),
+      queryFn: async () => await getUsers({ page: page + 1, pageSize }),
+      staleTime: 5 * 60 * 1000,
+    });
+  }
 
   return {
-    users,
-    total,
+    users: data?.users ?? [],
+    total: data?.total ?? 0,
     page,
-    pageCount,
-    loading,
-    error,
+    pageCount: data?.pageCount ?? 0,
+    loading: isLoading,
+    error: (error as Error | null)?.message ?? null,
     setPage,
-    refetch: fetchUsers,
+    refetch: async () => {
+      await refetch();
+    },
   };
 }

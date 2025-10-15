@@ -1,4 +1,3 @@
-// Tipos principais
 export type User = {
   id: string;
   role: string;
@@ -34,6 +33,9 @@ export type AxiosError = {
     data?: {
       message?: string;
     };
+    status?: number;
+    statusText?: string;
   };
   message?: string;
+  code?: string;
 };

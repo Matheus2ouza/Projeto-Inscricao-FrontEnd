@@ -29,7 +29,7 @@ import { Event } from "../types/eventTypes";
 
 interface EventManagementProps {
   event: Event;
-  refetch: () => void; // Adicione esta prop para recarregar os dados do evento
+  refetch: () => void;
 }
 
 export default function EventManagement({
@@ -131,9 +131,9 @@ export default function EventManagement({
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild>
+            <Button variant="outline" size="icon" asChild>
               <Link href="/super/events">
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="w-4 h-4" />
               </Link>
             </Button>
             <div>
@@ -149,6 +149,22 @@ export default function EventManagement({
           <div className="flex items-center gap-3">
             {!isEditing ? (
               <>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center gap-2"
+                  disabled={loading}
+                >
+                  Abrir Inscrições
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center gap-2"
+                  disabled={loading}
+                >
+                  Abrir Pagamentos
+                </Button>
                 <Button
                   variant="outline"
                   onClick={() => setIsEditing(true)}
@@ -546,17 +562,17 @@ export default function EventManagement({
                     <Badge
                       className={
                         event.status === "OPEN"
-                          ? "bg-green-600"
+                          ? "bg-green-600 dark:text-white"
                           : event.status === "FINALIZED"
-                          ? "bg-gray-600"
-                          : "bg-red-600"
+                            ? "bg-gray-600 dark:text-white"
+                            : "bg-red-600 dark:text-white"
                       }
                     >
                       {event.status === "OPEN"
                         ? "Inscrições Abertas"
                         : event.status === "FINALIZED"
-                        ? "Evento Finalizado"
-                        : "Inscrições Fechadas"}
+                          ? "Evento Finalizado"
+                          : "Inscrições Fechadas"}
                     </Badge>
                   )}
                 </div>
