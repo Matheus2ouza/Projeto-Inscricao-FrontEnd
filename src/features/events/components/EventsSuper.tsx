@@ -1,32 +1,31 @@
-// EventsTableSuper.tsx
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
+import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationLink,
-  PaginationPrevious,
   PaginationNext,
+  PaginationPrevious,
 } from "@/shared/components/ui/pagination";
-import { Badge } from "@/shared/components/ui/badge";
-import {
-  Users,
-  Calendar,
-  Eye,
-  DollarSign,
-  MapPin,
-  EyeClosed,
-  Copy,
-  ExternalLink,
-  Check,
-  AlertTriangle,
-} from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import {
+  AlertTriangle,
+  Calendar,
+  Check,
+  Copy,
+  DollarSign,
+  ExternalLink,
+  Eye,
+  EyeClosed,
+  MapPin,
+  Users,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 import { useEventsAll } from "../hooks/useEventsAll";
 
 const PAGE_SIZE = 4;
@@ -86,11 +85,6 @@ export default function EventsTableSuper() {
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-  };
-
-  const handleFormSubmitSuccess = () => {
-    setOpen(false);
-    refetch();
   };
 
   const copyToClipboard = async (text: string, eventId: string) => {
@@ -246,8 +240,8 @@ export default function EventsTableSuper() {
                           <div>
                             <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                               {showAmount[event.id]
-                                ? "****"
-                                : formatCurrency(event.amountCollected)}
+                                ? formatCurrency(event.amountCollected)
+                                : "****"}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               Arrecadado
@@ -262,9 +256,9 @@ export default function EventsTableSuper() {
                             className="ml-2 focus:outline-none"
                           >
                             {showAmount[event.id] ? (
-                              <EyeClosed className="h-8 w-8 text-green-600 dark:text-green-400" />
-                            ) : (
                               <Eye className="h-8 w-8 text-green-600 dark:text-green-400" />
+                            ) : (
+                              <EyeClosed className="h-8 w-8 text-green-600 dark:text-green-400" />
                             )}
                           </button>
                         </div>
