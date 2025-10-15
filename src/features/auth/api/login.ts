@@ -8,15 +8,18 @@ import {
   AuthResponse,
   AxiosError,
   LoginServiceInput,
-  LoginServiceOutput,
   RequestData,
   SessionData,
 } from "../types/loginTypes";
 
+export type LoginServiceResult =
+  | { ok: true; role: string }
+  | { ok: false; errorMessage: string };
+
 // Serviço de login
 export async function loginService(
   input: LoginServiceInput
-): Promise<LoginServiceOutput> {
+): Promise<LoginServiceResult> {
   const dataToRequest: RequestData = {
     username: input.username,
     password: input.password,
@@ -63,7 +66,7 @@ export async function loginService(
       maxAge: 60 * 60 * 7, // 7 horas
     });
 
-    return { role: user.role };
+    return { ok: true, role: user.role };
   } catch (error: unknown) {
     const axiosError = error as AxiosError;
 
@@ -72,6 +75,6 @@ export async function loginService(
       axiosError.response?.data?.message ||
       "Erro inesperado. Por favor, tente novamente mais tarde.";
 
-    throw new Error(errorMessage);
+    return { ok: false, errorMessage };
   }
 }

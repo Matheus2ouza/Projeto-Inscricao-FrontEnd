@@ -1,5 +1,3 @@
-"use server";
-
 import axiosInstance from "@/shared/lib/apiClient";
 
 export type RegisterServiceInput = {
