@@ -256,16 +256,18 @@ export default function RegisterPaymentDialog({
                         Dados para Pagamento
                       </h3>
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleFlip}
-                      className="text-primary hover:text-primary/80"
-                    >
-                      Registrar Pagamento
-                      <ArrowBigRightDash />
-                    </Button>
+                    <div className="flex items-center">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleFlip}
+                        className="text-primary text-base hover:text-primary/80 font-bold text-right"
+                      >
+                        Registrar Pagamento
+                      </Button>
+                      <ArrowBigRightDash className="h-6 w-6 text-primary" />
+                    </div>
                   </div>
 
                   <div className="flex-1 space-y-4">
@@ -410,16 +412,18 @@ export default function RegisterPaymentDialog({
                         Registrar Pagamento
                       </h3>
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleFlip}
-                      className="text-primary hover:text-primary/80 self-auto"
-                    >
-                      <ArrowBigLeftDash />
-                      Voltar aos Dados
-                    </Button>
+                    <div className="flex items-center">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleFlip}
+                        className="text-primary text-base hover:text-primary/80 font-bold text-right"
+                      >
+                        Voltar aos Dados
+                      </Button>
+                      <ArrowBigLeftDash className="h-6 w-6 text-primary" />
+                    </div>
                   </div>
 
                   <form
