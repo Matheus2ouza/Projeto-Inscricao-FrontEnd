@@ -1,15 +1,22 @@
-import React from "react";
+import Logo from "@/shared/components/ui/logo";
 import {
-  SidebarProvider,
   Sidebar,
   SidebarContent,
   SidebarMenu,
-  SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
   SidebarSeparator,
 } from "@/shared/components/ui/sidebar";
-import Logo from "@/shared/components/ui/logo";
-import { CalendarCheck2, Users, Map, ScrollText, House } from "lucide-react";
+import {
+  CalendarCheck2,
+  House,
+  Map,
+  ScrollText,
+  Tickets,
+  Users,
+} from "lucide-react";
+import React from "react";
 
 // Itens do menu lateral
 const items = [
@@ -22,8 +29,8 @@ const items = [
     title: "Inscrições",
     icon: ScrollText,
     subItems: [
-      { title: "Inscrição em Grupo", url: "#" },
-      { title: "Inscrição Individual", url: "#" },
+      { title: "Analizar Inscrições", url: "/super/inscriptions/analysis" },
+      { title: "Inscrição Avulsas", url: "/super/inscriptions/avulsa" },
     ],
   },
   {
@@ -40,6 +47,11 @@ const items = [
     title: "Eventos",
     url: "/super/events",
     icon: CalendarCheck2,
+  },
+  {
+    title: "Tickets",
+    url: "/super/tickets",
+    icon: Tickets,
   },
 ];
 

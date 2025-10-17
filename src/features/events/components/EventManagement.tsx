@@ -49,6 +49,8 @@ export default function EventManagement({
     handleSave,
     handleDelete,
     handleCancel,
+    handleUpdatePayment,
+    handleUpdateInscription,
   } = useFormEditEvent(event);
 
   const {
@@ -150,20 +152,28 @@ export default function EventManagement({
             {!isEditing ? (
               <>
                 <Button
-                  variant="outline"
-                  onClick={() => setIsEditing(true)}
+                  variant={event.status === "OPEN" ? "destructive" : "outline"}
+                  onClick={() =>
+                    handleUpdateInscription(
+                      event.status === "OPEN" ? "CLOSE" : "OPEN"
+                    )
+                  }
                   className="flex items-center gap-2"
                   disabled={loading}
                 >
-                  Abrir Inscrições
+                  {event.status === "OPEN"
+                    ? "Fechar Inscrições"
+                    : "Abrir Inscrições"}
                 </Button>
                 <Button
-                  variant="outline"
-                  onClick={() => setIsEditing(true)}
+                  variant={event.paymentEneble ? "destructive" : "outline"}
+                  onClick={() => handleUpdatePayment(!event.paymentEneble)}
                   className="flex items-center gap-2"
                   disabled={loading}
                 >
-                  Abrir Pagamentos
+                  {event.paymentEneble
+                    ? "Fechar Pagamentos"
+                    : "Abrir Pagamentos"}
                 </Button>
                 <Button
                   variant="outline"
@@ -575,6 +585,23 @@ export default function EventManagement({
                           : "Inscrições Fechadas"}
                     </Badge>
                   )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Status dos Pagamentos
+                  </label>
+                  <Badge
+                    className={
+                      event.paymentEneble
+                        ? "bg-green-600 dark:text-white"
+                        : "bg-red-600 dark:text-white"
+                    }
+                  >
+                    {event.paymentEneble
+                      ? "Pagamentos Ativos"
+                      : "Pagamentos Inativos"}
+                  </Badge>
                 </div>
               </div>
             </div>

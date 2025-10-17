@@ -1,12 +1,17 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { updateEvent } from "../api/updateEvent";
 import { deleteEvent } from "../api/deleteEvent";
+import { updateEvent } from "../api/updateEvent";
 import { Event, UpdateEventInput } from "../types/eventTypes";
+import { useEventInscriptions } from "./useEventInscriptions";
+import { useEventPayment } from "./useEventPayment";
 
 export function useFormEditEvent(event: Event) {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { loading: paymentLoading, updatePayment } = useEventPayment();
+  const { loading: inscriptionsLoading, updateInscriptions } =
+    useEventInscriptions();
   const [formData, setFormData] = useState({
     name: event.name,
     description: event.description || "",
@@ -91,6 +96,21 @@ export function useFormEditEvent(event: Event) {
       setLoading(false);
     }
   };
+  const handleUpdatePayment = async (paymentEnabled: boolean) => {
+    const success = await updatePayment(event.id, paymentEnabled);
+    if (success) {
+      // Recarregar a página para refletir as mudanças
+      window.location.reload();
+    }
+  };
+
+  const handleUpdateInscription = async (status: "OPEN" | "CLOSE") => {
+    const success = await updateInscriptions(event.id, status);
+    if (success) {
+      // Recarregar a página para refletir as mudanças
+      window.location.reload();
+    }
+  };
 
   const handleCancel = () => {
     setFormData({
@@ -115,11 +135,13 @@ export function useFormEditEvent(event: Event) {
   return {
     isEditing,
     setIsEditing,
-    loading,
+    loading: loading || paymentLoading || inscriptionsLoading,
     formData,
     handleInputChange,
     handleSave,
     handleDelete,
     handleCancel,
+    handleUpdatePayment,
+    handleUpdateInscription,
   };
 }

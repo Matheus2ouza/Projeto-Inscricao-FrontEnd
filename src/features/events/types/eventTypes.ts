@@ -11,7 +11,8 @@ export type Event = {
   location: string;
   latitude: number;
   longitude: number;
-  status: string; // Alterado de isOpen para status (OPEN, CLOSE, FINALIZED)
+  status: string;
+  paymentEneble: boolean;
   regionId: string;
   createdAt: string;
   updatedAt: string;

@@ -13,12 +13,12 @@ import {
 } from "@/shared/components/ui/pagination";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Card, CardBody, CardFooter } from "@heroui/react";
-import { Calendar, Loader2, MapPin, User, Users } from "lucide-react";
+import { Calendar, Loader2, MapPin } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function EventsPage() {
+export default function AvulsaTable() {
   const router = useRouter();
   const [imageLoading, setImageLoading] = useState(true);
   const { events, loading, error, page, pageCount, setPage } = useEventsAll({
@@ -27,11 +27,7 @@ export default function EventsPage() {
   });
 
   const handleIndividualInscription = (eventId: string) => {
-    router.push(`/user/individual-inscription/${eventId}`);
-  };
-
-  const handleGroupInscription = (eventId: string) => {
-    router.push(`/user/group-inscription/${eventId}`);
+    router.push(`/super/inscriptions/avulsa/${eventId}`);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -114,10 +110,10 @@ export default function EventsPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Eventos Disponíveis
+          Inscrições Avulsas
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Confira os próximos eventos e participe!
+          Crie e gerencie as inscrições avulsas do seu evento
         </p>
       </div>
 
@@ -223,19 +219,7 @@ export default function EventsPage() {
                         onClick={() => handleIndividualInscription(event.id)}
                         disabled={statusInfo.disabled}
                       >
-                        <User className="w-4 h-4 mr-2" />
-                        Inscrição Individual
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full rounded-lg border-2"
-                        onClick={() => handleGroupInscription(event.id)}
-                        disabled={statusInfo.disabled}
-                      >
-                        <Users className="w-4 h-4 mr-2" />
-                        Inscrição em Grupo
+                        Visualizar Inscrições
                       </Button>
                     </div>
 
