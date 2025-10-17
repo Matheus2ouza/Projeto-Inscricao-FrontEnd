@@ -8,7 +8,14 @@ import {
   SidebarProvider,
   SidebarSeparator,
 } from "@/shared/components/ui/sidebar";
-import { CalendarCheck2, House, Map, ScrollText, Users } from "lucide-react";
+import {
+  CalendarCheck2,
+  House,
+  Map,
+  ScrollText,
+  Tickets,
+  Users,
+} from "lucide-react";
 import React from "react";
 
 // Itens do menu lateral
@@ -23,7 +30,7 @@ const items = [
     icon: ScrollText,
     subItems: [
       { title: "Analizar Inscrições", url: "/super/inscriptions/analysis" },
-      { title: "Inscrição Individual", url: "#" },
+      { title: "Inscrição Avulsas", url: "/super/inscriptions/avulsa" },
     ],
   },
   {
@@ -40,6 +47,11 @@ const items = [
     title: "Eventos",
     url: "/super/events",
     icon: CalendarCheck2,
+  },
+  {
+    title: "Tickets",
+    url: "/super/tickets",
+    icon: Tickets,
   },
 ];
 
