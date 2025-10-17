@@ -191,7 +191,7 @@ export default function EventsPage() {
                         ></div>
                       )}
                     </div>
-                    <div className="absolute top-2 right-2">
+                    <div className="absolute top-2 right-2 select-none">
                       <Badge className={`${statusInfo.badgeClass} border-0`}>
                         {statusInfo.label}
                       </Badge>
