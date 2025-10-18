@@ -9,12 +9,18 @@ export type GenderType = "MASCULINO" | "FEMININO";
 export type AvulsaRegistration = {
   id: string;
   responsible: string;
-  phone: string;
+  phone?: string;
   totalValue: number;
   status: string;
-  paymentMethod: PaymentMethod;
   createdAt: string;
   updatedAt: string;
+};
+
+export type OnSiteRegistrationPaymentTotals = {
+  totalDinheiro: number;
+  totalCartao: number;
+  totalPix: number;
+  totalGeral: number;
 };
 
 export type ListAvulsaRequest = {
@@ -28,6 +34,7 @@ export type ListAvulsaResponse = {
   total: number;
   page: number;
   pageCount: number;
+  totals: OnSiteRegistrationPaymentTotals;
 };
 
 export type Decimal = string;
