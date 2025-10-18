@@ -165,21 +165,21 @@ function AddParticipantDialog({ onAddParticipant }: AddParticipantDialogProps) {
                     <FormLabel className="text-gray-700 dark:text-gray-300">
                       Gênero
                     </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value ?? "MASCULINO"}
-                        defaultValue={field.value ?? "MASCULINO"}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione o gênero" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="MASCULINO">Masculino</SelectItem>
-                          <SelectItem value="FEMININO">Feminino</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? "MASCULINO"}
+                      defaultValue={field.value ?? "MASCULINO"}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o gênero" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="MASCULINO">Masculino</SelectItem>
+                        <SelectItem value="FEMININO">Feminino</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

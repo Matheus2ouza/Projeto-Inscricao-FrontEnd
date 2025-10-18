@@ -10,7 +10,15 @@ export async function getAvulsaRegistrations(
       `inscriptions/avul/${eventId}`,
       { params: { page, pageSize } }
     );
-    return data;
+    return {
+      ...data,
+      totals: data.totals ?? {
+        totalDinheiro: 0,
+        totalCartao: 0,
+        totalPix: 0,
+        totalGeral: 0,
+      },
+    };
   } catch (error) {
     const axiosError = error as { response?: { data?: { message?: string } } };
     throw new Error(
