@@ -1,12 +1,12 @@
 import axiosInstance from "@/shared/lib/apiClient";
-import { CreateInscriptionAvulRequest } from "../types/avulsaTypes";
+import { CreateInscriptionAvulInput } from "../types/avulsaTypes";
 
 export async function createAvulsaRegistration(
-  input: CreateInscriptionAvulRequest
+  input: CreateInscriptionAvulInput
 ): Promise<{ id: string }> {
   try {
     const { data } = await axiosInstance.post<{ id: string }>(
-      "/inscriptions/avulsa",
+      "inscriptions/avul/create",
       input
     );
     return data;
