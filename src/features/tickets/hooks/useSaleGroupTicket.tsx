@@ -30,9 +30,7 @@ const saleGroupTicketSchema = z.object({
       const numberValue = Number(value);
       return !Number.isNaN(numberValue) && numberValue >= 0;
     }, { message: "Informe um valor numérico válido" }),
-  status: z.enum(statusValues, {
-    errorMap: () => ({ message: "Selecione um status" }),
-  }),
+  status: z.enum(statusValues),
 });
 
 export type SaleGroupTicketFormValues = z.infer<typeof saleGroupTicketSchema>;
