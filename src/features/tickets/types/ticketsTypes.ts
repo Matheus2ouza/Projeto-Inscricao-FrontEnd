@@ -10,6 +10,22 @@ export type Ticket = {
   updatedAt: string;
 };
 
+export type TicketSale = {
+  id: string;
+  quantity: number;
+  totalValue: number;
+};
+
+export type TicketDetails = {
+  id: string;
+  name: string;
+  description?: string;
+  quantity: number;
+  price: number;
+  available: number;
+  ticketSale: TicketSale[];
+};
+
 export type CreateTicketInput = {
   eventId: string;
   name: string;

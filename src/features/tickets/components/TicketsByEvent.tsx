@@ -21,13 +21,14 @@ import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { cn } from "@/shared/lib/utils";
 import { Plus, Ticket, Wallet } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useCreateTicket } from "../hooks/useCreateTicket";
 import { useTicketsByEvent } from "../hooks/useTicketsByEvent";
 
 export default function TicketsByEvent() {
   const params = useParams();
+  const router = useRouter();
   const eventId = params.id as string;
   const {
     data: tickets,
@@ -193,7 +194,15 @@ export default function TicketsByEvent() {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      router.push(
+                        `/super/tickets/analysis/${eventId}/ticket/${t.id}`
+                      )
+                    }
+                  >
                     Ver Vendas
                   </Button>
                 </div>
