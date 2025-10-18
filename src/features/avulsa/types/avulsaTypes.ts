@@ -1,10 +1,10 @@
 export type PaymentMethod = "DINHEIRO" | "PIX" | "CARTÃO";
 export type InscriptionStatus =
-  | "pending"
-  | "paid"
-  | "cancelled"
-  | "under_review";
-export type GenderType = "male" | "female" | "other";
+  | "PENDING"
+  | "PAID"
+  | "CANCELLED"
+  | "UNDER_REVIEW";
+export type GenderType = "MASCULINO" | "FEMININO";
 
 export type AvulsaRegistration = {
   id: string;
@@ -30,20 +30,25 @@ export type ListAvulsaResponse = {
   pageCount: number;
 };
 
-export type CreateInscriptionAvulParticipant = {
-  value: number;
-  name: string;
-  birthDate: Date;
-  gender: GenderType;
+export type Decimal = string;
+
+export type ParticipantPayment = {
+  paymentMethod: PaymentMethod;
+  value: Decimal;
 };
 
-export type CreateInscriptionAvulRequest = {
+export type CreateInscriptionAvulParticipant = {
+  name: string;
+  gender: GenderType;
+  payments: ParticipantPayment[];
+};
+
+export type CreateInscriptionAvulInput = {
   eventId: string;
   responsible: string;
-  phone: string;
+  phone?: string;
   totalValue: number;
   status: InscriptionStatus;
-  paymentMethod: PaymentMethod;
   participants: CreateInscriptionAvulParticipant[];
 };
 
