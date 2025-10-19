@@ -9,6 +9,7 @@ import {
   SidebarSeparator,
 } from "@/shared/components/ui/sidebar";
 import {
+  BanknoteArrowDown,
   CalendarCheck2,
   House,
   Map,
@@ -52,6 +53,11 @@ const items = [
     title: "Tickets",
     url: "/super/tickets",
     icon: Tickets,
+  },
+  {
+    title: "Gastos",
+    url: "/super/gastos",
+    icon: BanknoteArrowDown,
   },
 ];
 
