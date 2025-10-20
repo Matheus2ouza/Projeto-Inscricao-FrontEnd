@@ -60,8 +60,8 @@ export default function ExpensesByEvent() {
 
   const paymentMethodLabels: Record<PaymentMethod, string> = {
     PIX: "PIX",
-    CARD: "Cartão",
-    CASH: "Dinheiro",
+    CARTÃO: "Cartão",
+    DINHEIRO: "Dinheiro",
   };
 
   return (
