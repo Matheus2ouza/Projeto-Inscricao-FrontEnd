@@ -59,6 +59,11 @@ const items = [
     url: "/super/gastos",
     icon: BanknoteArrowDown,
   },
+  {
+    title: "Relatorios",
+    url: "/super/relatorios",
+    icon: BanknoteArrowDown,
+  },
 ];
 
 export default function AppSidebar({
