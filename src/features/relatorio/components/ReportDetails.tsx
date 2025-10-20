@@ -49,6 +49,13 @@ const paymentMethodLabels: Record<string, string> = {
   DINHEIRO: "Dinheiro",
 };
 
+const statusLabels: Record<string, string> = {
+  PENDING: "Pendente",
+  UNDER_REVIEW: "Em análise",
+  PAID: "Pago",
+  CANCELLED: "Cancelada",
+};
+
 const formatCurrency = (value: number) => currencyFormatter.format(value || 0);
 
 const formatDateTime = (value: Date) => dateFormatter.format(value);
@@ -57,6 +64,7 @@ const formatDateRange = (start: Date, end: Date) =>
   `${periodFormatter.format(start)} - ${periodFormatter.format(end)}`;
 
 const prettifyStatus = (status: string) =>
+  statusLabels[status] ??
   status
     .toLowerCase()
     .replace(/_/g, " ")
