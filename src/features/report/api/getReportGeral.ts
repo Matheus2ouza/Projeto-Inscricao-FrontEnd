@@ -17,8 +17,6 @@ const mapReportResponse = (
       ...data.event,
       startDate: parseDate(data.event.startDate),
       endDate: parseDate(data.event.endDate),
-      amountCollected: data.event.amountCollected,
-      imageUrl: data.event.imageUrl,
     },
     inscricoes: {
       ...data.inscricoes,

@@ -43,21 +43,6 @@ const periodFormatter = new Intl.DateTimeFormat("pt-BR", {
   year: "numeric",
 });
 
-const paymentMethodLabels: Record<string, string> = {
-  PIX: "PIX",
-  CARTAO: "Cartão",
-  CARTAO_CREDITO: "Cartão de Crédito",
-  CARTAO_DEBITO: "Cartão de Débito",
-  DINHEIRO: "Dinheiro",
-};
-
-const statusLabels: Record<string, string> = {
-  PENDING: "Pendente",
-  UNDER_REVIEW: "Em análise",
-  PAID: "Pago",
-  CANCELLED: "Cancelada",
-};
-
 const formatCurrency = (value: number) => currencyFormatter.format(value || 0);
 const numberFormatter = new Intl.NumberFormat("pt-BR");
 const formatNumber = (value: number) => numberFormatter.format(value || 0);
@@ -65,13 +50,6 @@ const formatDateTime = (value: Date) => dateFormatter.format(value);
 
 const formatDateRange = (start: Date, end: Date) =>
   `${periodFormatter.format(start)} - ${periodFormatter.format(end)}`;
-
-const prettifyStatus = (status: string) =>
-  statusLabels[status] ??
-  status
-    .toLowerCase()
-    .replace(/_/g, " ")
-    .replace(/(?:^|\s)\w/g, (c) => c.toUpperCase());
 
 const SummaryMetric = ({
   label,
@@ -185,39 +163,69 @@ export default function ReportDetails() {
     [data]
   );
 
-  const infoMetrics = useMemo(
+  const registrationMetrics = useMemo(
     () =>
       data
         ? [
             {
               label: "Inscrições (Grupos)",
-              value: data.inscricoes.inscricoes.length,
+              value: data.totais.totalInscricoesGrupo,
               highlight: true,
+              formatter: formatNumber,
             },
             {
               label: "Participantes (Grupos)",
-              value: data.inscricoes.totalParticipantes,
+              value: data.totais.totalParticipantesGrupo,
               highlight: true,
+              formatter: formatNumber,
             },
             {
               label: "Inscrições Avulsas",
-              value: data.inscricoesAvulsas.inscricoes.length,
+              value: data.totais.totalInscricoesAvulsas,
               highlight: true,
+              formatter: formatNumber,
             },
             {
               label: "Participantes Avulsos",
-              value: data.inscricoesAvulsas.totalParticipantes,
+              value: data.totais.totalParticipantesAvulsos,
               highlight: true,
+              formatter: formatNumber,
+            },
+            {
+              label: "Participantes Totais",
+              value: data.totais.totalParticipantes,
+              highlight: true,
+              formatter: formatNumber,
+            },
+          ]
+        : [],
+    [data]
+  );
+
+  const additionalMetrics = useMemo(
+    () =>
+      data
+        ? [
+            {
+              label: "Tickets vendidos",
+              value: data.tickets.vendas.reduce(
+                (total, venda) => total + venda.quantitySold,
+                0
+              ),
+              highlight: true,
+              formatter: formatNumber,
             },
             {
               label: "Vendas de Tickets",
               value: data.tickets.vendas.length,
               highlight: true,
+              formatter: formatNumber,
             },
             {
               label: "Gastos Registrados",
               value: data.gastos.gastos.length,
               highlight: true,
+              formatter: formatNumber,
             },
           ]
         : [],
@@ -366,17 +374,15 @@ export default function ReportDetails() {
                     {formatDateRange(data.event.startDate, data.event.endDate)}
                   </p>
                   <p>
-                    Local:{" "}
-                    {data.event.location
-                      ? data.event.location
-                      : "Local não informado"}
+                    Montante arrecadado:{" "}
+                    {formatCurrency(data.event.amountCollected)}
                   </p>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    <span className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                       Totais financeiros
                     </span>
                     <div className="mt-2 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
@@ -391,19 +397,41 @@ export default function ReportDetails() {
                     </div>
                   </div>
                   <div>
-                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      Dados gerais
+                    <span className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                      Dados gerais Inscrições
                     </span>
-                    <div className="mt-2 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-                      {infoMetrics.map((metric) => (
-                        <SummaryMetric
-                          key={metric.label}
-                          label={metric.label}
-                          value={metric.value}
-                          formatter={formatNumber}
-                          highlight={Boolean(metric.highlight)}
-                        />
-                      ))}
+                    <div className="mt-2 space-y-4">
+                      {registrationMetrics.length > 0 && (
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-3">
+                          {registrationMetrics.map((metric) => (
+                            <SummaryMetric
+                              key={metric.label}
+                              label={metric.label}
+                              value={metric.value}
+                              formatter={metric.formatter}
+                              highlight={Boolean(metric.highlight)}
+                            />
+                          ))}
+                        </div>
+                      )}
+                      <span className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mt-10">
+                        Dados gerais
+                      </span>
+                      <div className="mt-2 space-y-4">
+                        {additionalMetrics.length > 0 && (
+                          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-3">
+                            {additionalMetrics.map((metric) => (
+                              <SummaryMetric
+                                key={metric.label}
+                                label={metric.label}
+                                value={metric.value}
+                                formatter={metric.formatter}
+                                highlight={Boolean(metric.highlight)}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
