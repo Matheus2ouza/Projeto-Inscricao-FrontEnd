@@ -27,7 +27,7 @@ export default function ReportTable() {
   });
 
   const handleViewReport = (eventId: string) => {
-    router.push(`/super/relatorios/${eventId}`);
+    router.push(`/super/report/${eventId}`);
   };
 
   const handlePageChange = (newPage: number) => {

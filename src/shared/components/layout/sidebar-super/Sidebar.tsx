@@ -61,7 +61,7 @@ const items = [
   },
   {
     title: "Relatorios",
-    url: "/super/relatorios",
+    url: "/super/report",
     icon: BanknoteArrowDown,
   },
 ];

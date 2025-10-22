@@ -51,7 +51,7 @@ const mapReportResponse = (
   };
 };
 
-export async function getRelatorioGeral(
+export async function getReportGeneral(
   eventId: string
 ): Promise<ReportGeneralOutput> {
   try {

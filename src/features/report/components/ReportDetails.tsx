@@ -23,8 +23,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { gerarPdfRelatorio } from "../api/gerarPdfRelatorio";
-import { useRelatorioGeral } from "../hooks/useRelatorioGeral";
+import { genaratePdfReport } from "../api/genaratePdfReport";
+import { useReportGeneral } from "../hooks/useReportGeneral";
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -142,7 +142,7 @@ export default function ReportDetails() {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const { data, loading, isFetching, error, refetch } =
-    useRelatorioGeral(eventId);
+    useReportGeneral(eventId);
 
   const hasData = Boolean(data);
 
@@ -229,8 +229,20 @@ export default function ReportDetails() {
 
     try {
       setIsDownloading(true);
-      const { pdfBuffer, filename } = await gerarPdfRelatorio({ eventId });
-      const blob = new Blob([pdfBuffer], { type: "application/pdf" });
+
+      // ⬇️ o backend agora retorna pdfBase64 e filename
+      const { pdfBase64, filename } = await genaratePdfReport({ eventId });
+
+      // converte base64 → blob
+      const byteCharacters = atob(pdfBase64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+
+      // cria link temporário pra download
       const downloadUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = downloadUrl;

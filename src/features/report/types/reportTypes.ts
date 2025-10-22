@@ -1,11 +1,9 @@
-import type { Buffer } from "buffer";
-
 export type GenaratePdfReportInput = {
   eventId: string;
 };
 
 export type GenaratePdfReportOutput = {
-  pdfBuffer: Buffer;
+  pdfBase64: string;
   filename: string;
 };
 
@@ -167,7 +165,7 @@ export type ReportGeneralOutput = {
   };
 };
 
-export type UseReportGeralResult = {
+export type UseReportGeneralResult = {
   data: ReportGeneralOutput | null;
   loading: boolean;
   error: string | null;

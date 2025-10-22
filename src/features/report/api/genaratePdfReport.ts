@@ -4,51 +4,34 @@ import type {
   GenaratePdfReportOutput,
 } from "../types/reportTypes";
 
-type SerializedBuffer = {
-  type: string;
-  data: number[];
-};
-
-type GerarPdfRelatorioApiResponse = {
+type GenaratePdfReportApiResponse = {
   data?: {
-    pdfBuffer: SerializedBuffer;
+    pdfBase64?: string;
     filename?: string;
   };
-  pdfBuffer?: SerializedBuffer;
+  pdfBase64?: string;
   filename?: string;
   message?: string;
 };
 
-const toUint8Array = (serialized?: SerializedBuffer) => {
-  if (!serialized || !Array.isArray(serialized.data)) {
-    return new Uint8Array();
-  }
-
-  return Uint8Array.from(serialized.data);
-};
-
-export async function gerarPdfRelatorio({
+export async function genaratePdfReport({
   eventId,
 }: GenaratePdfReportInput): Promise<GenaratePdfReportOutput> {
   try {
-    const response = await axiosInstance.get<GerarPdfRelatorioApiResponse>(
+    const response = await axiosInstance.get<GenaratePdfReportApiResponse>(
       `/report/pdf/${eventId}`
     );
 
     const payload = response.data?.data ?? response.data;
-    const serializedBuffer = payload?.pdfBuffer;
+    const pdfBase64 = payload?.pdfBase64;
     const filename = payload?.filename ?? `relatorio-${eventId}.pdf`;
 
-    if (!serializedBuffer) {
+    if (!pdfBase64) {
       throw new Error("Resposta do servidor não contém o PDF gerado.");
     }
 
-    const pdfBuffer = toUint8Array(
-      serializedBuffer
-    ) as unknown as GenaratePdfReportOutput["pdfBuffer"];
-
     return {
-      pdfBuffer,
+      pdfBase64,
       filename,
     };
   } catch (error) {
