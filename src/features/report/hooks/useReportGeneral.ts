@@ -1,25 +1,22 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getRelatorioGeral } from "../api/getRelatorioGeral";
-import { UseRelatorioGeralResult } from "../types/reportTypes";
+import { getReportGeneral } from "../api/getReportGeral";
+import { UseReportGeneralResult } from "../types/reportTypes";
 
-export const relatorioKeys = {
-  all: ["relatorio"] as const,
-  geral: (eventId: string) =>
-    [...relatorioKeys.all, "geral", eventId] as const,
+export const reportKeys = {
+  all: ["report"] as const,
+  general: (eventId: string) => [...reportKeys.all, "geral", eventId] as const,
 };
 
-export function useRelatorioGeral(
-  eventId?: string
-): UseRelatorioGeralResult {
+export function useReportGeneral(eventId?: string): UseReportGeneralResult {
   const queryKey = eventId
-    ? relatorioKeys.geral(eventId)
-    : [...relatorioKeys.all, "geral", "pending"] as const;
+    ? reportKeys.general(eventId)
+    : ([...reportKeys.all, "general", "pending"] as const);
 
   const { data, isLoading, isFetching, error, refetch } = useQuery({
     queryKey,
-    queryFn: async () => await getRelatorioGeral(eventId as string),
+    queryFn: async () => await getReportGeneral(eventId as string),
     enabled: Boolean(eventId),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

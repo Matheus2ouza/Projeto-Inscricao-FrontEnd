@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,
@@ -19,10 +18,13 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { cn } from "@/shared/lib/utils";
-import { ArrowLeft, Loader2, RefreshCcw } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
-import { useMemo } from "react";
-import { useRelatorioGeral } from "../hooks/useRelatorioGeral";
+import { ArrowLeft, Download, Loader2, RefreshCcw } from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { genaratePdfReport } from "../api/genaratePdfReport";
+import { useReportGeneral } from "../hooks/useReportGeneral";
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -57,7 +59,8 @@ const statusLabels: Record<string, string> = {
 };
 
 const formatCurrency = (value: number) => currencyFormatter.format(value || 0);
-
+const numberFormatter = new Intl.NumberFormat("pt-BR");
+const formatNumber = (value: number) => numberFormatter.format(value || 0);
 const formatDateTime = (value: Date) => dateFormatter.format(value);
 
 const formatDateRange = (start: Date, end: Date) =>
@@ -74,25 +77,30 @@ const SummaryMetric = ({
   label,
   value,
   highlight = false,
+  formatter = formatCurrency,
 }: {
   label: string;
   value: number;
   highlight?: boolean;
-}) => (
-  <div
-    className={cn(
-      "rounded-lg border bg-background px-4 py-3 transition-shadow",
-      highlight ? "border-primary/40 shadow-md" : "border-border"
-    )}
-  >
-    <span className="text-xs font-medium uppercase text-muted-foreground tracking-wide">
-      {label}
-    </span>
-    <p className="mt-2 text-lg font-semibold text-foreground">
-      {formatCurrency(value)}
-    </p>
-  </div>
-);
+  formatter?: (value: number) => string;
+}) => {
+  const baseClasses =
+    "rounded-lg border border-border bg-background px-4 py-3 transition-all";
+  const hoverClasses = highlight
+    ? "hover:border-primary/50 hover:shadow-[0_4px_12px_rgba(59,130,246,0.15)]"
+    : "hover:border-border/70 hover:bg-muted/30 hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]";
+
+  return (
+    <div className={cn(baseClasses, "hover:-translate-y-[2px]", hoverClasses)}>
+      <span className="text-xs font-medium uppercase text-muted-foreground tracking-wide">
+        {label}
+      </span>
+      <p className="mt-2 text-lg font-semibold text-foreground">
+        {formatter(value)}
+      </p>
+    </div>
+  );
+};
 
 const SectionSummary = ({
   total,
@@ -104,67 +112,189 @@ const SectionSummary = ({
   totalDinheiro: number;
   totalPix: number;
   totalCartao: number;
-}) => (
-  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-    <SummaryMetric label="Total" value={total} highlight />
-    <SummaryMetric label="Dinheiro" value={totalDinheiro} />
-    <SummaryMetric label="PIX" value={totalPix} />
-    <SummaryMetric label="Cartão" value={totalCartao} />
-  </div>
-);
+}) => {
+  const metrics = [
+    { label: "Total", value: total, highlight: true },
+    { label: "Dinheiro", value: totalDinheiro, highlight: true },
+    { label: "PIX", value: totalPix, highlight: true },
+    { label: "Cartão", value: totalCartao, highlight: true },
+  ];
+
+  return (
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {metrics.map((metric) => (
+        <SummaryMetric
+          key={metric.label}
+          label={metric.label}
+          value={metric.value}
+          highlight={metric.highlight}
+        />
+      ))}
+    </div>
+  );
+};
 
 export default function ReportDetails() {
   const params = useParams();
-  const router = useRouter();
   const eventId = Array.isArray(params.id)
     ? params.id[0]
     : (params.id as string);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const { data, loading, isFetching, error, refetch } =
-    useRelatorioGeral(eventId);
+    useReportGeneral(eventId);
 
   const hasData = Boolean(data);
 
-  const totalsBySection = useMemo(
+  const financialMetrics = useMemo(
     () =>
       data
         ? [
             {
-              title: "Inscrições (Grupos)",
-              length: data.inscricoes.inscricoes.length,
+              label: "Total Geral",
+              value: data.totais.totalGeral,
+              highlight: true,
             },
             {
-              title: "Inscrições Avulsas",
-              length: data.inscricoesAvulsas.inscricoes.length,
+              label: "Montante Arrecadado",
+              value: data.totais.totalArrecadado,
+              highlight: true,
             },
-            { title: "Vendas de Tickets", length: data.tickets.vendas.length },
-            { title: "Gastos Registrados", length: data.gastos.gastos.length },
+            {
+              label: "Total em Dinheiro",
+              value: data.totais.totalDinheiro,
+              highlight: true,
+            },
+            {
+              label: "Total em PIX",
+              value: data.totais.totalPix,
+              highlight: true,
+            },
+            {
+              label: "Total em Cartão",
+              value: data.totais.totalCartao,
+              highlight: true,
+            },
+            {
+              label: "Total de Gastos",
+              value: data.totais.totalGastos,
+              highlight: true,
+            },
           ]
         : [],
     [data]
   );
 
+  const infoMetrics = useMemo(
+    () =>
+      data
+        ? [
+            {
+              label: "Inscrições (Grupos)",
+              value: data.inscricoes.inscricoes.length,
+              highlight: true,
+            },
+            {
+              label: "Participantes (Grupos)",
+              value: data.inscricoes.totalParticipantes,
+              highlight: true,
+            },
+            {
+              label: "Inscrições Avulsas",
+              value: data.inscricoesAvulsas.inscricoes.length,
+              highlight: true,
+            },
+            {
+              label: "Participantes Avulsos",
+              value: data.inscricoesAvulsas.totalParticipantes,
+              highlight: true,
+            },
+            {
+              label: "Vendas de Tickets",
+              value: data.tickets.vendas.length,
+              highlight: true,
+            },
+            {
+              label: "Gastos Registrados",
+              value: data.gastos.gastos.length,
+              highlight: true,
+            },
+          ]
+        : [],
+    [data]
+  );
+
+  const handleDownloadReport = async () => {
+    if (!eventId) return;
+
+    try {
+      setIsDownloading(true);
+
+      // ⬇️ o backend agora retorna pdfBase64 e filename
+      const { pdfBase64, filename } = await genaratePdfReport({ eventId });
+
+      // converte base64 → blob
+      const byteCharacters = atob(pdfBase64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+
+      // cria link temporário pra download
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error("Erro ao baixar relatório em PDF:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível baixar o relatório."
+      );
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="mx-auto max-w-7xl px-6 py-8 space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Relatório Geral
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300">
-              Consulte os dados consolidados do evento selecionado.
-            </p>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="icon" asChild>
+              <Link href="/super/relatorios">
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Relatório Geral
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300">
+                Consulte os dados consolidados do evento selecionado.
+              </p>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button
-              variant="outline"
               size="sm"
-              onClick={() => router.back()}
+              onClick={handleDownloadReport}
+              disabled={isDownloading}
               className="flex items-center gap-2"
             >
-              <ArrowLeft className="h-4 w-4" />
-              Voltar
+              {isDownloading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+              {isDownloading ? "Gerando..." : "Baixar relatório"}
             </Button>
             <Button
               variant="outline"
@@ -244,44 +374,38 @@ export default function ReportDetails() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <SummaryMetric
-                    label="Total Geral"
-                    value={data.totais.totalGeral}
-                    highlight
-                  />
-                  <SummaryMetric
-                    label="Dinheiro"
-                    value={data.totais.totalDinheiro}
-                  />
-                  <SummaryMetric label="PIX" value={data.totais.totalPix} />
-                  <SummaryMetric
-                    label="Cartão"
-                    value={data.totais.totalCartao}
-                  />
-                </div>
-                <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <div className="rounded-lg border bg-background px-4 py-3">
-                    <span className="text-xs font-medium uppercase text-muted-foreground tracking-wide">
-                      Montante Arrecadado
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Totais financeiros
                     </span>
-                    <p className="mt-2 text-lg font-semibold text-foreground">
-                      {formatCurrency(data.event.amountCollected)}
-                    </p>
-                  </div>
-                  {totalsBySection.map((section) => (
-                    <div
-                      key={section.title}
-                      className="rounded-lg border bg-background px-4 py-3"
-                    >
-                      <span className="text-xs font-medium uppercase text-muted-foreground tracking-wide">
-                        {section.title}
-                      </span>
-                      <p className="mt-2 text-lg font-semibold text-foreground">
-                        {section.length}
-                      </p>
+                    <div className="mt-2 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+                      {financialMetrics.map((metric) => (
+                        <SummaryMetric
+                          key={metric.label}
+                          label={metric.label}
+                          value={metric.value}
+                          highlight={Boolean(metric.highlight)}
+                        />
+                      ))}
                     </div>
-                  ))}
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Dados gerais
+                    </span>
+                    <div className="mt-2 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+                      {infoMetrics.map((metric) => (
+                        <SummaryMetric
+                          key={metric.label}
+                          label={metric.label}
+                          value={metric.value}
+                          formatter={formatNumber}
+                          highlight={Boolean(metric.highlight)}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -306,14 +430,17 @@ export default function ReportDetails() {
                   </div>
                 ) : (
                   <div className="overflow-hidden rounded-lg border">
-                    <Table>
+                    <Table className="min-w-full table-fixed">
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Responsável</TableHead>
-                          <TableHead>Telefone</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Total</TableHead>
-                          <TableHead>Criado em</TableHead>
+                          <TableHead className="w-[40%]">Responsável</TableHead>
+                          <TableHead className="w-[20%]">
+                            Participantes
+                          </TableHead>
+                          <TableHead className="w-[20%]">Valor total</TableHead>
+                          <TableHead className="w-[20%] text-right">
+                            Data
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -323,18 +450,17 @@ export default function ReportDetails() {
                               {inscricao.responsible}
                             </TableCell>
                             <TableCell>
-                              {inscricao.phone || "Não informado"}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">
-                                {prettifyStatus(inscricao.status)}
-                              </Badge>
+                              {formatNumber(inscricao.countParticipants)}
                             </TableCell>
                             <TableCell>
                               {formatCurrency(inscricao.totalValue)}
                             </TableCell>
-                            <TableCell>
-                              {formatDateTime(inscricao.createdAt)}
+                            <TableCell className="text-right">
+                              <div className="flex flex-col items-end gap-1">
+                                <span className="text-xs text-muted-foreground">
+                                  {formatDateTime(inscricao.createdAt)}
+                                </span>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -365,14 +491,17 @@ export default function ReportDetails() {
                   </div>
                 ) : (
                   <div className="overflow-hidden rounded-lg border">
-                    <Table>
+                    <Table className="min-w-full table-fixed">
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Responsável</TableHead>
-                          <TableHead>Telefone</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Total</TableHead>
-                          <TableHead>Criado em</TableHead>
+                          <TableHead className="w-[40%]">Responsável</TableHead>
+                          <TableHead className="w-[20%]">
+                            Participantes
+                          </TableHead>
+                          <TableHead className="w-[20%]">Valor total</TableHead>
+                          <TableHead className="w-[20%] text-right">
+                            Data
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -382,18 +511,17 @@ export default function ReportDetails() {
                               {inscricao.responsible}
                             </TableCell>
                             <TableCell>
-                              {inscricao.phone || "Não informado"}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">
-                                {prettifyStatus(inscricao.status)}
-                              </Badge>
+                              {formatNumber(inscricao.countParticipants)}
                             </TableCell>
                             <TableCell>
                               {formatCurrency(inscricao.totalValue)}
                             </TableCell>
-                            <TableCell>
-                              {formatDateTime(inscricao.createdAt)}
+                            <TableCell className="text-right">
+                              <div className="flex flex-col items-end gap-1">
+                                <span className="text-xs text-muted-foreground">
+                                  {formatDateTime(inscricao.createdAt)}
+                                </span>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -424,32 +552,35 @@ export default function ReportDetails() {
                   </div>
                 ) : (
                   <div className="overflow-hidden rounded-lg border">
-                    <Table>
+                    <Table className="min-w-full table-fixed">
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Quantidade</TableHead>
-                          <TableHead>Total</TableHead>
-                          <TableHead>Método</TableHead>
-                          <TableHead>Criado em</TableHead>
+                          <TableHead className="w-[40%]">Ingresso</TableHead>
+                          <TableHead className="w-[20%]">Vendidos</TableHead>
+                          <TableHead className="w-[20%]">Valor total</TableHead>
+                          <TableHead className="w-[20%] text-right">
+                            Data
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {data.tickets.vendas.map((venda) => (
                           <TableRow key={venda.id}>
                             <TableCell className="font-medium">
-                              {venda.quantity}
+                              {venda.name}
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {formatNumber(venda.quantitySold)}
                             </TableCell>
                             <TableCell>
                               {formatCurrency(venda.totalValue)}
                             </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">
-                                {paymentMethodLabels[venda.paymentMethod] ??
-                                  prettifyStatus(venda.paymentMethod)}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              {formatDateTime(venda.createdAt)}
+                            <TableCell className="text-right">
+                              <div className="flex flex-col items-end gap-1">
+                                <span className="text-xs text-muted-foreground">
+                                  {formatDateTime(venda.createdAt)}
+                                </span>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -480,14 +611,15 @@ export default function ReportDetails() {
                   </div>
                 ) : (
                   <div className="overflow-hidden rounded-lg border">
-                    <Table>
+                    <Table className="min-w-full table-fixed">
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Descrição</TableHead>
-                          <TableHead>Responsável</TableHead>
-                          <TableHead>Método</TableHead>
-                          <TableHead>Valor</TableHead>
-                          <TableHead>Criado em</TableHead>
+                          <TableHead className="w-[40%]">Descrição</TableHead>
+                          <TableHead className="w-[20%]">Responsável</TableHead>
+                          <TableHead className="w-[20%]">Valor</TableHead>
+                          <TableHead className="w-[20%] text-right">
+                            Data
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -496,16 +628,18 @@ export default function ReportDetails() {
                             <TableCell className="font-medium">
                               {gasto.description}
                             </TableCell>
-                            <TableCell>{gasto.responsible}</TableCell>
                             <TableCell>
-                              <Badge variant="outline">
-                                {paymentMethodLabels[gasto.paymentMethod] ??
-                                  prettifyStatus(gasto.paymentMethod)}
-                              </Badge>
+                              <div className="flex flex-col gap-1">
+                                <span>{gasto.responsible}</span>
+                              </div>
                             </TableCell>
                             <TableCell>{formatCurrency(gasto.value)}</TableCell>
-                            <TableCell>
-                              {formatDateTime(gasto.createdAt)}
+                            <TableCell className="text-right">
+                              <div className="flex flex-col items-end gap-1">
+                                <span className="text-xs text-muted-foreground">
+                                  {formatDateTime(gasto.createdAt)}
+                                </span>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}

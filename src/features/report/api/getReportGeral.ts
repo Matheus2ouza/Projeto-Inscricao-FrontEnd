@@ -1,21 +1,24 @@
 import axiosInstance from "@/shared/lib/apiClient";
-import { RelatorioGeralOutput } from "../types/reportTypes";
-
-type RelatorioGeralResponse = RelatorioGeralOutput;
+import {
+  ReportGeneralOutput,
+  ReportGeneralResponse,
+} from "../types/reportTypes";
 
 const parseDate = (value: Date | string): Date => {
   return value instanceof Date ? value : new Date(value);
 };
 
-const mapRelatorioResponse = (
-  data: RelatorioGeralResponse
-): RelatorioGeralOutput => {
+const mapReportResponse = (
+  data: ReportGeneralResponse
+): ReportGeneralOutput => {
   return {
     ...data,
     event: {
       ...data.event,
       startDate: parseDate(data.event.startDate),
       endDate: parseDate(data.event.endDate),
+      amountCollected: data.event.amountCollected,
+      imageUrl: data.event.imageUrl,
     },
     inscricoes: {
       ...data.inscricoes,
@@ -48,16 +51,15 @@ const mapRelatorioResponse = (
   };
 };
 
-export async function getRelatorioGeral(
+export async function getReportGeneral(
   eventId: string
-): Promise<RelatorioGeralOutput> {
+): Promise<ReportGeneralOutput> {
   try {
-    const { data } =
-      await axiosInstance.get<RelatorioGeralResponse>(
-        `/relatorio/geral/${eventId}`
-      );
+    const { data } = await axiosInstance.get<ReportGeneralResponse>(
+      `/report/general/${eventId}`
+    );
 
-    return mapRelatorioResponse(data);
+    return mapReportResponse(data);
   } catch (error) {
     const axiosError = error as { response?: { data?: { message?: string } } };
     throw new Error(
