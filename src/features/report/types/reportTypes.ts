@@ -17,9 +17,7 @@ export type ReportGeneralResponse = {
     name: string;
     startDate: Date;
     endDate: Date;
-    location: string | null;
     amountCollected: number;
-    imageUrl: string | null;
   };
   totais: {
     totalGeral: number;
@@ -28,6 +26,11 @@ export type ReportGeneralResponse = {
     totalPix: number;
     totalCartao: number;
     totalGastos: number;
+    totalInscricoesGrupo: number;
+    totalParticipantesGrupo: number;
+    totalInscricoesAvulsas: number;
+    totalParticipantesAvulsos: number;
+    totalParticipantes: number;
   };
   inscricoes: {
     total: number;
@@ -41,7 +44,7 @@ export type ReportGeneralResponse = {
       countParticipants: number;
       totalValue: number;
       status: string;
-      createdAt: string | Date;
+      createdAt: Date;
     }>;
   };
   inscricoesAvulsas: {
@@ -83,7 +86,7 @@ export type ReportGeneralResponse = {
       value: number;
       paymentMethod: string;
       responsible: string;
-      createdAt: string | Date;
+      createdAt: Date;
     }>;
   };
 };
@@ -94,9 +97,7 @@ export type ReportGeneralOutput = {
     name: string;
     startDate: Date;
     endDate: Date;
-    location: string | null;
     amountCollected: number;
-    imageUrl: string | null;
   };
   totais: {
     totalGeral: number;
@@ -105,6 +106,11 @@ export type ReportGeneralOutput = {
     totalPix: number;
     totalCartao: number;
     totalGastos: number;
+    totalInscricoesGrupo: number;
+    totalParticipantesGrupo: number;
+    totalInscricoesAvulsas: number;
+    totalParticipantesAvulsos: number;
+    totalParticipantes: number;
   };
   inscricoes: {
     total: number;
