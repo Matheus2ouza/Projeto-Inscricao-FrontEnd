@@ -3,6 +3,7 @@ import { z } from "zod";
 
 export const individualInscriptionSchema = z.object({
   responsible: z.string().min(1, "Nome do responsável é obrigatório"),
+  email: z.optional(z.email({ message: "Informe um e-mail válido" })),
   phone: z.string().min(1, "Telefone é obrigatório"),
   participantName: z.string().min(1, "Nome do participante é obrigatório"),
   birthDate: z.string().min(1, "Data de nascimento é obrigatória"),

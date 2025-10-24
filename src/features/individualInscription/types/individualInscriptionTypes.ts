@@ -19,6 +19,7 @@ export interface UseFormIndividualInscriptionReturn {
 
 export interface IndividualInscriptionSubmit {
   responsible: string;
+  email?: string;
   phone: string;
   eventId: string;
   participant: {
@@ -62,6 +63,7 @@ export interface TypeInscription {
 // Tipos para o formulário
 export interface IndividualInscriptionFormInputs {
   responsible: string;
+  email?: string;
   phone: string;
   participantName: string;
   birthDate: string;
@@ -72,6 +74,7 @@ export interface IndividualInscriptionFormInputs {
 // Tipos para erros do formulário
 export interface FormErrors {
   responsible?: { message?: string };
+  email?: { message?: string };
   phone?: { message?: string };
   participantName?: { message?: string };
   birthDate?: { message?: string };

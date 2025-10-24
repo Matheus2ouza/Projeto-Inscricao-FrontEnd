@@ -72,6 +72,28 @@ export default function IndividualInscriptionForm({
                 )}
               </div>
               <div className="space-y-2">
+                <Label htmlFor="email">E-mail do responsável</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...register("email")}
+                  value={formData.email ?? ""}
+                  onChange={handleInputChange}
+                  placeholder="exemplo@dominio.com"
+                  className={cn(
+                    formErrors.email && "border-red-500 focus:border-red-500"
+                  )}
+                />
+                <p className="text-[13px] text-muted-foreground">
+                  Opcional — usado apenas para atualizações da inscrição.
+                </p>
+                {formErrors.email && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formErrors.email.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="phone">Telefone do responsável *</Label>
                 <Input
                   id="phone"

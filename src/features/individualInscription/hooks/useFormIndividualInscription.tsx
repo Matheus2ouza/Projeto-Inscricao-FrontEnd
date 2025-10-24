@@ -1,4 +1,3 @@
-// hooks/useFormIndividualInscription.tsx
 "use client";
 
 import { useGlobalLoading } from "@/components/GlobalLoading";
@@ -37,6 +36,7 @@ export function useFormIndividualInscription({
     resolver: zodResolver(individualInscriptionSchema),
     defaultValues: {
       responsible: "",
+      email: undefined,
       phone: "",
       participantName: "",
       birthDate: "",
@@ -83,6 +83,12 @@ export function useFormIndividualInscription({
       // Formatação automática da data
       const formattedDate = formatDate(value);
       setValue(name as keyof IndividualInscriptionFormInputs, formattedDate);
+    } else if (name === "email") {
+      const trimmed = value.trim();
+      setValue(
+        name as keyof IndividualInscriptionFormInputs,
+        (trimmed.length === 0 ? undefined : trimmed) as never
+      );
     } else {
       setValue(name as keyof IndividualInscriptionFormInputs, value);
     }
@@ -143,6 +149,10 @@ export function useFormIndividualInscription({
         typeDescriptionId: data.typeInscriptionId,
       },
     };
+
+    if (data.email) {
+      apiData.email = data.email;
+    }
 
     setLoading(true);
     try {
