@@ -48,7 +48,8 @@ import {
   Plus,
   User,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { MouseEvent, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { InscriptionDetails } from "../types/inscriptionsDetails.types";
 
 interface InscriptionDetailsProps {
@@ -72,6 +73,7 @@ export default function DetailsInscriptionsTable({
   }>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [currentPaymentPage, setCurrentPaymentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState("participants");
   const { setLoading } = useGlobalLoading();
 
   const itemsPerPage = 15;
@@ -121,8 +123,32 @@ export default function DetailsInscriptionsTable({
     return null;
   }
 
+  const showUnderReviewToast = () => {
+    toast.info("Inscrição em revisão", {
+      description:
+        "Aguardando análise da organização. Assim que houver uma atualização você será avisado.",
+    });
+  };
+
   const handleRegisterPayment = () => {
+    if (data?.status === "UNDER_REVIEW") {
+      showUnderReviewToast();
+      return;
+    }
     setRegisterPaymentOpen(true);
+  };
+  const handleTabChange = (value: string) => {
+    if (value === "payments" && data?.status === "UNDER_REVIEW") {
+      return;
+    }
+    setActiveTab(value);
+  };
+
+  const handlePaymentsTriggerClick = (event: MouseEvent<HTMLButtonElement>) => {
+    if (data?.status === "UNDER_REVIEW") {
+      event.preventDefault();
+      showUnderReviewToast();
+    }
   };
 
   // Função para fazer download da imagem
@@ -236,27 +262,6 @@ export default function DetailsInscriptionsTable({
     return new Date(date).toLocaleString("pt-BR");
   };
 
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "paid":
-      case "pago":
-      case "aprovado":
-        return "default";
-      case "pending":
-      case "pendente":
-      case "under_review":
-      case "em_análise":
-        return "secondary";
-      case "cancelled":
-      case "cancelado":
-      case "rejected":
-      case "rejeitado":
-        return "destructive";
-      default:
-        return "outline";
-    }
-  };
-
   const getStatusText = (status: string) => {
     switch (status.toLowerCase()) {
       case "paid":
@@ -279,23 +284,17 @@ export default function DetailsInscriptionsTable({
   };
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "paid":
-      case "pago":
-      case "aprovado":
-        return "bg-green-500 text-white hover:bg-green-600";
-      case "pending":
-      case "pendente":
-      case "under_review":
-      case "em_análise":
-        return "bg-yellow-500 text-white hover:bg-yellow-600";
-      case "cancelled":
-      case "cancelado":
-      case "rejected":
-      case "rejeitado":
-        return "bg-red-500 text-white hover:bg-red-600";
+    switch (status) {
+      case "PENDING":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+      case "UNDER_REVIEW":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+      case "PAID":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+      case "CANCELLED":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
       default:
-        return "bg-gray-500 text-white hover:bg-gray-600";
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
     }
   };
 
@@ -424,7 +423,11 @@ export default function DetailsInscriptionsTable({
         </Card>
 
         {/* Abas para Participantes e Pagamentos */}
-        <Tabs defaultValue="participants" className="space-y-4">
+        <Tabs
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="space-y-4"
+        >
           <TabsList className="grid w-full grid-cols-2 h-auto">
             <TabsTrigger
               value="participants"
@@ -437,6 +440,7 @@ export default function DetailsInscriptionsTable({
             <TabsTrigger
               value="payments"
               className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-3"
+              onClick={handlePaymentsTriggerClick}
             >
               <CreditCard className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Pagamentos</span>
