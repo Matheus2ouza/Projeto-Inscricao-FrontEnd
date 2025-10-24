@@ -1,14 +1,18 @@
 "use client";
 
 import { useGlobalLoading } from "@/components/GlobalLoading";
-import { useForm } from "react-hook-form";
-import z from "zod";
-import { registerEvent } from "../api/registerEvent";
-import { toast } from "sonner";
-import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { useState } from "react";
 import { DateRange } from "react-day-picker";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import z from "zod";
+import {
+  registerEvent,
+  type CreateEventRequest,
+  type StatusEvent,
+} from "../api/registerEvent";
 
 const EventSchema = z.object({
   name: z
@@ -27,6 +31,9 @@ const EventSchema = z.object({
     })
     .optional(),
   regionId: z.string().min(1, { message: "Região é obrigatória" }),
+  accountIds: z
+    .array(z.string())
+    .min(1, { message: "Selecione pelo menos um responsável" }),
   location: z.object({
     lat: z
       .number()
@@ -84,6 +91,7 @@ export default function useFormCreateEvent(): useFormCreateEvent {
     defaultValues: {
       name: "",
       regionId: "",
+      accountIds: [],
       location: undefined,
       openImmediately: false,
     },
@@ -123,19 +131,26 @@ export default function useFormCreateEvent(): useFormCreateEvent {
       const startDateISO = convertToISOString(dateRange.from);
       const endDateISO = convertToISOString(dateRange.to);
 
-      const registrationStatus = input.openImmediately ? "OPEN" : "CLOSE";
+      const registrationStatus: StatusEvent = input.openImmediately
+        ? "OPEN"
+        : "CLOSE";
 
-      // Preparar dados no formato esperado pela API
-      const eventData = {
+      const responsibles = input.accountIds.map((accountId) => ({
+        accountId,
+      }));
+
+      const eventData: CreateEventRequest = {
         name: input.name,
-        startDate: startDateISO,
-        endDate: endDateISO,
+        startDate: new Date(startDateISO),
+        endDate: new Date(endDateISO),
         regionId: input.regionId,
         image: imageBase64,
         latitude: input.location.lat,
         longitude: input.location.lng,
-        address: input.location.address,
-        openImmediately: registrationStatus,
+        location: input.location.address,
+        status: registrationStatus,
+        paymentEnabled: false,
+        responsibles,
       };
 
       const { id } = await registerEvent(eventData);
