@@ -74,6 +74,7 @@ export default function IndividualInscriptionConfirmPage() {
           <IndividualPaymentConfirmation
             inscriptionId={confirmationResult.inscriptionId}
             paymentEnabled={confirmationResult.paymentEnabled}
+            inscriptionStatus={confirmationResult.inscriptionStatus}
             onPayment={handlePayment}
             onSkipPayment={handleSkipPayment}
           />

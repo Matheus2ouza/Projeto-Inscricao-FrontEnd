@@ -22,6 +22,8 @@ export default function GroupInscriptionConfirmPage() {
     handleSkipPayment, // Adicione esta linha
   } = useGroupInscriptionConfirmation({ cacheKey });
 
+  console.log(confirmationData);
+
   if (!confirmationData && !confirmationResult) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -72,6 +74,7 @@ export default function GroupInscriptionConfirmPage() {
         <PaymentConfirmation
           inscriptionId={confirmationResult.inscriptionId}
           paymentEnabled={confirmationResult.paymentEnabled}
+          inscriptionStatus={confirmationResult.inscriptionStatus}
           onPayment={handlePayment}
           onSkipPayment={handleSkipPayment}
         />
