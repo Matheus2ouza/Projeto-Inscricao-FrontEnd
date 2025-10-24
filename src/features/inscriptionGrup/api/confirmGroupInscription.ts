@@ -6,6 +6,7 @@ export interface ConfirmGroupInscriptionParams {
 
 export interface ConfirmGroupInscriptionResponse {
   inscriptionId: string;
+  inscriptionStatus: string;
   paymentEnabled: boolean;
 }
 
@@ -15,7 +16,5 @@ export async function confirmGroupInscription(
   const response = await axiosInstance.post("inscriptions/group/confirm", {
     cacheKey: data.cacheKey,
   });
-
-  console.log(response.data);
   return response.data;
 }

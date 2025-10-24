@@ -3,6 +3,7 @@ import { FieldErrors } from "react-hook-form";
 
 export interface GroupInscriptionFormData {
   responsible: string;
+  email?: string;
   phone: string;
 }
 
@@ -41,6 +42,7 @@ export interface UseFormInscriptionGrupReturn {
   fileInputRef: RefObject<HTMLInputElement>;
   formErrors: FieldErrors<{
     responsible: string;
+    email?: string;
     phone: string;
   }>;
 
