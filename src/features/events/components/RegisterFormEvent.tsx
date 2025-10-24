@@ -1,17 +1,20 @@
 "use client";
 
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, {
-  useMemo,
-  useState,
-  useRef,
   useCallback,
   useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
 
+import { ComboboxAccount } from "@/features/accounts/components/ComboboxAccount";
+import { ComboboxRegion } from "@/features/regions/components/ComboboxRegion";
+import { useRegions } from "@/features/regions/hooks/useRegions";
+import { CalendarRanger } from "@/shared/components/calendar-ranger";
 import { Button } from "@/shared/components/ui/button";
-import { FormProvider } from "react-hook-form";
 import {
   FormControl,
   FormField,
@@ -20,13 +23,11 @@ import {
   FormMessage,
 } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
-import useFormCreateEvent from "../hooks/useFormCreateEvent";
-import { CalendarRanger } from "@/shared/components/calendar-ranger";
-import { useRegions } from "@/features/regions/hooks/useRegions";
-import { ComboboxRegion } from "@/features/regions/components/ComboboxRegion";
-import { Upload, X, MapPin } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import { MapPin, Upload, X } from "lucide-react";
+import { FormProvider } from "react-hook-form";
 import { toast } from "sonner";
+import useFormCreateEvent from "../hooks/useFormCreateEvent";
 
 interface RegisterFormEventProps {
   onSubmitSuccess?: () => void;
@@ -34,6 +35,16 @@ interface RegisterFormEventProps {
 
 // Chave para armazenar o estado no sessionStorage
 const FORM_STORAGE_KEY = "event-form-data";
+let cachedImageFile: File | null = null;
+let cachedImagePreviewUrl: string | null = null;
+
+const clearCachedImage = () => {
+  if (cachedImagePreviewUrl && cachedImagePreviewUrl.startsWith("blob:")) {
+    URL.revokeObjectURL(cachedImagePreviewUrl);
+  }
+  cachedImageFile = null;
+  cachedImagePreviewUrl = null;
+};
 
 export default function RegisterFormEvent({
   onSubmitSuccess,
@@ -51,13 +62,17 @@ export default function RegisterFormEvent({
   // Salvar o estado do formulário no sessionStorage antes de navegar
   const saveFormState = useCallback(() => {
     const formData = form.getValues();
+    const preview = cachedImagePreviewUrl ?? previewUrl;
     const state = {
       name: formData.name,
       regionId: formData.regionId,
+      accountIds: Array.isArray(formData.accountIds)
+        ? formData.accountIds
+        : [],
       dateRange: dateRange,
       openImmediately: formData.openImmediately,
-      previewUrl: previewUrl, // Salvar a URL da preview
-      hasImage: !!formData.image, // Marcar que há uma imagem
+      previewUrl: preview, // Salvar a URL da preview
+      hasImage: Boolean(cachedImageFile ?? formData.image), // Marcar que há uma imagem
     };
     sessionStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(state));
   }, [form, dateRange, previewUrl]);
@@ -72,6 +87,9 @@ export default function RegisterFormEvent({
         // Restaurar campos básicos
         if (state.name) form.setValue("name", state.name);
         if (state.regionId) form.setValue("regionId", state.regionId);
+        if (Array.isArray(state.accountIds)) {
+          form.setValue("accountIds", state.accountIds);
+        }
         if (state.openImmediately !== undefined) {
           form.setValue("openImmediately", state.openImmediately);
         }
@@ -81,13 +99,14 @@ export default function RegisterFormEvent({
           setDateRange(state.dateRange);
         }
 
-        // Restaurar preview URL se existir
-        if (state.previewUrl && !previewUrl) {
-          setPreviewUrl(state.previewUrl);
-          // Marcar que há uma imagem no formulário
-          if (state.hasImage) {
-            // Criar um placeholder para manter o estado da imagem
-            form.setValue("image", new File([], "placeholder"));
+        // Restaurar imagem do cache se disponível
+        if (cachedImageFile) {
+          form.setValue("image", cachedImageFile);
+          if (!cachedImagePreviewUrl && state.previewUrl) {
+            cachedImagePreviewUrl = state.previewUrl;
+          }
+          if (cachedImagePreviewUrl) {
+            setPreviewUrl(cachedImagePreviewUrl);
           }
         }
 
@@ -98,7 +117,7 @@ export default function RegisterFormEvent({
       console.error("Erro ao restaurar estado do formulário:", error);
       sessionStorage.removeItem(FORM_STORAGE_KEY);
     }
-  }, [form, setDateRange, previewUrl]);
+  }, [form, setDateRange]);
 
   // Processar dados de localização do sessionStorage
   const processLocationData = useCallback(() => {
@@ -178,6 +197,7 @@ export default function RegisterFormEvent({
         // Se não há imagem mas há preview, limpar a preview
         setPreviewUrl(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
+        clearCachedImage();
       }
     });
     return () => subscription.unsubscribe();
@@ -201,6 +221,7 @@ export default function RegisterFormEvent({
     if (success && id) {
       // Se tiver uma função de callback, execute
       if (onSubmitSuccess) onSubmitSuccess();
+      clearCachedImage();
 
       // Mostrar toast de sucesso
       const url = `${window.location.origin}/events/${id}`;
@@ -267,7 +288,12 @@ export default function RegisterFormEvent({
   const handleFileSelect = useCallback(
     (file: File) => {
       form.setValue("image", file);
+      if (cachedImagePreviewUrl && cachedImagePreviewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(cachedImagePreviewUrl);
+      }
+      cachedImageFile = file;
       const url = URL.createObjectURL(file);
+      cachedImagePreviewUrl = url;
       setPreviewUrl(url);
       toast.success("Imagem carregada com sucesso", {
         description: `Arquivo: ${file.name}`,
@@ -343,6 +369,7 @@ export default function RegisterFormEvent({
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    clearCachedImage();
     toast.info("Imagem removida", {
       description: "Você pode adicionar uma nova imagem.",
       duration: 3000,
@@ -373,7 +400,12 @@ export default function RegisterFormEvent({
     sessionStorage.removeItem(FORM_STORAGE_KEY);
     sessionStorage.removeItem("temp-location-data");
 
-    form.reset({ name: "", regionId: "", image: undefined });
+    form.reset({
+      name: "",
+      regionId: "",
+      accountIds: [],
+      image: undefined,
+    });
     setPreviewUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
     setDateRange({
@@ -381,6 +413,7 @@ export default function RegisterFormEvent({
       to: undefined,
     });
     setIsDragging(false);
+    clearCachedImage();
 
     // Redirecionar para a lista de eventos
     router.push("/super/events");
@@ -461,6 +494,38 @@ export default function RegisterFormEvent({
                               <FormMessage />
                               <p className="text-sm text-muted-foreground mt-1">
                                 Selecione a região onde o evento será realizado.
+                              </p>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {/* Campo: Contas responsáveis */}
+                      <div className="space-y-3">
+                        <FormField
+                          control={form.control}
+                          name="accountIds"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium">
+                                Contas responsáveis *
+                              </FormLabel>
+                              <FormControl>
+                                <ComboboxAccount
+                                  value={
+                                    Array.isArray(field.value)
+                                      ? field.value
+                                      : []
+                                  }
+                                  onChange={(selected) => {
+                                    field.onChange(selected);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Escolha um ou mais usuários que ficarão
+                                responsáveis pelo evento.
                               </p>
                             </FormItem>
                           )}

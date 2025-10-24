@@ -2,51 +2,35 @@
 
 import axiosInstance from "@/shared/lib/apiClient";
 
-export type RegisterEventInput = {
+export type StatusEvent = "OPEN" | "CLOSE" | "FINALIZED";
+
+export type CreateEventResponsible = {
+  accountId: string;
+};
+
+export type CreateEventRequest = {
   name: string;
-  startDate?: string;
-  endDate?: string;
+  startDate: Date;
+  endDate: Date;
   regionId: string;
   image?: string;
-  address?: string;
-  latitude?: number;
+  location?: string;
   longitude?: number;
-  openImmediately?: string;
+  latitude?: number;
+  status: StatusEvent;
+  paymentEnabled: boolean;
+  responsibles: CreateEventResponsible[];
 };
 
 export type RegisterEventOutput = {
   id: string;
 };
 
-type RegisterData = {
-  name: string;
-  startDate?: string;
-  endDate?: string;
-  regionId: string;
-  image?: string;
-  location?: string;
-  latitude?: number;
-  longitude?: number;
-  status?: string;
-};
-
 export async function registerEvent(
-  input: RegisterEventInput
+  input: CreateEventRequest
 ): Promise<RegisterEventOutput> {
   try {
-    const registerData: RegisterData = {
-      name: input.name,
-      startDate: input.startDate,
-      endDate: input.endDate,
-      regionId: input.regionId,
-      image: input.image,
-      location: input.address,
-      latitude: input.latitude,
-      longitude: input.longitude,
-      status: input.openImmediately,
-    };
-
-    const response = await axiosInstance.post("/events/create", registerData);
+    const response = await axiosInstance.post("/events/create", input);
     const { data } = response;
 
     return { id: data.id };

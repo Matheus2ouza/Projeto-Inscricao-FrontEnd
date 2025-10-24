@@ -4,16 +4,14 @@ import { useGlobalLoading } from "@/components/GlobalLoading";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { confirmGroupInscription } from "../api/confirmGroupInscription";
+import {
+  confirmGroupInscription,
+  ConfirmGroupInscriptionResponse,
+} from "../api/confirmGroupInscription";
 import { GroupInscriptionConfirmationData } from "../types/inscriptionGrupTypes";
 
 interface UseGroupInscriptionConfirmationProps {
   cacheKey: string;
-}
-
-interface ConfirmGroupResponse {
-  inscriptionId: string;
-  paymentEnabled: boolean;
 }
 
 export function useGroupInscriptionConfirmation({
@@ -24,7 +22,7 @@ export function useGroupInscriptionConfirmation({
   const { setLoading } = useGlobalLoading();
   const [timeRemaining, setTimeRemaining] = useState(30); // 30 minutos
   const [confirmationResult, setConfirmationResult] =
-    useState<ConfirmGroupResponse | null>(null);
+    useState<ConfirmGroupInscriptionResponse | null>(null);
 
   // Decodificar o cacheKey da URL
   const decodedCacheKey = decodeURIComponent(cacheKey);

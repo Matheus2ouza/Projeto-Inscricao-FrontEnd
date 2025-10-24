@@ -1,10 +1,10 @@
+import { Badge } from "@/shared/components/ui/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { Badge } from "@/shared/components/ui/badge";
 
 export function GroupInscriptionInfo() {
   return (
@@ -14,33 +14,53 @@ export function GroupInscriptionInfo() {
           <CardTitle className="text-lg">Como Funciona</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* 1. Responsável */}
           <div className="space-y-2">
-            <h4 className="font-semibold">1. Baixe a Planilha</h4>
+            <h4 className="font-semibold">
+              1. Preencha os Dados do Responsável
+            </h4>
             <p className="text-sm text-gray-600">
-              Faça o download do template Excel pré-configurado.
+              Informe o nome e telefone obrigatoriamente. O e-mail é opcional,
+              mas permite receber atualizações sobre a inscrição.
             </p>
           </div>
 
+          {/* 2. Baixe a planilha */}
           <div className="space-y-2">
-            <h4 className="font-semibold">2. Adicione os Dados</h4>
+            <h4 className="font-semibold">2. Baixe a Planilha</h4>
             <p className="text-sm text-gray-600">
-              Preencha a planilha com os dados dos participantes.
+              Faça o download do template Excel clicando em{" "}
+              <strong>“Baixar Planilha”</strong>.
             </p>
           </div>
 
+          {/* 3. Preencha os dados */}
           <div className="space-y-2">
-            <h4 className="font-semibold">3. Faça o Upload</h4>
+            <h4 className="font-semibold">
+              3. Adicione os Dados dos Participantes
+            </h4>
             <p className="text-sm text-gray-600">
-              Carregue a planilha preenchida no campo ao lado.
+              Abra a planilha e preencha as informações dos participantes
+              conforme o formato indicado no arquivo.
             </p>
           </div>
 
+          {/* 4. Upload */}
           <div className="space-y-2">
-            <h4 className="font-semibold">4. Confirme e Envie para Análise</h4>
+            <h4 className="font-semibold">4. Faça o Upload da Planilha</h4>
             <p className="text-sm text-gray-600">
-              Preencha seus dados como responsável e envie para análise. O
-              sistema verificará os dados e retornará erros ou confirmará as
-              inscrições.
+              Após preencher, envie o arquivo Excel no campo{" "}
+              <strong>“Planilha Preenchida”</strong> para análise.
+            </p>
+          </div>
+
+          {/* 5. Envio */}
+          <div className="space-y-2">
+            <h4 className="font-semibold">5. Envie para Análise</h4>
+            <p className="text-sm text-gray-600">
+              Clique em <strong>“Enviar para Análise”</strong> e aguarde o
+              sistema verificar a planilha. Você será informado se houver erros
+              ou se as inscrições forem confirmadas.
             </p>
           </div>
         </CardContent>
@@ -54,10 +74,10 @@ export function GroupInscriptionInfo() {
           <div className="space-y-2">
             <h4 className="font-semibold">Análise Automática</h4>
             <p className="text-sm text-gray-600">
-              O sistema verificará automaticamente:
+              O sistema validará automaticamente:
             </p>
             <ul className="text-sm text-gray-600 list-disc list-inside space-y-1 mt-2">
-              <li>Formato correto dos dados</li>
+              <li>Formato e consistência dos dados</li>
               <li>Campos obrigatórios preenchidos</li>
               <li>Duplicidade de inscrições</li>
             </ul>
@@ -66,7 +86,7 @@ export function GroupInscriptionInfo() {
           <div className="space-y-2">
             <h4 className="font-semibold">Resultado da Análise</h4>
             <p className="text-sm text-gray-600">
-              Após a análise, você receberá:
+              Após a verificação, você poderá receber:
             </p>
             <div className="flex flex-wrap gap-2 mt-2">
               <Badge
@@ -87,8 +107,8 @@ export function GroupInscriptionInfo() {
           <div className="space-y-2">
             <h4 className="font-semibold">Confirmação Final</h4>
             <p className="text-sm text-gray-600">
-              Na próxima tela, você poderá revisar todos os dados antes de
-              confirmar definitivamente as inscrições no evento.
+              Na etapa seguinte, revise as informações e confirme o envio
+              definitivo das inscrições.
             </p>
           </div>
         </CardContent>

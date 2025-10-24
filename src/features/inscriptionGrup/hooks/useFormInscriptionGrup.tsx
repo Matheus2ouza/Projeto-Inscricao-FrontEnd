@@ -27,6 +27,7 @@ const groupInscriptionSchema = z.object({
         .replace(/\s+/g, " ")
         .replace(/(^\w|\s\w)/g, (l) => l.toUpperCase())
     ),
+  email: z.optional(z.email({ message: "Informe um e-mail válido" })),
   phone: z
     .string()
     .min(1, { message: "Telefone é obrigatório" })
@@ -54,6 +55,7 @@ export function useFormInscriptionGrup({
     resolver: zodResolver(groupInscriptionSchema),
     defaultValues: {
       responsible: "",
+      email: undefined,
       phone: "",
     },
     mode: "onChange",
@@ -78,6 +80,12 @@ export function useFormInscriptionGrup({
       // Formatação automática do telefone
       const formattedPhone = formatPhone(value);
       setValue(name as keyof GroupInscriptionFormInputs, formattedPhone);
+    } else if (name === "email") {
+      const trimmed = value.trim();
+      setValue(
+        name as keyof GroupInscriptionFormInputs,
+        (trimmed.length === 0 ? undefined : trimmed) as never
+      );
     } else {
       setValue(name as keyof GroupInscriptionFormInputs, value);
     }
@@ -224,6 +232,7 @@ export function useFormInscriptionGrup({
     try {
       const response = await submitGroupInscription({
         responsible: data.responsible,
+        email: data.email,
         phone: data.phone,
         eventId,
         file,

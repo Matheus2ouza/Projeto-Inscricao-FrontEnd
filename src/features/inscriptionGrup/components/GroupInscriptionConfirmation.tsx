@@ -32,12 +32,9 @@ interface GroupInscriptionConfirmationProps {
 // Sistema de cores para tipos de inscrição
 const getTypeInscriptionColor = (typeDescription: string) => {
   const type = typeDescription.toLowerCase();
+  const normalized = type.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-  if (
-    type.includes("normal") ||
-    type.includes("padrão") ||
-    type.includes("standard")
-  ) {
+  if (normalized.includes("normal")) {
     return {
       badge:
         "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
@@ -45,55 +42,19 @@ const getTypeInscriptionColor = (typeDescription: string) => {
     };
   }
 
-  if (type.includes("estudante") || type.includes("student")) {
+  if (normalized.includes("servico")) {
     return {
       badge:
-        "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800",
-      text: "text-green-700 dark:text-green-300",
-    };
-  }
-
-  if (
-    type.includes("idoso") ||
-    type.includes("idoso") ||
-    type.includes("senior")
-  ) {
-    return {
-      badge:
-        "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800",
+        "bg-purple-100 text-purple-900 border-purple-200 dark:bg-purple-900/30 dark:text-purple-200 dark:border-purple-800",
       text: "text-purple-700 dark:text-purple-300",
     };
   }
 
-  if (
-    type.includes("criança") ||
-    type.includes("kid") ||
-    type.includes("child")
-  ) {
+  if (normalized.includes("isento")) {
     return {
       badge:
-        "bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800",
-      text: "text-pink-700 dark:text-pink-300",
-    };
-  }
-
-  if (type.includes("premium") || type.includes("vip")) {
-    return {
-      badge:
-        "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800",
-      text: "text-yellow-700 dark:text-yellow-300",
-    };
-  }
-
-  if (
-    type.includes("cortesia") ||
-    type.includes("cortesia") ||
-    type.includes("free")
-  ) {
-    return {
-      badge:
-        "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-800",
-      text: "text-gray-700 dark:text-gray-300",
+        "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800",
+      text: "text-emerald-700 dark:text-emerald-300",
     };
   }
 

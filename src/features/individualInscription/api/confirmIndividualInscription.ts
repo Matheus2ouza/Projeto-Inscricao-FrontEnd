@@ -2,6 +2,7 @@ import axiosInstance from "@/shared/lib/apiClient";
 
 export interface ConfirmIndividualInscriptionResponse {
   inscriptionId: string;
+  inscriptionStatus: string;
   paymentEnabled: boolean;
 }
 

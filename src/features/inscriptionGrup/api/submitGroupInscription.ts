@@ -3,6 +3,7 @@ import { GroupInscriptionConfirmationData } from "../types/inscriptionGrupTypes"
 
 export interface SubmitGroupInscriptionParams {
   responsible: string;
+  email?: string;
   phone: string;
   eventId: string;
   file: File;
@@ -13,6 +14,9 @@ export async function submitGroupInscription(
 ): Promise<GroupInscriptionConfirmationData> {
   const formData = new FormData();
   formData.append("responsible", data.responsible);
+  if (data.email) {
+    formData.append("email", data.email);
+  }
   formData.append("phone", data.phone);
   formData.append("eventId", data.eventId);
   formData.append("file", data.file);

@@ -1,4 +1,5 @@
-// useIndividualInscriptionConfirmation.tsx - COM CONTADOR DE TEMPO
+"use client";
+
 import { useGlobalLoading } from "@/components/GlobalLoading";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";

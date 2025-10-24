@@ -1,7 +1,5 @@
 "use client";
 
-import { useEventsAll } from "@/features/events/hooks/useEventsAll";
-import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
   Pagination,
@@ -13,10 +11,11 @@ import {
 } from "@/shared/components/ui/pagination";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Card, CardBody, CardFooter } from "@heroui/react";
-import { Calendar, Loader2, MapPin } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useEventsAll } from "../hooks/useEventsForAnalysis";
 
 export default function AnalysisInscriptionTable() {
   const router = useRouter();
@@ -39,33 +38,48 @@ export default function AnalysisInscriptionTable() {
     setImageLoading(false);
   };
 
-  // Função para determinar o status do evento
-  const getEventStatusInfo = (status: string) => {
-    switch (status) {
-      case "OPEN":
-        return {
-          label: "Inscrições Abertas",
-          badgeClass: "bg-green-500 hover:bg-green-600 text-white",
-          disabled: false,
-        };
-      case "CLOSE":
-        return {
-          label: "Inscrições Fechadas",
-          badgeClass: "bg-red-500 hover:bg-red-600 text-white",
-          disabled: true,
-        };
-      case "FINALIZED":
-        return {
-          label: "Evento Finalizado",
-          badgeClass: "bg-gray-500 hover:bg-gray-600 text-white",
-          disabled: true,
-        };
-      default:
-        return {
-          label: "Status Desconhecido",
-          badgeClass: "bg-gray-500 hover:bg-gray-600 text-white",
-          disabled: true,
-        };
+  // Função para determinar o status da análise
+  const getAnalysisStatusInfo = (
+    countInscriptions: number,
+    countInscritpionsAnalysis: number
+  ) => {
+    const pendingCount = countInscriptions - countInscritpionsAnalysis;
+
+    if (countInscriptions === 0) {
+      return {
+        label: "Sem Inscrições",
+        badgeClass: "bg-gray-500",
+        disabled: true,
+      };
+    }
+
+    if (pendingCount === 0) {
+      return {
+        label: "Análise Completa",
+        badgeClass: "bg-green-500",
+        disabled: false,
+      };
+    }
+
+    // Cores baseadas na quantidade de pendentes
+    if (pendingCount <= 5) {
+      return {
+        label: `${pendingCount} Pendente${pendingCount > 1 ? "s" : ""}`,
+        badgeClass: "bg-green-400",
+        disabled: false,
+      };
+    } else if (pendingCount <= 15) {
+      return {
+        label: `${pendingCount} Pendente${pendingCount > 1 ? "s" : ""}`,
+        badgeClass: "bg-yellow-500",
+        disabled: false,
+      };
+    } else {
+      return {
+        label: `${pendingCount} Pendente${pendingCount > 1 ? "s" : ""}`,
+        badgeClass: "bg-red-500",
+        disabled: false,
+      };
     }
   };
 
@@ -110,10 +124,10 @@ export default function AnalysisInscriptionTable() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Analise de Inscrições
+          Análise de Inscrições
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Analise e valide as inscrições do seu evento
+          Monitore o progresso da análise das inscrições dos eventos
         </p>
       </div>
 
@@ -136,15 +150,18 @@ export default function AnalysisInscriptionTable() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {events.map((event) => {
-              const statusInfo = getEventStatusInfo(event.status);
+              const statusInfo = getAnalysisStatusInfo(
+                event.countInscriptions,
+                event.countInscritpionsAnalysis
+              );
               const gradientClass = generateGradient(event.name);
 
               return (
                 <Card
                   key={event.id}
-                  className="w-full hover:shadow-xl transition-all duration-300 border-0 shadow-md rounded-xl overflow-hidden hover:scale-[1.02]"
+                  className="w-full hover:shadow-xl transition-all duration-300 border-0 shadow-md rounded-xl hover:scale-[1.02] overflow-visible"
                 >
-                  <CardBody className="p-0 relative">
+                  <CardBody className="p-0 relative overflow-visible">
                     <div className="w-full h-48 relative">
                       {event.imageUrl ? (
                         <>
@@ -187,10 +204,19 @@ export default function AnalysisInscriptionTable() {
                         ></div>
                       )}
                     </div>
-                    <div className="absolute top-2 right-2 select-none">
-                      <Badge className={`${statusInfo.badgeClass} border-0`}>
-                        {statusInfo.label}
-                      </Badge>
+                    <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 select-none pointer-events-none">
+                      <div
+                        className={`w-8 h-8 rounded-full ${statusInfo.badgeClass} border-2 border-white shadow-lg flex items-center justify-center text-white font-bold text-xs`}
+                      >
+                        {event.countInscriptions === 0
+                          ? "0"
+                          : event.countInscriptions -
+                                event.countInscritpionsAnalysis ===
+                              0
+                            ? "✓"
+                            : event.countInscriptions -
+                              event.countInscritpionsAnalysis}
+                      </div>
                     </div>
                   </CardBody>
                   <CardFooter className="flex flex-col items-start p-4 gap-3">
@@ -198,20 +224,31 @@ export default function AnalysisInscriptionTable() {
                       {event.name}
                     </h3>
 
-                    <div className="flex items-center text-sm dark:text-white mb-1">
-                      <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                      <span className="line-clamp-1">
-                        {new Date(event.startDate).toLocaleDateString("pt-BR")}{" "}
-                        - {new Date(event.endDate).toLocaleDateString("pt-BR")}
-                      </span>
+                    {/* Informações sobre inscrições */}
+                    <div className="flex flex-col gap-2 w-full">
+                      <div className="flex justify-between items-center text-sm dark:text-white">
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Total de Inscrições:
+                        </span>
+                        <span className="font-semibold">
+                          {event.countInscriptions}
+                        </span>
+                      </div>
+
+                      {event.countInscriptions > 0 && (
+                        <div className="flex justify-between items-center text-sm dark:text-white">
+                          <span className="text-gray-600 dark:text-gray-400">
+                            Pendentes:
+                          </span>
+                          <span className="font-semibold text-yellow-600">
+                            {event.countInscriptions -
+                              event.countInscritpionsAnalysis}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="flex items-center text-sm dark:text-white">
-                      <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
-                      <span className="line-clamp-1">{event.location}</span>
-                    </div>
-
-                    {/* Botões de Inscrição */}
+                    {/* Botão de Análise */}
                     <div className="flex flex-col w-full gap-2 mt-2">
                       <Button
                         size="sm"
@@ -219,32 +256,11 @@ export default function AnalysisInscriptionTable() {
                         onClick={() => handleIndividualInscription(event.id)}
                         disabled={statusInfo.disabled}
                       >
-                        Analisar Inscrições
+                        {event.countInscriptions === 0
+                          ? "Sem Inscrições"
+                          : "Analisar Inscrições"}
                       </Button>
                     </div>
-
-                    {event.typesInscriptions &&
-                      event.typesInscriptions.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {event.typesInscriptions.slice(0, 3).map((type) => (
-                            <Badge
-                              key={type.id}
-                              variant="outline"
-                              className="text-xs rounded-md border"
-                            >
-                              {type.description}
-                            </Badge>
-                          ))}
-                          {event.typesInscriptions.length > 3 && (
-                            <Badge
-                              variant="outline"
-                              className="text-xs rounded-md border"
-                            >
-                              +{event.typesInscriptions.length - 3}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
                   </CardFooter>
                 </Card>
               );
