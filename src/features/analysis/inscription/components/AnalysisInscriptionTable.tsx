@@ -56,44 +56,50 @@ export default function AnalysisInscriptionTable() {
   // Função para determinar o status da análise
   const getAnalysisStatusInfo = (
     countInscriptions: number,
-    countInscritpionsAnalysis: number
+    countInscritpionsAnalysis: number,
   ) => {
     const pendingCount = countInscriptions - countInscritpionsAnalysis;
+    const inAnalysisCount = countInscritpionsAnalysis;
 
     if (countInscriptions === 0) {
       return {
         label: "Sem Inscrições",
         badgeClass: "bg-gray-500",
         disabled: true,
+        count: 0,
       };
     }
 
-    if (pendingCount === 0) {
+    if (inAnalysisCount === 0) {
       return {
         label: "Análise Completa",
         badgeClass: "bg-green-500",
         disabled: false,
+        count: 0,
       };
     }
 
-    // Cores baseadas na quantidade de pendentes
-    if (pendingCount <= 5) {
+    // Cores baseadas na quantidade de inscrições em análise
+    if (inAnalysisCount <= 5) {
       return {
-        label: `${pendingCount} Pendente${pendingCount > 1 ? "s" : ""}`,
-        badgeClass: "bg-green-400",
+        label: `${inAnalysisCount} Em Análise`,
+        badgeClass: "bg-blue-500",
         disabled: false,
+        count: inAnalysisCount,
       };
-    } else if (pendingCount <= 15) {
+    } else if (inAnalysisCount <= 15) {
       return {
-        label: `${pendingCount} Pendente${pendingCount > 1 ? "s" : ""}`,
-        badgeClass: "bg-yellow-500",
+        label: `${inAnalysisCount} Em Análise`,
+        badgeClass: "bg-blue-600",
         disabled: false,
+        count: inAnalysisCount,
       };
     } else {
       return {
-        label: `${pendingCount} Pendente${pendingCount > 1 ? "s" : ""}`,
-        badgeClass: "bg-red-500",
+        label: `${inAnalysisCount} Em Análise`,
+        badgeClass: "bg-blue-700",
         disabled: false,
+        count: inAnalysisCount,
       };
     }
   };
@@ -170,7 +176,7 @@ export default function AnalysisInscriptionTable() {
             {events.map((event) => {
               const statusInfo = getAnalysisStatusInfo(
                 event.countInscriptions,
-                event.countInscritpionsAnalysis
+                event.countInscritpionsAnalysis,
               );
               const gradientClass = generateGradient(event.name);
               // Se não há imagem, não está carregando. Se há imagem, verifica o estado
@@ -237,12 +243,9 @@ export default function AnalysisInscriptionTable() {
                         >
                           {event.countInscriptions === 0
                             ? "0"
-                            : event.countInscriptions -
-                                  event.countInscritpionsAnalysis ===
-                                0
+                            : statusInfo.count === 0
                               ? "✓"
-                              : event.countInscriptions -
-                                event.countInscritpionsAnalysis}
+                              : statusInfo.count}
                         </div>
                       </div>
                     )}
@@ -269,8 +272,7 @@ export default function AnalysisInscriptionTable() {
                             Pendentes:
                           </span>
                           <span className="font-semibold text-yellow-600 dark:text-yellow-400">
-                            {event.countInscriptions -
-                              event.countInscritpionsAnalysis}
+                            {event.countInscritpionsAnalysis}
                           </span>
                         </div>
                       )}
