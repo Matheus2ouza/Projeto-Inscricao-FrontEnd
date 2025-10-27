@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useInscriptionActions } from "../hooks/useInscriptionActions";
 import { useInscriptionDetails } from "../hooks/useInscriptionDetails";
 import { ConfirmationModal } from "./ConfirmationModal";
@@ -58,6 +58,13 @@ export default function InscriptionDetailAnalysis() {
     action: () => {},
   });
 
+  // Detectar quando o componente é desmontado
+  useEffect(() => {
+    return () => {
+      // Cleanup quando componente é desmontado
+    };
+  }, [inscriptionId]);
+
   const {
     approveInscription,
     cancelInscription,
@@ -75,6 +82,9 @@ export default function InscriptionDetailAnalysis() {
       pageSize: 10,
       enabled: !isDeleting,
     });
+
+  // Verificar se a inscrição foi deletada
+  const isInscriptionDeleted = !loading && !inscriptionData && !error && !isDeleting;
 
   const handleApproveInscription = () => {
     setModalConfig({
@@ -240,6 +250,31 @@ export default function InscriptionDetailAnalysis() {
               Erro ao carregar inscrição
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+            <Button asChild className="w-full">
+              <Link href="/super/inscriptions/analysis">
+                Voltar para Análise
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isInscriptionDeleted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <Card className="w-full max-w-md border-0 shadow-lg">
+          <CardContent className="p-6 text-center">
+            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <OctagonX className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+            </div>
+            <h2 className="text-xl font-semibold text-orange-600 mb-2">
+              Inscrição não encontrada
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Esta inscrição pode ter sido deletada ou não existe mais.
+            </p>
             <Button asChild className="w-full">
               <Link href="/super/inscriptions/analysis">
                 Voltar para Análise
