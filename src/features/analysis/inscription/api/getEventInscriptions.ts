@@ -1,16 +1,16 @@
 import axiosInstance from "@/shared/lib/apiClient";
 import {
-  ListInscriptionRequest,
-  ListInscriptionResponse,
+  InscriptionAnalysisRequest,
+  InscriptionAnalysisResponse,
 } from "../types/analysisTypes";
 
 export async function getEventInscriptions(
   eventId: string,
-  params: ListInscriptionRequest
-): Promise<ListInscriptionResponse> {
+  params: InscriptionAnalysisRequest
+): Promise<InscriptionAnalysisResponse> {
   try {
-    const { data } = await axiosInstance.get<ListInscriptionResponse>(
-      `/events/${eventId}/inscriptions`,
+    const { data } = await axiosInstance.get<InscriptionAnalysisResponse>(
+      `/events/${eventId}/analysis`,
       {
         params: {
           page: params.page,
@@ -20,14 +20,14 @@ export async function getEventInscriptions(
     );
     return data;
   } catch (error) {
-    console.error("Error fetching event inscriptions:", error);
+    console.error("Error fetching event inscriptions analysis:", error);
     const axiosError = error as {
       response?: { data?: { message?: string } };
       message?: string;
     };
     throw new Error(
       axiosError.response?.data?.message ||
-        "Falha ao carregar inscrições do evento"
+        "Falha ao carregar análise de inscrições do evento"
     );
   }
 }

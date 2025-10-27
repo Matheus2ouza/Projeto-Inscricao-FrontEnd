@@ -6,6 +6,7 @@ export async function POST() {
     const cookieStore = await cookies();
     const refreshToken = cookieStore.get("refreshToken")?.value ?? null;
     if (!refreshToken) {
+      console.warn("[refresh route] POST: missing refresh token cookie");
       return NextResponse.json({ ok: false }, { status: 401 });
     }
 
@@ -19,12 +20,19 @@ export async function POST() {
     });
 
     if (!res.ok) {
+      console.error(
+        "[refresh route] POST: upstream refresh failed",
+        res.status
+      );
       return NextResponse.json({ ok: false }, { status: res.status });
     }
 
     const data = await res.json();
     const authToken: string | undefined = data?.authToken;
     if (!authToken) {
+      console.error(
+        "[refresh route] POST: refresh response missing authToken field"
+      );
       return NextResponse.json({ ok: false }, { status: 500 });
     }
 
@@ -35,9 +43,9 @@ export async function POST() {
       path: "/",
       maxAge: 60 * 60 * 7, // 7h
     });
-
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (error) {
+    console.error("[refresh route] POST: unhandled error", error);
     return NextResponse.json({ ok: false }, { status: 500 });
   }
 }

@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { UseEventsParams, UseEventsResult } from "../types/eventTypes";
-import { useEventsQuery, usePrefetchEvents } from "./useEventsQuery";
+import {
+  useAnalysisEventsQuery,
+  usePrefetchAnalysisEvents,
+} from "./useAnalysisEventsQuery";
 
-export function useEventsAll({
+export function useEventsForAnalysis({
   initialPage = 1,
   pageSize = 8,
 }: UseEventsParams = {}): UseEventsResult {
@@ -14,10 +17,10 @@ export function useEventsAll({
     isLoading: loading,
     error,
     refetch,
-  } = useEventsQuery(page, pageSize);
+  } = useAnalysisEventsQuery(page, pageSize);
 
   // Pré-carregar próxima página
-  const { prefetchNextPage } = usePrefetchEvents();
+  const { prefetchNextPage } = usePrefetchAnalysisEvents();
 
   // Pré-carregar próxima página quando dados carregam
   if (data && page < data.pageCount) {

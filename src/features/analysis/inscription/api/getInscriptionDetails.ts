@@ -1,15 +1,15 @@
 import axiosInstance from "@/shared/lib/apiClient";
 import {
+  AnalysisInscriptionResponse,
   InscriptionDetailRequest,
-  InscriptionDetailResponse,
 } from "../types/analysisTypes";
 
 export async function getInscriptionDetails(
   inscriptionId: string,
   params: InscriptionDetailRequest
-): Promise<InscriptionDetailResponse> {
+): Promise<AnalysisInscriptionResponse> {
   try {
-    const { data } = await axiosInstance.get<InscriptionDetailResponse>(
+    const { data } = await axiosInstance.get<AnalysisInscriptionResponse>(
       `/inscriptions/${inscriptionId}/analytics`,
       {
         params: {
@@ -18,7 +18,7 @@ export async function getInscriptionDetails(
         },
       }
     );
-    console.log(data);
+
     return data;
   } catch (error) {
     console.error("Error fetching inscription details:", error);
@@ -28,7 +28,7 @@ export async function getInscriptionDetails(
     };
     throw new Error(
       axiosError.response?.data?.message ||
-        "Falha ao carregar detalhes da inscrição"
+      "Falha ao carregar detalhes da inscrição"
     );
   }
 }

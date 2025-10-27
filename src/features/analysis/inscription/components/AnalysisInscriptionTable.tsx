@@ -15,16 +15,20 @@ import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useEventsAll } from "../hooks/useEventsForAnalysis";
+import { useEventsForAnalysis } from "../hooks/useEventsForAnalysis";
 
 export default function AnalysisInscriptionTable() {
   const router = useRouter();
-  const [imageLoading, setImageLoading] = useState(true);
-  const { events, loading, error, page, pageCount, setPage } = useEventsAll({
-    initialPage: 1,
-    pageSize: 8,
-  });
+  const [imageLoadingStates, setImageLoadingStates] = useState<
+    Record<string, boolean>
+  >({});
+  const { events, loading, error, page, pageCount, setPage } =
+    useEventsForAnalysis({
+      initialPage: 1,
+      pageSize: 8,
+    });
 
+  //Vai para o app/(private)/super/inscriptions/analysis/[id]
   const handleIndividualInscription = (eventId: string) => {
     router.push(`/super/inscriptions/analysis/${eventId}`);
   };
@@ -34,8 +38,19 @@ export default function AnalysisInscriptionTable() {
   };
 
   // Função para quando a imagem carregar
-  const handleImageLoad = () => {
-    setImageLoading(false);
+  const handleImageLoad = (eventId: string) => {
+    setImageLoadingStates((prev) => ({
+      ...prev,
+      [eventId]: false,
+    }));
+  };
+
+  // Função para inicializar o estado de loading da imagem
+  const initializeImageLoading = (eventId: string) => {
+    setImageLoadingStates((prev) => ({
+      ...prev,
+      [eventId]: true,
+    }));
   };
 
   // Função para determinar o status da análise
@@ -134,11 +149,14 @@ export default function AnalysisInscriptionTable() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, index) => (
-            <Card key={index} className="w-full border-0 shadow-md">
+            <Card
+              key={index}
+              className="w-full border border-transparent shadow-md bg-white dark:bg-zinc-900 dark:border-zinc-800"
+            >
               <CardBody className="p-0">
                 <Skeleton className="w-full h-48 rounded-t-xl" />
               </CardBody>
-              <CardFooter className="flex flex-col items-start p-4">
+              <CardFooter className="flex flex-col items-start p-4 bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800">
                 <Skeleton className="h-6 w-3/4 mb-2" />
                 <Skeleton className="h-4 w-1/2 mb-2" />
                 <Skeleton className="h-4 w-1/2" />
@@ -155,19 +173,23 @@ export default function AnalysisInscriptionTable() {
                 event.countInscritpionsAnalysis
               );
               const gradientClass = generateGradient(event.name);
+              // Se não há imagem, não está carregando. Se há imagem, verifica o estado
+              const isImageLoading = event.imageUrl
+                ? imageLoadingStates[event.id] !== false
+                : false;
 
               return (
                 <Card
                   key={event.id}
-                  className="w-full hover:shadow-xl transition-all duration-300 border-0 shadow-md rounded-xl hover:scale-[1.02] overflow-visible"
+                  className="w-full hover:shadow-xl transition-all duration-300 border border-transparent shadow-md rounded-xl hover:scale-[1.02] overflow-visible bg-white dark:bg-zinc-900 dark:border-zinc-800"
                 >
                   <CardBody className="p-0 relative overflow-visible">
                     <div className="w-full h-48 relative">
                       {event.imageUrl ? (
                         <>
                           {/* Loading overlay para a imagem */}
-                          {imageLoading && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
+                          {isImageLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-muted/80 dark:bg-muted/40 z-10">
                               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                             </div>
                           )}
@@ -182,7 +204,8 @@ export default function AnalysisInscriptionTable() {
                             loading="eager"
                             decoding="async"
                             className="object-cover rounded-t-xl"
-                            onLoad={handleImageLoad}
+                            onLoad={() => handleImageLoad(event.id)}
+                            onLoadStart={() => initializeImageLoading(event.id)}
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
                               target.style.display = "none";
@@ -194,6 +217,8 @@ export default function AnalysisInscriptionTable() {
                                 </div>
                                 `;
                               }
+                              // Marcar como carregado mesmo em caso de erro
+                              handleImageLoad(event.id);
                             }}
                           />
                         </>
@@ -204,23 +229,26 @@ export default function AnalysisInscriptionTable() {
                         ></div>
                       )}
                     </div>
-                    <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 select-none pointer-events-none">
-                      <div
-                        className={`w-8 h-8 rounded-full ${statusInfo.badgeClass} border-2 border-white shadow-lg flex items-center justify-center text-white font-bold text-xs`}
-                      >
-                        {event.countInscriptions === 0
-                          ? "0"
-                          : event.countInscriptions -
-                                event.countInscritpionsAnalysis ===
-                              0
-                            ? "✓"
+                    {/* Badge de status - só aparece após a imagem carregar */}
+                    {!isImageLoading && (
+                      <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 select-none pointer-events-none">
+                        <div
+                          className={`w-8 h-8 rounded-full ${statusInfo.badgeClass} border-2 border-white dark:border-zinc-900 shadow-lg flex items-center justify-center text-white font-bold text-xs`}
+                        >
+                          {event.countInscriptions === 0
+                            ? "0"
                             : event.countInscriptions -
-                              event.countInscritpionsAnalysis}
+                                  event.countInscritpionsAnalysis ===
+                                0
+                              ? "✓"
+                              : event.countInscriptions -
+                                event.countInscritpionsAnalysis}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </CardBody>
-                  <CardFooter className="flex flex-col items-start p-4 gap-3">
-                    <h3 className="font-bold text-lg mb-1 line-clamp-2">
+                  <CardFooter className="flex flex-col items-start p-4 gap-3 bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800">
+                    <h3 className="font-bold text-lg mb-1 line-clamp-2 text-gray-900 dark:text-white">
                       {event.name}
                     </h3>
 
@@ -240,7 +268,7 @@ export default function AnalysisInscriptionTable() {
                           <span className="text-gray-600 dark:text-gray-400">
                             Pendentes:
                           </span>
-                          <span className="font-semibold text-yellow-600">
+                          <span className="font-semibold text-yellow-600 dark:text-yellow-400">
                             {event.countInscriptions -
                               event.countInscritpionsAnalysis}
                           </span>
@@ -251,8 +279,8 @@ export default function AnalysisInscriptionTable() {
                     {/* Botão de Análise */}
                     <div className="flex flex-col w-full gap-2 mt-2">
                       <Button
+                        variant="outline"
                         size="sm"
-                        className="w-full dark:text-white rounded-lg"
                         onClick={() => handleIndividualInscription(event.id)}
                         disabled={statusInfo.disabled}
                       >

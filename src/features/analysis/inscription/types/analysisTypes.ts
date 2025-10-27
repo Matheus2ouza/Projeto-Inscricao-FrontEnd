@@ -1,23 +1,24 @@
-export type ListInscriptionRequest = {
+export type InscriptionAnalysisRequest = {
   page: number;
   pageSize: number;
 };
 
-export type Inscription = {
+export type InscriptionData = {
   id: string;
   responsible: string;
   phone: string;
+  totalValue: number;
   status: string;
 };
 
-export type ListInscriptionResponse = {
+export type AccountData = {
   id: string;
-  name: string;
-  quantityParticipants: number;
-  inscriptions: Inscription[];
-  total: number;
-  page: number;
-  pageCount: number;
+  username: string;
+  inscriptions: InscriptionData[];
+};
+
+export type InscriptionAnalysisResponse = {
+  account: AccountData[];
 };
 
 export type UseAnalysisParams = {
@@ -27,7 +28,7 @@ export type UseAnalysisParams = {
 };
 
 export type UseAnalysisResult = {
-  eventData: ListInscriptionResponse | null;
+  analysisData: InscriptionAnalysisResponse | null;
   loading: boolean;
   error: string | null;
   page: number;
@@ -38,33 +39,36 @@ export type UseAnalysisResult = {
 };
 
 // Tipos para detalhes da inscrição
-export type Participant = {
-  id: string;
-  name: string;
-  birthDate: Date;
-  gender: string;
-};
-
 export type InscriptionDetailRequest = {
   page: number;
   pageSize: number;
 };
 
-export type InscriptionDetailResponse = {
+export type AnalysisInscriptionResponse = {
   id: string;
   responsible: string;
+  email?: string;
   phone: string;
   status: string;
-  participants: Participant[];
+  participants: {
+    id: string;
+    name: string;
+    birthDate: string; // String ISO format from backend
+    gender: string;
+  }[];
   total: number;
   page: number;
   pageCount: number;
 };
 
+// Manter compatibilidade com nome antigo
+export type InscriptionDetailResponse = AnalysisInscriptionResponse;
+
 export type UseInscriptionDetailParams = {
   inscriptionId: string;
   initialPage?: number;
   pageSize?: number;
+  enabled?: boolean;
 };
 
 export type UseInscriptionDetailResult = {
