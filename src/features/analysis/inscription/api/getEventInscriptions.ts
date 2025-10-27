@@ -18,6 +18,7 @@ export async function getEventInscriptions(
         },
       }
     );
+    console.log(data)
     return data;
   } catch (error) {
     console.error("Error fetching event inscriptions analysis:", error);
@@ -27,7 +28,7 @@ export async function getEventInscriptions(
     };
     throw new Error(
       axiosError.response?.data?.message ||
-        "Falha ao carregar análise de inscrições do evento"
+      "Falha ao carregar análise de inscrições do evento"
     );
   }
 }
