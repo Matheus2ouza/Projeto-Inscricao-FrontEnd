@@ -25,15 +25,12 @@ export const verifySession = cache(async (): Promise<Session | null> => {
   const sessionCookie = cookieStore.get("session");
 
   if (!sessionCookie) {
+    console.warn("[session] verifySession: no session cookie");
     return null;
   }
 
   try {
     const sessionData = JSON.parse(sessionCookie.value);
-
-    if (new Date(sessionData.expires) < new Date()) {
-      return null;
-    }
 
     return sessionData as Session;
   } catch (error) {

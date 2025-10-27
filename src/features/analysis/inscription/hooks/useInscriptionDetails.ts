@@ -24,11 +24,6 @@ export function useInscriptionDetails({
   // Verificar se a inscrição foi deletada
   const inscriptionWasDeleted = isDeleted(inscriptionId);
 
-  console.log("useInscriptionDetails - inscriptionId:", inscriptionId);
-  console.log("useInscriptionDetails - enabled:", enabled);
-  console.log("useInscriptionDetails - inscriptionWasDeleted:", inscriptionWasDeleted);
-  console.log("useInscriptionDetails - shouldExecute:", !!inscriptionId && enabled && !inscriptionWasDeleted);
-
   const { data, isLoading, error, refetch } = useQuery<AnalysisInscriptionResponse>({
     queryKey: analysisInscriptionsKeys.inscriptionDetails(
       inscriptionId,

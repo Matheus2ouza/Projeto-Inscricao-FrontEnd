@@ -12,8 +12,6 @@ export const submitIndividualInscription = async (
       "/inscriptions/indiv/upload",
       data
     );
-
-    console.log(response.data);
     return response.data;
   } catch (error: unknown) {
     console.error("Erro ao enviar inscrição individual:", error);

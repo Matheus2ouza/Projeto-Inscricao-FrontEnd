@@ -12,20 +12,29 @@ const axiosInstance = axios.create({
 async function resolveAuthToken(): Promise<string | null> {
   if (typeof window === "undefined") {
     const { getAuthToken } = await import("./session");
-    return await getAuthToken();
+    const token = await getAuthToken();;
+    return token;
   }
   try {
     // Primeiro tenta cookie direto
     const match = document.cookie.match(/(?:^|; )authToken=([^;]*)/);
-    if (match) return decodeURIComponent(match[1]);
+    if (match) {
+      console.log("[apiClient] resolveAuthToken (client): token from cookie");
+      return decodeURIComponent(match[1]);
+    }
     // Fallback: busca do endpoint interno (SSR/CSR)
     const res = await fetch("/api/token", { cache: "no-store" });
     if (res.ok) {
       const { token } = await res.json();
       return token ?? null;
     }
+    console.warn(
+      "[apiClient] resolveAuthToken (client): /api/token request failed",
+      res.status
+    );
     return null;
   } catch {
+    console.error("[apiClient] resolveAuthToken: unexpected error");
     return null;
   }
 }
@@ -47,6 +56,7 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error("[apiClient] request interceptor error", error);
     return Promise.reject(error);
   }
 );
@@ -61,6 +71,14 @@ axiosInstance.interceptors.response.use(
     const isRefreshCall =
       originalRequest.url && originalRequest.url.includes("/users/refresh");
     if (error.response && error.response.status === 403 && !isRefreshCall) {
+      console.warn(
+        "[apiClient] response interceptor: 403 received, attempting refresh",
+        {
+          url: originalRequest.url,
+          method: originalRequest.method,
+          status: error.response.status,
+        }
+      );
       originalRequest.__retryCount = originalRequest.__retryCount || 0;
       if (originalRequest.__retryCount < 3) {
         originalRequest.__retryCount += 1;
@@ -70,13 +88,23 @@ axiosInstance.interceptors.response.use(
             method: "POST",
             cache: "no-store",
           });
-          if (!res.ok) throw new Error("refresh failed");
+          if (!res.ok) {
+            console.error(
+              "[apiClient] response interceptor: /api/refresh failed",
+              res.status
+            );
+            throw new Error("refresh failed");
+          }
           return axiosInstance(originalRequest);
-        } catch {
+        } catch (refreshError) {
+          console.error(
+            "[apiClient] response interceptor: refresh sequence failed",
+            refreshError
+          );
           // Logout e toast de sessão expirada
           try {
             await fetch("/api/logout", { method: "POST" });
-          } catch {}
+          } catch { }
           toast.error("Sessão expirada. Faça login novamente.");
           if (typeof window !== "undefined") {
             window.location.href = "/login";
@@ -85,7 +113,10 @@ axiosInstance.interceptors.response.use(
         }
       }
     }
-    console.error("API Error:", error.response?.data || error.message);
+    console.error(
+      "[apiClient] API Error:",
+      error.response?.data || error.message || error
+    );
     return Promise.reject(error); // repassa o erro pra onde foi chamado
   }
 );

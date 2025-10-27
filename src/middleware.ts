@@ -22,16 +22,24 @@ export default async function middleware(request: NextRequest) {
   // Sem token
   if (!authToken) {
     // Rotas públicas passam
-    if (isPublic) return NextResponse.next();
+    if (isPublic) {
+      console.log("[middleware] no auth token but public route", pathname);
+      return NextResponse.next();
+    }
 
     // Rotas privadas redirecionam ao login
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED;
+    console.warn(
+      "[middleware] no auth token, redirecting to login",
+      redirectUrl.pathname
+    );
     return NextResponse.redirect(redirectUrl);
   }
 
   // Com token, se rota pública que redireciona (ex.: /login), mandar para home do role
   if (shouldRedirectWhenAuthenticated(pathname)) {
+
     const session = await verifySession();
     if (session) {
       const role = session.user.role;
@@ -45,6 +53,9 @@ export default async function middleware(request: NextRequest) {
       redirectUrl.pathname = roleHome[role] ?? "/user/home";
       return NextResponse.redirect(redirectUrl);
     }
+    console.warn(
+      "[middleware] expected session for authenticated redirect but none found"
+    );
   }
 
   // Com token em rota privada: validar sessão e prefixo do role
@@ -53,6 +64,9 @@ export default async function middleware(request: NextRequest) {
     if (!session) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED;
+      console.warn(
+        "[middleware] auth token present but session invalid, redirecting to login"
+      );
       return NextResponse.redirect(redirectUrl);
     }
 
@@ -68,10 +82,14 @@ export default async function middleware(request: NextRequest) {
     if (!pathname.startsWith(requiredPrefix)) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = requiredPrefix;
+      console.warn("[middleware] role prefix mismatch", {
+        role,
+        pathname,
+        expectedPrefix: requiredPrefix,
+      });
       return NextResponse.redirect(redirectUrl);
     }
   }
-
   return NextResponse.next();
 }
 

@@ -61,7 +61,6 @@ export default function useFormLogin(): UseFormLoginType {
         description: result.errorMessage,
       });
     } catch (error) {
-      // fallback de segurança (não deve chegar aqui com o novo formato)
       toast.error("Erro no Login", {
         description: "Verifique os dados e tente novamente",
       });

@@ -25,11 +25,6 @@ export function useInscriptionsForAnalysis({
   // Pré-carregar próxima página
   const { prefetchNextPage } = usePrefetchAnalysisInscriptions();
 
-  // Pré-carregar próxima página quando dados carregam
-  // Nova estrutura não tem paginação por enquanto
-  // if (data && page < (data.pageCount ?? 0)) {
-  //   prefetchNextPage(eventId, page, pageSize);
-  // }
 
   return {
     analysisData: data ?? null,
