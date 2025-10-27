@@ -1,9 +1,8 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getInscriptionDetails } from "../api/getInscriptionDetails";
-import { useDeletedInscriptions } from "../context/DeletedInscriptionsContext";
 import {
   AnalysisInscriptionResponse,
   UseInscriptionDetailParams,
@@ -19,10 +18,15 @@ export function useInscriptionDetails({
 }: UseInscriptionDetailParams): UseInscriptionDetailResult {
   const [page, setPage] = useState(initialPage);
   const queryClient = useQueryClient();
-  const { isDeleted } = useDeletedInscriptions();
 
-  // Verificar se a inscrição foi deletada
-  const inscriptionWasDeleted = isDeleted(inscriptionId);
+  // Verificar se a inscrição foi deletada usando useMemo para reatividade
+  const isDeleted = useMemo(() => {
+    const deletedInscriptions = queryClient.getQueryData<Set<string>>(["deleted-inscriptions"]);
+    return deletedInscriptions?.has(inscriptionId) || false;
+  }, [inscriptionId, queryClient]);
+
+  // Se a inscrição foi deletada, não executar a query
+  const shouldExecuteQuery = enabled && !!inscriptionId && !isDeleted;
 
   const { data, isLoading, error, refetch } = useQuery<AnalysisInscriptionResponse>({
     queryKey: analysisInscriptionsKeys.inscriptionDetails(
@@ -31,14 +35,13 @@ export function useInscriptionDetails({
       pageSize
     ),
     queryFn: async () => {
-      console.log("Fazendo chamada para getInscriptionDetails:", inscriptionId);
       return await getInscriptionDetails(inscriptionId, { page, pageSize });
     },
     staleTime: 5 * 60 * 1000, // 5 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos
     retry: 2,
     refetchOnWindowFocus: false,
-    enabled: !!inscriptionId && enabled && !inscriptionWasDeleted, // Só executa se habilitado, com inscriptionId e se a inscrição não foi deletada
+    enabled: shouldExecuteQuery, // Usar a variável calculada
   });
 
   // Pré-carregar próxima página quando possível (apenas quando as dependências mudarem)

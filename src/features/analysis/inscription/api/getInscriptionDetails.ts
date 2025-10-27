@@ -21,7 +21,6 @@ export async function getInscriptionDetails(
 
     return data;
   } catch (error) {
-    console.error("Error fetching inscription details:", error);
     const axiosError = error as {
       response?: { data?: { message?: string } };
       message?: string;

@@ -4,7 +4,6 @@ export async function deleteInscription(inscriptionId: string): Promise<void> {
   try {
     await axiosInstance.delete(`/inscriptions/${inscriptionId}/delete`);
   } catch (error) {
-    console.error("Error deleting inscription:", error);
     const axiosError = error as {
       response?: { data?: { message?: string } };
       message?: string;
