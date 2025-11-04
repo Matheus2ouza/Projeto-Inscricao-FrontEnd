@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getEventsName } from "../api/getEvents";
+import { getEventsCombobox } from "../api/getEvents";
 import { EventDto } from "../types/eventTypes";
 
 type UseEventsResult = {
@@ -11,16 +11,16 @@ type UseEventsResult = {
   refetch: () => Promise<void>;
 };
 
-export function useEvents(): UseEventsResult {
+export function useEventsCombobox(): UseEventsResult {
   const [events, setEvents] = useState<EventDto[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchRegions = async () => {
+  const fetchEvents = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getEventsName();
+      const data = await getEventsCombobox();
       setEvents(data);
     } catch (e: unknown) {
       const errorMessage =
@@ -32,8 +32,8 @@ export function useEvents(): UseEventsResult {
   };
 
   useEffect(() => {
-    fetchRegions();
+    fetchEvents();
   }, []);
 
-  return { events, loading, error, refetch: fetchRegions };
+  return { events, loading, error, refetch: fetchEvents };
 }

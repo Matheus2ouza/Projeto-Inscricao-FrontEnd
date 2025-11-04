@@ -1,10 +1,10 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { Button } from "@/shared/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import IndividualInscriptionForm from "@/features/individualInscription/components/IndividualInscriptionForm";
 import { IndividualInscriptionInfo } from "@/features/individualInscription/components/IndividualInscriptionInfo";
+import { Button } from "@/shared/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useParams } from "next/navigation";
 
 export default function IndividualInscriptionPage() {
   const params = useParams();

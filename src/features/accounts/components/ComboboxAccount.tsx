@@ -25,19 +25,24 @@ export type ComboboxAccountProps = {
   value: string[];
   onChange: (value: string[]) => void;
   options?: AccountOption[];
+  loading?: boolean;
 };
 
 export function ComboboxAccount({
   value,
   onChange,
   options,
+  loading: loadingProp,
 }: ComboboxAccountProps) {
   const [open, setOpen] = React.useState(false);
-  const { regions: fetched, loading, error } = useAccount();
+  const shouldFetch = options === undefined;
+  const { accounts: fetched, loading: internalLoading, error } =
+    useAccount(shouldFetch);
+  const loading = loadingProp ?? internalLoading;
 
   // Preferência: props.options > API; fallback: []
-  const regions = React.useMemo<AccountOption[]>(() => {
-    if (options && options.length > 0) return options;
+  const accounts = React.useMemo<AccountOption[]>(() => {
+    if (options) return options;
     if (fetched && fetched.length > 0) {
       return fetched.map((r) => ({
         label: r.username.toUpperCase(),
@@ -59,21 +64,21 @@ export function ComboboxAccount({
   const selectedLabels = React.useMemo(() => {
     if (!value || value.length === 0) return [];
     return value
-      .map((selected) => regions.find((r) => r.value === selected)?.label)
+      .map((selected) => accounts.find((r) => r.value === selected)?.label)
       .filter((label): label is string => Boolean(label));
-  }, [value, regions]);
+  }, [value, accounts]);
 
   const buttonLabel = React.useMemo(() => {
     if (selectedLabels.length === 0) {
       if (loading) return "Carregando usuários...";
-      if (regions.length === 0) return "Nenhum usuário encontrado";
+      if (accounts.length === 0) return "Nenhum usuário encontrado";
       return "Selecione um ou mais usuários...";
     }
 
     if (selectedLabels.length === 1) return selectedLabels[0];
 
     return selectedLabels.join(", ");
-  }, [selectedLabels, loading, regions.length]);
+  }, [selectedLabels, loading, accounts.length]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -117,12 +122,12 @@ export function ComboboxAccount({
                   ? "Falha ao carregar usuários."
                   : "Nenhum usuário encontrado."}
             </CommandEmpty>
-            {regions.length > 0 && (
+            {accounts.length > 0 && (
               <CommandGroup>
-                {regions.map((region) => (
+                {accounts.map((account) => (
                   <CommandItem
-                    key={region.value}
-                    value={region.value}
+                    key={account.value}
+                    value={account.value}
                     onSelect={(currentValue) => {
                       toggleSelection(currentValue);
                     }}
@@ -130,17 +135,17 @@ export function ComboboxAccount({
                     <span
                       className={cn(
                         "px-2 py-1 rounded text-xs font-semibold",
-                        value.includes(region.value)
+                        value.includes(account.value)
                           ? "ring-2 ring-blue-400"
                           : ""
                       )}
                     >
-                      {region.label}
+                      {account.label}
                     </span>
                     <Check
                       className={cn(
                         "ml-auto",
-                        value.includes(region.value)
+                        value.includes(account.value)
                           ? "opacity-100"
                           : "opacity-0"
                       )}

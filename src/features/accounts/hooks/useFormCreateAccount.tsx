@@ -1,6 +1,10 @@
 "use client";
 
 import { useGlobalLoading } from "@/components/GlobalLoading";
+import {
+  accountsKeys,
+  useInvalidateAccountsQuery,
+} from "@/features/accounts/hooks/useAccountsQuery";
 import { usersKeys } from "@/features/accounts/hooks/useUsers";
 import { registerAccount } from "@/features/auth/api/registerAccount";
 import { useQueryClient } from "@tanstack/react-query";
@@ -44,6 +48,7 @@ export type useFormCreateAccount = {
 export default function useFormCreateAccount(): useFormCreateAccount {
   const { setLoading } = useGlobalLoading();
   const queryClient = useQueryClient();
+  const { invalidateCombobox } = useInvalidateAccountsQuery();
   const [createdCredentials, setCreatedCredentials] = React.useState<{
     username: string;
     password: string;
@@ -75,6 +80,10 @@ export default function useFormCreateAccount(): useFormCreateAccount {
       });
       // invalidar cache de usuários para atualizar lista
       await queryClient.invalidateQueries({ queryKey: usersKeys.lists() });
+      await invalidateCombobox();
+      await queryClient.invalidateQueries({
+        queryKey: accountsKeys.combobox(),
+      });
       // reset form to default values after successful creation
       form.reset();
       toast.success("Usuario criado com sucesso", {

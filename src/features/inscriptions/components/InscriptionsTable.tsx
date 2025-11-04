@@ -13,8 +13,8 @@ import {
 import { BanknoteArrowDown, FileText, Search, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { ComboboxEvent } from "../../events/components/ComboBoxEvent";
 import { useInscriptions } from "../hooks/useInscriptions";
-import { ComboboxEvent } from "./ComboBoxEvent";
 import { ComboboxPeriod } from "./ComboboxPeriod";
 
 // Função para converter período para ISO

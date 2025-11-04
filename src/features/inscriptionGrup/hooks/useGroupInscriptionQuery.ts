@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { submitGroupInscription } from "../api/submitGroupInscription";
-import { confirmGroupInscription } from "../api/confirmGroupInscription";
 import { eventsKeys } from "@/features/events/hooks/useEventsQuery";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { confirmGroupInscription } from "../api/confirmGroupInscription";
+import { submitGroupInscription } from "../api/submitGroupInscription";
 
 // Chaves de query para inscrições em grupo
 export const groupInscriptionKeys = {

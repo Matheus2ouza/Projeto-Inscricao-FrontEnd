@@ -11,7 +11,7 @@ export async function getEvents(params: {
   return data;
 }
 
-export async function getEventsName(): Promise<EventDto[]> {
+export async function getEventsCombobox(): Promise<EventDto[]> {
   const { data } = await axiosInstance.get<EventDto[]>("/events/all/names");
   return data;
 }

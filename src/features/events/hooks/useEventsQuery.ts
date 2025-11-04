@@ -23,7 +23,7 @@ export function useEventsQuery(page: number = 1, pageSize: number = 8) {
 }
 
 // Hook para invalidar cache de eventos
-export function useInvalidateEvents() {
+export function useInvalidateEventsQuery() {
   const queryClient = useQueryClient();
 
   return {
@@ -37,7 +37,7 @@ export function useInvalidateEvents() {
 }
 
 // Hook para pré-carregar dados
-export function usePrefetchEvents() {
+export function usePrefetchEventsQuery() {
   const queryClient = useQueryClient();
 
   return {
@@ -50,3 +50,4 @@ export function usePrefetchEvents() {
     },
   };
 }
+

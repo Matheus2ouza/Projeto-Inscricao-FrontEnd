@@ -10,7 +10,7 @@ export async function getEventInscriptions(
 ): Promise<InscriptionAnalysisResponse> {
   try {
     const { data } = await axiosInstance.get<InscriptionAnalysisResponse>(
-      `/events/${eventId}/analysis`,
+      `/events/${eventId}/analysis/inscription`,
       {
         params: {
           page: params.page,
@@ -18,7 +18,6 @@ export async function getEventInscriptions(
         },
       }
     );
-    console.log(data)
     return data;
   } catch (error) {
     console.error("Error fetching event inscriptions analysis:", error);

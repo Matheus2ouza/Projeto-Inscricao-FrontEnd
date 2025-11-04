@@ -176,7 +176,7 @@ export default function AnalysisInscriptionTable() {
             {events.map((event) => {
               const statusInfo = getAnalysisStatusInfo(
                 event.countInscriptions,
-                event.countInscritpionsAnalysis,
+                event.countInscriptionsAnalysis,
               );
               const gradientClass = generateGradient(event.name);
               // Se não há imagem, não está carregando. Se há imagem, verifica o estado
@@ -272,7 +272,7 @@ export default function AnalysisInscriptionTable() {
                             Pendentes:
                           </span>
                           <span className="font-semibold text-yellow-600 dark:text-yellow-400">
-                            {event.countInscritpionsAnalysis}
+                            {event.countInscriptionsAnalysis}
                           </span>
                         </div>
                       )}

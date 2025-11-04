@@ -10,6 +10,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/shared/components/ui/pagination";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 import { cn } from "@/shared/lib/utils";
 import {
   AlertTriangle,
@@ -108,10 +109,53 @@ export default function EventsTableSuper() {
   // Estados de loading e error
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center min-h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando eventos...</p>
+      <div className="p-4 sm:p-6 relative">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+          <div>
+            <Skeleton className="h-9 w-32 mb-2" />
+            <Skeleton className="h-5 w-64" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
+          {Array.from({ length: PAGE_SIZE }).map((_, index) => (
+            <div
+              key={index}
+              className="bg-card text-card-foreground flex flex-col transition-all duration-300 ease-in-out shadow-sm w-full overflow-hidden rounded-xl"
+            >
+              {/* Imagem do Evento */}
+              <div className="relative w-full aspect-[3/1.1] overflow-hidden">
+                <Skeleton className="w-full h-full" />
+              </div>
+              {/* Conteúdo do Card */}
+              <div className="flex flex-col gap-4 sm:gap-6 p-4 sm:p-6">
+                {/* Header do Card */}
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3 sm:gap-4 w-full">
+                    <Skeleton className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex-shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-5 w-24" />
+                    </div>
+                  </div>
+                </div>
+                {/* Estatísticas */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <Skeleton className="h-20 rounded-lg" />
+                  <Skeleton className="h-20 rounded-lg" />
+                </div>
+                {/* Informações Básicas */}
+                <div className="space-y-2 sm:space-y-3">
+                  <Skeleton className="h-10 rounded-lg" />
+                  <Skeleton className="h-10 rounded-lg" />
+                </div>
+                {/* Footer do Card */}
+                <div className="flex justify-between items-center pt-3 sm:pt-4">
+                  <Skeleton className="h-10 w-40" />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -165,7 +209,7 @@ export default function EventsTableSuper() {
               {/* Card personalizado sem bordas do shadcn */}
               <div
                 className={cn(
-                  "bg-card text-card-foreground flex flex-col transition-all duration-300 ease-in-out shadow-sm w-full overflow-hidden rounded-xl hover:shadow-md"
+                  "bg-card text-card-foreground flex flex-col transition-all duration-300 ease-in-out shadow-sm w-full overflow-hidden rounded-xl hover:shadow-md hover:scale-[1.02] cursor-pointer"
                 )}
               >
                 {/* Imagem do Evento - Ocupando toda a parte superior */}
@@ -373,10 +417,10 @@ export default function EventsTableSuper() {
                   </div>
 
                   {/* Footer do Card */}
-                  <div className="flex justify-between items-center pt-3 sm:pt-4">
+                  <div className="flex justify-end items-center pt-3 sm:pt-4">
                     <Button
                       asChild
-                      variant="outline"
+                      variant="default"
                       className="flex items-center gap-2 text-xs sm:text-sm"
                     >
                       <Link href={`/super/events/${event.id}`}>

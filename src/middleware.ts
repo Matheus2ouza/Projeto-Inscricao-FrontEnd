@@ -82,11 +82,6 @@ export default async function middleware(request: NextRequest) {
     if (!pathname.startsWith(requiredPrefix)) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = requiredPrefix;
-      console.warn("[middleware] role prefix mismatch", {
-        role,
-        pathname,
-        expectedPrefix: requiredPrefix,
-      });
       return NextResponse.redirect(redirectUrl);
     }
   }

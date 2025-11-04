@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { getRegions, type RegionDto } from "@/features/regions/api/getRegions";
+import { useEffect, useState } from "react";
 
 type UseRegionsResult = {
   regions: RegionDto[];
@@ -10,7 +10,7 @@ type UseRegionsResult = {
   refetch: () => Promise<void>;
 };
 
-export function useRegions(): UseRegionsResult {
+export function useRegions(autoFetch: boolean = true): UseRegionsResult {
   const [regions, setRegions] = useState<RegionDto[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,8 +31,10 @@ export function useRegions(): UseRegionsResult {
   };
 
   useEffect(() => {
-    fetchRegions();
-  }, []);
+    if (autoFetch) {
+      fetchRegions();
+    }
+  }, [autoFetch]);
 
   return { regions, loading, error, refetch: fetchRegions };
 }

@@ -6,13 +6,17 @@
   "editor.detectIndentation": false,
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
+
   "emmet.includeLanguages": {
     "javascript": "javascriptreact"
   },
+
   "javascript.suggest.autoImports": true,
   "typescript.suggest.autoImports": true,
+
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
-    "source.organizeImports": "explicit"
-  }
+    "source.fixAll.eslint": "always",
+    "source.organizeImports": "always"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
 }

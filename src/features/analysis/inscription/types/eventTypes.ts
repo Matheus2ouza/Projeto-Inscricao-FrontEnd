@@ -3,7 +3,7 @@ export type Event = {
   name: string;
   imageUrl?: string;
   countInscriptions: number;
-  countInscritpionsAnalysis: number;
+  countInscriptionsAnalysis: number;
 };
 
 export type UseEventsParams = {
