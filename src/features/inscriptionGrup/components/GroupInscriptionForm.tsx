@@ -265,20 +265,22 @@ export function GroupInscriptionForm({ hookData }: GroupInscriptionFormProps) {
               </div>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full h-14 text-lg font-bold transform uppercase text-white"
-              disabled={
-                isSubmitting ||
-                !file ||
-                !!formErrors.responsible ||
-                !!formErrors.phone
-              }
-            >
-              {isSubmitting
-                ? "Enviando para análise..."
-                : "Enviar para Análise"}
-            </Button>
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                className="w-full md:w-auto px-8 py-3 text-base transform uppercase dark:text-white"
+                disabled={
+                  isSubmitting ||
+                  !file ||
+                  !!formErrors.responsible ||
+                  !!formErrors.phone
+                }
+              >
+                {isSubmitting
+                  ? "Enviando para análise..."
+                  : "Enviar para Análise"}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
