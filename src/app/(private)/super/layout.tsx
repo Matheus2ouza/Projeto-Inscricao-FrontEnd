@@ -1,6 +1,6 @@
 import PrivateNavbar from "@/shared/components/layout/private-navbar";
-
-import AppSidebar from "@/shared/components/layout/sidebar-super/Sidebar";
+import AppSidebarSuper from "@/shared/components/layout/sidebar-super/Sidebar";
+import SessionUserProvider from "@/shared/providers/session-user-provider";
 
 export default function PrivateLayout({
   children,
@@ -8,9 +8,11 @@ export default function PrivateLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AppSidebar>
-      <PrivateNavbar />
-      {children}
-    </AppSidebar>
+    <SessionUserProvider>
+      <AppSidebarSuper>
+        <PrivateNavbar />
+        {children}
+      </AppSidebarSuper>
+    </SessionUserProvider>
   );
 }

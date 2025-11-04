@@ -48,7 +48,7 @@ export default function useFormLogin(): UseFormLoginType {
       });
 
       if (result.ok) {
-        const redirectUrl = `/${result.role.toLocaleLowerCase()}/home`;
+        const redirectUrl = `/${result.user.role.toLowerCase()}/home`;
         router.push(redirectUrl);
         toast.success("Login feito com sucesso", {
           description: "Login feito com sucesso",

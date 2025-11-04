@@ -1,8 +1,6 @@
 "use client";
 
-import * as React from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/shared/lib/utils";
+import { useRegions } from "@/features/regions/hooks/useRegions";
 import { Button } from "@/shared/components/ui/button";
 import {
   Command,
@@ -17,7 +15,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/shared/components/ui/popover";
-import { useRegions } from "@/features/regions/hooks/useRegions";
+import { cn } from "@/shared/lib/utils";
+import { Check, ChevronsUpDown } from "lucide-react";
+import * as React from "react";
 
 export type RegionOption = { label: string; value: string };
 
@@ -25,19 +25,24 @@ export type ComboboxRegionProps = {
   value: string;
   onChange: (value: string) => void;
   options?: RegionOption[];
+  loading?: boolean;
 };
 
 export function ComboboxRegion({
   value,
   onChange,
   options,
+  loading: loadingProp,
 }: ComboboxRegionProps) {
   const [open, setOpen] = React.useState(false);
-  const { regions: fetched, loading, error } = useRegions();
+  const shouldFetch = options === undefined;
+  const { regions: fetched, loading: internalLoading, error } =
+    useRegions(shouldFetch);
+  const loading = loadingProp ?? internalLoading;
 
   // Preferência: props.options > API; fallback: []
   const regions = React.useMemo<RegionOption[]>(() => {
-    if (options && options.length > 0) return options;
+    if (options) return options;
     if (fetched && fetched.length > 0) {
       return fetched.map((r) => ({
         label: r.name.toUpperCase(),
@@ -64,13 +69,13 @@ export function ComboboxRegion({
             }
           >
             {value
-              ? regions.find((r) => r.value === value)?.label ??
-                "Selecione a região..."
+              ? (regions.find((r) => r.value === value)?.label ??
+                "Selecione a região...")
               : loading
-              ? "Carregando regiões..."
-              : regions.length === 0
-              ? "Nenhuma região encontrada"
-              : "Selecione a região..."}
+                ? "Carregando regiões..."
+                : regions.length === 0
+                  ? "Nenhuma região encontrada"
+                  : "Selecione a região..."}
           </span>
           <ChevronsUpDown
             className={
@@ -89,8 +94,8 @@ export function ComboboxRegion({
               {loading
                 ? "Carregando..."
                 : error
-                ? "Falha ao carregar regiões."
-                : "Nenhuma região encontrada."}
+                  ? "Falha ao carregar regiões."
+                  : "Nenhuma região encontrada."}
             </CommandEmpty>
             {regions.length > 0 && (
               <CommandGroup>

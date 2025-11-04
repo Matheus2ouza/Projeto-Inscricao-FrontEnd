@@ -1,6 +1,6 @@
+import { eventsKeys } from "@/features/events/hooks/useEventsQuery";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { eventsKeys } from "@/features/events/hooks/useEventsQuery";
 import { createAvulsaRegistration } from "../api/createAvulsaRegistration";
 import { avulsaKeys, CreateInscriptionAvulInput } from "../types/avulsaTypes";
 

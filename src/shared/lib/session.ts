@@ -1,24 +1,15 @@
 import { cache } from "react";
 
+import type { SessionData, User } from "@/features/auth/types/loginTypes";
+
 function assertServer() {
   if (typeof window !== "undefined") {
     throw new Error("session.ts deve ser usado apenas no servidor");
   }
 }
 
-// Tipos para sessão e usuário
-export interface User {
-  id: string;
-  role: "USER" | "ADMIN" | "SUPER" | "MANAGER";
-}
-
-export interface Session {
-  user: User;
-  expires: string;
-}
-
 // Função para verificar a sessão
-export const verifySession = cache(async (): Promise<Session | null> => {
+export const verifySession = cache(async (): Promise<SessionData | null> => {
   assertServer();
   const { cookies } = await import("next/headers");
   const cookieStore = await cookies();
@@ -30,9 +21,9 @@ export const verifySession = cache(async (): Promise<Session | null> => {
   }
 
   try {
-    const sessionData = JSON.parse(sessionCookie.value);
+    const sessionData = JSON.parse(sessionCookie.value) as SessionData;
 
-    return sessionData as Session;
+    return sessionData;
   } catch (error) {
     console.error("Erro ao verificar sessão:", error);
     return null;
@@ -57,7 +48,7 @@ export const getUser = cache(async (): Promise<User | null> => {
 
 // Função para verificar se o usuário tem role específico
 export const hasRole = cache(
-  async (role: "USER" | "ADMIN" | "SUPER" | "MANAGER"): Promise<boolean> => {
+  async (role: User["role"]): Promise<boolean> => {
     const user = await getUser();
     return user?.role === role;
   }

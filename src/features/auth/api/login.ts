@@ -10,10 +10,11 @@ import {
   LoginServiceInput,
   RequestData,
   SessionData,
+  User,
 } from "../types/loginTypes";
 
 export type LoginServiceResult =
-  | { ok: true; role: string }
+  | { ok: true; user: User }
   | { ok: false; errorMessage: string };
 
 // Serviço de login
@@ -38,7 +39,11 @@ export async function loginService(
     const sessionData: SessionData = {
       user: {
         id: user.id,
+        username: user.username,
         role: user.role,
+        email: user.email,
+        region: user.role === "SUPER" ? null : user.region,
+        image: user.image,
       },
       expires: payload.exp ? new Date(payload.exp * 1000).toISOString() : "",
     };
@@ -66,7 +71,7 @@ export async function loginService(
       maxAge: 60 * 60 * 7, // 7 horas
     });
 
-    return { ok: true, role: user.role };
+    return { ok: true, user: sessionData.user };
   } catch (error: unknown) {
     const axiosError = error as AxiosError;
 

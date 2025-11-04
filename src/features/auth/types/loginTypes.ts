@@ -1,8 +1,16 @@
-export type User = {
+export type Region = {
   id: string;
-  role: string;
+  Name: string;
 };
 
+export type User = {
+  id: string;
+  username: string;
+  role: string;
+  email: string | null;
+  region: Region | null;
+  image: string | null;
+};
 export type LoginServiceInput = {
   username: string;
   password: string;
@@ -23,6 +31,12 @@ export type SessionData = {
 };
 
 export type AuthResponse = {
+  authToken: string;
+  refreshToken: string;
+  user: User;
+};
+
+export type LoginUserResponse = {
   authToken: string;
   refreshToken: string;
   user: User;

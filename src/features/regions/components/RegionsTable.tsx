@@ -31,16 +31,10 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/shared/components/ui/pagination";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 import { cn } from "@/shared/lib/utils";
 import { DialogClose, DialogTitle } from "@radix-ui/react-dialog";
-import {
-  Calendar,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  MapPin,
-  Users,
-} from "lucide-react";
+import { Calendar, Clock, MapPin, Users } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
 import { FormProvider } from "react-hook-form";
@@ -87,8 +81,50 @@ export default function RegionsTable() {
 
   if (loading) {
     return (
-      <div className="p-6 flex justify-center items-center">
-        <div>Carregando...</div>
+      <div className="p-6 relative">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <Skeleton className="h-9 w-32 mb-2" />
+            <Skeleton className="h-5 w-64" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-6">
+          {Array.from({ length: PAGE_SIZE }).map((_, index) => (
+            <Card
+              key={index}
+              className="transition-all duration-300 ease-in-out border-2 bg-card shadow-sm w-full border-gray-200 dark:border-gray-700"
+            >
+              <CardHeader className="pb-3 border-b">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="w-12 h-12 rounded-lg" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-6 w-32" />
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-5 w-20" />
+                        <Skeleton className="h-5 w-20" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pb-3">
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <Skeleton className="h-20 rounded-lg" />
+                  <Skeleton className="h-20 rounded-lg" />
+                </div>
+                <div className="space-y-3 mb-4">
+                  <Skeleton className="h-10 rounded-lg" />
+                  <Skeleton className="h-10 rounded-lg" />
+                </div>
+              </CardContent>
+              <CardFooter className="border-t pt-4 flex justify-end">
+                <Skeleton className="h-10 w-48" />
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
@@ -193,7 +229,7 @@ export default function RegionsTable() {
                 "transition-all duration-300 ease-in-out border-2 bg-card shadow-sm w-full",
                 expandedRegion === region.id
                   ? "border-blue-500 shadow-2xl max-w-6xl max-h-[90vh] overflow-y-auto z-50"
-                  : "border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 hover:scale-[1.02] cursor-pointer",
+                  : "border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 hover:scale-[1.01] cursor-pointer",
                 expandedRegion &&
                   expandedRegion !== region.id &&
                   "opacity-30 blur-sm"
@@ -432,11 +468,9 @@ export default function RegionsTable() {
               {/* Footer do Card */}
               <CardFooter className="border-t pt-4 flex justify-end">
                 <Button
-                  variant={expandedRegion === region.id ? "default" : "outline"}
+                  variant="default"
                   className={cn(
-                    "w-50 flex items-center justify-center gap-2 transition-all bg-primary text-white dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/80",
-                    expandedRegion === region.id &&
-                      "bg-blue-600 hover:bg-blue-700"
+                    "w-50 flex items-center justify-center gap-2 transition-none bg-primary text-white dark:bg-secondary dark:text-secondary-foreground"
                   )}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -444,15 +478,9 @@ export default function RegionsTable() {
                   }}
                 >
                   {expandedRegion === region.id ? (
-                    <>
-                      <ChevronUp className="h-4 w-4" />
-                      Fechar Detalhes
-                    </>
+                    <>Fechar Detalhes</>
                   ) : (
-                    <>
-                      <ChevronDown className="h-4 w-4" />
-                      Ver Detalhes Completos
-                    </>
+                    <>Ver Detalhes Completos</>
                   )}
                 </Button>
               </CardFooter>
