@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useEventsForAnalysis } from "../hooks/useEventsForAnalysis";
 
-export default function AnalysisInscriptionTable() {
+export default function AnalysisPaymentTable() {
   const router = useRouter();
   const [imageLoadingStates, setImageLoadingStates] = useState<
     Record<string, boolean>
@@ -28,9 +28,9 @@ export default function AnalysisInscriptionTable() {
       pageSize: 8,
     });
 
-  //Vai para o app/(private)/super/inscriptions/analysis/[id]
+  //Vai para o app/(private)/super/payments/analysis/[id]
   const handleIndividualInscription = (eventId: string) => {
-    router.push(`/super/inscriptions/analysis/${eventId}`);
+    router.push(`/super/payments/analysis/${eventId}`);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -55,15 +55,15 @@ export default function AnalysisInscriptionTable() {
 
   // Função para determinar o status da análise
   const getAnalysisStatusInfo = (
-    countInscriptions: number,
-    countInscritpionsAnalysis: number,
+    countPayments: number,
+    countPaymentsAnalysis: number
   ) => {
-    const pendingCount = countInscriptions - countInscritpionsAnalysis;
-    const inAnalysisCount = countInscritpionsAnalysis;
+    const pendingCount = countPayments - countPaymentsAnalysis;
+    const inAnalysisCount = countPaymentsAnalysis;
 
-    if (countInscriptions === 0) {
+    if (countPayments === 0) {
       return {
-        label: "Sem Inscrições",
+        label: "Sem Pagamentos",
         badgeClass: "bg-gray-500",
         disabled: true,
         count: 0,
@@ -79,7 +79,7 @@ export default function AnalysisInscriptionTable() {
       };
     }
 
-    // Cores baseadas na quantidade de inscrições em análise
+    // Cores baseadas na quantidade de pagamentos em análise
     if (inAnalysisCount <= 5) {
       return {
         label: `${inAnalysisCount} Em Análise`,
@@ -145,10 +145,10 @@ export default function AnalysisInscriptionTable() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Análise de Inscrições
+          Análise de Pagamentos
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Monitore o progresso da análise das inscrições dos eventos
+          Monitore o progresso da análise dos pagamentos dos eventos
         </p>
       </div>
 
@@ -175,8 +175,8 @@ export default function AnalysisInscriptionTable() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {events.map((event) => {
               const statusInfo = getAnalysisStatusInfo(
-                event.countInscriptions,
-                event.countInscriptionsAnalysis,
+                event.countPayments,
+                event.countPaymentsAnalysis
               );
               const gradientClass = generateGradient(event.name);
               // Se não há imagem, não está carregando. Se há imagem, verifica o estado
@@ -241,7 +241,7 @@ export default function AnalysisInscriptionTable() {
                         <div
                           className={`w-8 h-8 rounded-full ${statusInfo.badgeClass} border-2 border-white dark:border-zinc-900 shadow-lg flex items-center justify-center text-white font-bold text-xs`}
                         >
-                          {event.countInscriptions === 0
+                          {event.countPayments === 0
                             ? "0"
                             : statusInfo.count === 0
                               ? "✓"
@@ -255,40 +255,37 @@ export default function AnalysisInscriptionTable() {
                       {event.name}
                     </h3>
 
-                    {/* Informações sobre inscrições */}
+                    {/* Informações sobre pagamentos */}
                     <div className="flex flex-col gap-2 w-full">
                       <div className="flex justify-between items-center text-sm dark:text-white">
                         <span className="text-gray-600 dark:text-gray-400">
-                          Total de Inscrições:
+                          Total de Pagamentos:
                         </span>
                         <span className="font-semibold">
-                          {event.countInscriptions}
+                          {event.countPayments}
                         </span>
                       </div>
 
-                      {event.countInscriptions > 0 && (
+                      {event.countPayments > 0 && (
                         <div className="flex justify-between items-center text-sm dark:text-white">
                           <span className="text-gray-600 dark:text-gray-400">
                             Pendentes:
                           </span>
                           <span className="font-semibold text-yellow-600 dark:text-yellow-400">
-                            {event.countInscriptionsAnalysis}
+                            {event.countPaymentsAnalysis}
                           </span>
                         </div>
                       )}
                     </div>
 
                     {/* Botão de Análise */}
-                    <div className="flex flex-col w-full gap-2 mt-2">
+                    <div className="flex flex-col w-full gap-2 mt-2 ">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleIndividualInscription(event.id)}
-                        disabled={statusInfo.disabled}
                       >
-                        {event.countInscriptions === 0
-                          ? "Sem Inscrições"
-                          : "Analisar Inscrições"}
+                        Analisar Pagamentos
                       </Button>
                     </div>
                   </CardFooter>

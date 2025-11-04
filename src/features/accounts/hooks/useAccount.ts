@@ -1,38 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getAccont, type AccountDto } from "../api/getUsersCombobox";
+import { useAccountsComboboxQuery } from "./useAccountsQuery";
+import type { AccountDto } from "../api/getUsersCombobox";
 
 type UseAccountResult = {
-  regions: AccountDto[];
+  accounts: AccountDto[];
   loading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
 };
 
-export function useAccount(): UseAccountResult {
-  const [regions, setRegions] = useState<AccountDto[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+export function useAccount(autoFetch: boolean = true): UseAccountResult {
+  const { data, isLoading, isFetching, error, refetch } =
+    useAccountsComboboxQuery(autoFetch);
 
-  const fetchRegions = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getAccont();
-      setRegions(data);
-    } catch (e: unknown) {
-      const errorMessage =
-        e instanceof Error ? e.message : "Falha ao carregar regiões";
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+  return {
+    accounts: data ?? [],
+    loading: isLoading || isFetching,
+    error: error
+      ? error instanceof Error
+        ? error.message
+      : "Falha ao carregar contas"
+      : null,
+    refetch: async () => {
+      await refetch();
+    },
   };
-
-  useEffect(() => {
-    fetchRegions();
-  }, []);
-
-  return { regions, loading, error, refetch: fetchRegions };
 }

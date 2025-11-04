@@ -2,8 +2,8 @@ export type Event = {
   id: string;
   name: string;
   imageUrl?: string;
-  countInscriptions: number;
-  countInscriptionsAnalysis: number;
+  countPayments: number;
+  countPaymentsAnalysis: number;
 };
 
 export type UseEventsParams = {
@@ -28,3 +28,4 @@ export type UseEventsResult = {
   setPage: (p: number) => void;
   refetch: () => Promise<void>;
 };
+
