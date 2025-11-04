@@ -34,7 +34,7 @@ import {
   PaginationPrevious,
 } from "@/shared/components/ui/pagination";
 import { Switch } from "@/shared/components/ui/switch";
-import { Copy } from "lucide-react";
+import { AlertCircle, Check, CheckCircle2, Copy } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { FormProvider } from "react-hook-form";
 
@@ -61,6 +61,8 @@ export default function AccountsTable({
   const [appliedRegions, setAppliedRegions] = useState<string[]>([]); // Filtro aplicado
   const [showPassword, setShowPassword] = useState(false);
   const [hasRegion, setHasRegion] = useState(false);
+  const [copiedUsername, setCopiedUsername] = useState(false);
+  const [copiedPassword, setCopiedPassword] = useState(false);
 
   const { form, onSubmit, createdCredentials, clearCreatedCredentials } =
     useFormCreateAccount();
@@ -452,54 +454,134 @@ export default function AccountsTable({
           open={openCreds}
           onOpenChange={(v) => {
             setOpenCreds(v);
-            if (!v) clearCreatedCredentials();
+            if (!v) {
+              clearCreatedCredentials();
+              setCopiedUsername(false);
+              setCopiedPassword(false);
+            }
           }}
         >
-          <DialogContent>
+          <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle className="text-primary">
-                Credenciais do usuário criado
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">Usuário</div>
-                <div className="font-medium">
-                  {createdCredentials?.username ?? "-"}
+              <div className="flex items-center gap-3 mb-2">
+                <div className="flex items-center justify-center w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-full">
+                  <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() =>
-                    createdCredentials?.username &&
-                    navigator.clipboard.writeText(createdCredentials.username)
-                  }
-                  aria-label="Copiar usuário"
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
+                <DialogTitle className="text-xl font-bold text-primary dark:text-white">
+                  Usuário Criado com Sucesso!
+                </DialogTitle>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">Senha</div>
-                <div className="font-medium">
-                  {createdCredentials?.password ?? "-"}
+              <p className="text-sm text-muted-foreground mt-2">
+                Salve estas credenciais em um local seguro. Elas não serão
+                exibidas novamente.
+              </p>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              {/* Campo Usuário */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">
+                  Usuário
+                </label>
+                <div className="flex items-center gap-2 p-3 bg-muted/50 dark:bg-muted/30 rounded-lg border border-border">
+                  <code className="flex-1 font-mono text-sm font-semibold text-foreground break-all">
+                    {createdCredentials?.username ?? "-"}
+                  </code>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={async () => {
+                      if (createdCredentials?.username) {
+                        await navigator.clipboard.writeText(
+                          createdCredentials.username
+                        );
+                        setCopiedUsername(true);
+                        setTimeout(() => setCopiedUsername(false), 2000);
+                      }
+                    }}
+                    aria-label="Copiar usuário"
+                    className={`transition-all duration-200 shrink-0 ${
+                      copiedUsername
+                        ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                        : ""
+                    }`}
+                  >
+                    {copiedUsername ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
                 </div>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() =>
-                    createdCredentials?.password &&
-                    navigator.clipboard.writeText(createdCredentials.password)
-                  }
-                  aria-label="Copiar senha"
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
+                {copiedUsername && (
+                  <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                    <Check className="h-3 w-3" />
+                    Usuário copiado para a área de transferência!
+                  </p>
+                )}
+              </div>
+
+              {/* Campo Senha */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">
+                  Senha
+                </label>
+                <div className="flex items-center gap-2 p-3 bg-muted/50 dark:bg-muted/30 rounded-lg border border-border">
+                  <code className="flex-1 font-mono text-sm font-semibold text-foreground break-all">
+                    {createdCredentials?.password ?? "-"}
+                  </code>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={async () => {
+                      if (createdCredentials?.password) {
+                        await navigator.clipboard.writeText(
+                          createdCredentials.password
+                        );
+                        setCopiedPassword(true);
+                        setTimeout(() => setCopiedPassword(false), 2000);
+                      }
+                    }}
+                    aria-label="Copiar senha"
+                    className={`transition-all duration-200 shrink-0 ${
+                      copiedPassword
+                        ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                        : ""
+                    }`}
+                  >
+                    {copiedPassword ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                {copiedPassword && (
+                  <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                    <Check className="h-3 w-3" />
+                    Senha copiada para a área de transferência!
+                  </p>
+                )}
+              </div>
+
+              {/* Aviso */}
+              <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-700 dark:text-amber-300">
+                  <strong>Atenção:</strong> Estas credenciais são exibidas
+                  apenas uma vez. Certifique-se de salvá-las antes de fechar
+                  este diálogo.
+                </p>
               </div>
             </div>
+
             <DialogFooter>
               <DialogClose asChild>
-                <Button type="button" variant="default">
+                <Button
+                  type="button"
+                  variant="default"
+                  className="w-full sm:w-auto dark:text-white"
+                >
                   Fechar
                 </Button>
               </DialogClose>
