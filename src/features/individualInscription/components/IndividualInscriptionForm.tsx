@@ -7,16 +7,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from "@/shared/components/ui/command";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/shared/components/ui/popover";
 import { cn } from "@/shared/lib/utils";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { useFormIndividualInscription } from "../hooks/useFormIndividualInscription";
 
 interface IndividualInscriptionFormProps {
@@ -165,29 +171,87 @@ export default function IndividualInscriptionForm({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="gender">Gênero *</Label>
-                <Select
-                  value={formData.gender}
-                  onValueChange={(value) => {
-                    // Simular onChange para o react-hook-form
-                    const event = {
-                      target: { name: "gender", value },
-                    } as React.ChangeEvent<HTMLInputElement>;
-                    handleInputChange(event);
-                  }}
-                >
-                  <SelectTrigger
-                    id="gender"
-                    className={cn(
-                      formErrors.gender && "border-red-500 focus:border-red-500"
-                    )}
-                  >
-                    <SelectValue placeholder="Selecione o gênero" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="masculino">Masculino</SelectItem>
-                    <SelectItem value="feminino">Feminino</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="gender"
+                      variant="outline"
+                      role="combobox"
+                      className={cn(
+                        "w-full justify-between",
+                        formErrors.gender &&
+                          "border-red-500 focus:border-red-500"
+                      )}
+                      aria-expanded={false}
+                    >
+                      <span
+                        className={cn(
+                          formData.gender
+                            ? "text-blue-700 dark:text-blue-300 font-semibold"
+                            : "text-gray-700 dark:text-gray-200"
+                        )}
+                      >
+                        {formData.gender
+                          ? formData.gender === "masculino"
+                            ? "Masculino"
+                            : "Feminino"
+                          : "Selecione o gênero"}
+                      </span>
+                      <ChevronsUpDown
+                        className={cn(
+                          "opacity-50",
+                          formData.gender ? "text-blue-700" : ""
+                        )}
+                      />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] min-w-[200px] p-0">
+                    <Command>
+                      <CommandList>
+                        <CommandEmpty>Nenhuma opção encontrada.</CommandEmpty>
+                        <CommandGroup>
+                          {[
+                            { label: "Masculino", value: "masculino" },
+                            { label: "Feminino", value: "feminino" },
+                          ].map((opt) => (
+                            <CommandItem
+                              key={opt.value}
+                              value={opt.value}
+                              onSelect={(currentValue) => {
+                                const event = {
+                                  target: {
+                                    name: "gender",
+                                    value: currentValue,
+                                  },
+                                } as unknown as React.ChangeEvent<HTMLInputElement>;
+                                handleInputChange(event);
+                              }}
+                            >
+                              <span
+                                className={cn(
+                                  "px-2 py-1 rounded text-xs font-semibold",
+                                  formData.gender === opt.value
+                                    ? "ring-2 ring-blue-400"
+                                    : ""
+                                )}
+                              >
+                                {opt.label}
+                              </span>
+                              <Check
+                                className={cn(
+                                  "ml-auto",
+                                  formData.gender === opt.value
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 {formErrors.gender && (
                   <p className="text-red-500 text-sm mt-1">
                     {formErrors.gender.message}
@@ -196,34 +260,84 @@ export default function IndividualInscriptionForm({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="typeInscriptionId">Tipo de inscrição *</Label>
-                <Select
-                  value={formData.typeInscriptionId}
-                  onValueChange={(value) => {
-                    // Simular onChange para o react-hook-form
-                    const event = {
-                      target: { name: "typeInscriptionId", value },
-                    } as React.ChangeEvent<HTMLInputElement>;
-                    handleInputChange(event);
-                  }}
-                >
-                  <SelectTrigger
-                    id="typeInscriptionId"
-                    className={cn(
-                      formErrors.typeInscriptionId &&
-                        "border-red-500 focus:border-red-500"
-                    )}
-                  >
-                    <SelectValue placeholder="Selecione o tipo de inscrição" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {typeInscriptions.map((type) => (
-                      <SelectItem key={type.id} value={type.id}>
-                        {type.description} - R${" "}
-                        {type.value?.toFixed(2) || "0.00"}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="typeInscriptionId"
+                      variant="outline"
+                      role="combobox"
+                      className={cn(
+                        "w-full justify-between",
+                        formErrors.typeInscriptionId &&
+                          "border-red-500 focus:border-red-500"
+                      )}
+                      aria-expanded={false}
+                    >
+                      <span
+                        className={cn(
+                          formData.typeInscriptionId
+                            ? "text-blue-700 dark:text-blue-300 font-semibold"
+                            : "text-gray-700 dark:text-gray-200"
+                        )}
+                      >
+                        {formData.typeInscriptionId
+                          ? (() => {
+                              const selected = typeInscriptions.find(
+                                (t) => t.id === formData.typeInscriptionId
+                              );
+                              return selected
+                                ? `${selected.description} - R$ ${selected.value?.toFixed(2) || "0.00"}`
+                                : "Selecione o tipo de inscrição";
+                            })()
+                          : "Selecione o tipo de inscrição"}
+                      </span>
+                      <ChevronsUpDown
+                        className={cn(
+                          "opacity-50",
+                          formData.typeInscriptionId ? "text-blue-700" : ""
+                        )}
+                      />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] min-w-[260px] p-0">
+                    <Command>
+                      <CommandList>
+                        <CommandEmpty>Nenhum tipo encontrado.</CommandEmpty>
+                        <CommandGroup>
+                          {typeInscriptions.map((type) => (
+                            <CommandItem
+                              key={type.id}
+                              value={type.id}
+                              onSelect={(currentValue) => {
+                                const event = {
+                                  target: {
+                                    name: "typeInscriptionId",
+                                    value: currentValue,
+                                  },
+                                } as unknown as React.ChangeEvent<HTMLInputElement>;
+                                handleInputChange(event);
+                              }}
+                              className="flex items-center justify-between"
+                            >
+                              <span className="flex-1">
+                                {type.description} - R${" "}
+                                {type.value?.toFixed(2) || "0.00"}
+                              </span>
+                              <Check
+                                className={cn(
+                                  "h-4 w-4 ml-2",
+                                  formData.typeInscriptionId === type.id
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 {formErrors.typeInscriptionId && (
                   <p className="text-red-500 text-sm mt-1">
                     {formErrors.typeInscriptionId.message}
@@ -233,13 +347,15 @@ export default function IndividualInscriptionForm({
             </div>
           </div>
 
-          <Button
-            type="submit"
-            disabled={isSubmitting || Object.keys(formErrors).length > 0}
-            className="w-full md:w-auto px-8 py-3 text-lg dark:text-white"
-          >
-            {isSubmitting ? "Enviando..." : "Finalizar Inscrição"}
-          </Button>
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              disabled={isSubmitting || Object.keys(formErrors).length > 0}
+              className="w-full md:w-auto px-8 py-3 text-base transform uppercase dark:text-white"
+            >
+              {isSubmitting ? "Enviando..." : "Finalizar Inscrição"}
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>

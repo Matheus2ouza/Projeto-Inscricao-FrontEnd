@@ -1,10 +1,10 @@
+import { Badge } from "@/shared/components/ui/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { Badge } from "@/shared/components/ui/badge";
 
 export function IndividualInscriptionInfo() {
   return (
@@ -16,28 +16,28 @@ export function IndividualInscriptionInfo() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <h4 className="font-semibold">1. Dados do Responsável</h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Preencha seus dados como responsável pela inscrição.
             </p>
           </div>
 
           <div className="space-y-2">
             <h4 className="font-semibold">2. Dados do Inscrito</h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Informe os dados completos da pessoa que será inscrita.
             </p>
           </div>
 
           <div className="space-y-2">
             <h4 className="font-semibold">3. Tipo de Inscrição</h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Selecione o tipo de inscrição desejada e visualize o valor.
             </p>
           </div>
 
           <div className="space-y-2">
             <h4 className="font-semibold">4. Confirme e Envie</h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Aceite os termos e condições e finalize a inscrição.
             </p>
           </div>
@@ -51,10 +51,10 @@ export function IndividualInscriptionInfo() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <h4 className="font-semibold">Dados Necessários</h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Certifique-se de ter em mãos:
             </p>
-            <ul className="text-sm text-gray-600 list-disc list-inside space-y-1 mt-2">
+            <ul className="text-sm text-gray-600 dark:text-gray-300  list-disc list-inside space-y-1 mt-2">
               <li>Nome completo do responsável</li>
               <li>Telefone para contato</li>
               <li>Nome completo do inscrito</li>
@@ -64,7 +64,7 @@ export function IndividualInscriptionInfo() {
 
           <div className="space-y-2">
             <h4 className="font-semibold">Validação de Dados</h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               O sistema verificará automaticamente:
             </p>
             <div className="flex flex-wrap gap-2 mt-2">
@@ -85,7 +85,7 @@ export function IndividualInscriptionInfo() {
 
           <div className="space-y-2">
             <h4 className="font-semibold">Confirmação Final</h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Na próxima tela, você poderá revisar todos os dados antes de
               confirmar definitivamente a inscrição no evento.
             </p>
@@ -100,7 +100,7 @@ export function IndividualInscriptionInfo() {
         <CardContent className="space-y-3">
           <div className="space-y-2">
             <h4 className="font-semibold">Dúvidas?</h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Em caso de problemas ou dúvidas durante o processo de inscrição,
               entre em contato com nossa equipe de suporte.
             </p>

@@ -19,7 +19,7 @@ export function GroupInscriptionInfo() {
             <h4 className="font-semibold">
               1. Preencha os Dados do Responsável
             </h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Informe o nome e telefone obrigatoriamente. O e-mail é opcional,
               mas permite receber atualizações sobre a inscrição.
             </p>
@@ -28,7 +28,7 @@ export function GroupInscriptionInfo() {
           {/* 2. Baixe a planilha */}
           <div className="space-y-2">
             <h4 className="font-semibold">2. Baixe a Planilha</h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Faça o download do template Excel clicando em{" "}
               <strong>“Baixar Planilha”</strong>.
             </p>
@@ -39,7 +39,7 @@ export function GroupInscriptionInfo() {
             <h4 className="font-semibold">
               3. Adicione os Dados dos Participantes
             </h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Abra a planilha e preencha as informações dos participantes
               conforme o formato indicado no arquivo.
             </p>
@@ -48,7 +48,7 @@ export function GroupInscriptionInfo() {
           {/* 4. Upload */}
           <div className="space-y-2">
             <h4 className="font-semibold">4. Faça o Upload da Planilha</h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Após preencher, envie o arquivo Excel no campo{" "}
               <strong>“Planilha Preenchida”</strong> para análise.
             </p>
@@ -57,7 +57,7 @@ export function GroupInscriptionInfo() {
           {/* 5. Envio */}
           <div className="space-y-2">
             <h4 className="font-semibold">5. Envie para Análise</h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Clique em <strong>“Enviar para Análise”</strong> e aguarde o
               sistema verificar a planilha. Você será informado se houver erros
               ou se as inscrições forem confirmadas.
@@ -73,10 +73,10 @@ export function GroupInscriptionInfo() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <h4 className="font-semibold">Análise Automática</h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               O sistema validará automaticamente:
             </p>
-            <ul className="text-sm text-gray-600 list-disc list-inside space-y-1 mt-2">
+            <ul className="text-sm text-gray-600 dark:text-gray-300 list-disc list-inside space-y-1 mt-2">
               <li>Formato e consistência dos dados</li>
               <li>Campos obrigatórios preenchidos</li>
               <li>Duplicidade de inscrições</li>
@@ -85,7 +85,7 @@ export function GroupInscriptionInfo() {
 
           <div className="space-y-2">
             <h4 className="font-semibold">Resultado da Análise</h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Após a verificação, você poderá receber:
             </p>
             <div className="flex flex-wrap gap-2 mt-2">
@@ -106,7 +106,7 @@ export function GroupInscriptionInfo() {
 
           <div className="space-y-2">
             <h4 className="font-semibold">Confirmação Final</h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Na etapa seguinte, revise as informações e confirme o envio
               definitivo das inscrições.
             </p>
