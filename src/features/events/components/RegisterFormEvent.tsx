@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, {
   useCallback,
@@ -10,6 +11,8 @@ import React, {
   useState,
 } from "react";
 
+import { useGlobalLoading } from "@/components/GlobalLoading";
+import { useAccount } from "@/features/accounts/hooks/useAccount";
 import { ComboboxAccount } from "@/features/accounts/components/ComboboxAccount";
 import { ComboboxRegion } from "@/features/regions/components/ComboboxRegion";
 import { useRegions } from "@/features/regions/hooks/useRegions";
@@ -24,7 +27,7 @@ import {
 } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
 import { cn } from "@/shared/lib/utils";
-import { MapPin, Upload, X } from "lucide-react";
+import { ArrowLeft, MapPin, Upload } from "lucide-react";
 import { FormProvider } from "react-hook-form";
 import { toast } from "sonner";
 import useFormCreateEvent from "../hooks/useFormCreateEvent";
@@ -51,13 +54,22 @@ export default function RegisterFormEvent({
 }: RegisterFormEventProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { setLoading: setGlobalLoading } = useGlobalLoading();
   const { form, onSubmit, dateRange, setDateRange } = useFormCreateEvent();
-  const { regions: fetchedRegions } = useRegions();
+  const { regions: fetchedRegions, loading: regionsLoading } = useRegions();
+  const { accounts: fetchedAccounts, loading: accountsLoading } = useAccount();
   const [isDragging, setIsDragging] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [hasProcessedLocationParams, setHasProcessedLocationParams] =
     useState(false);
+
+  useEffect(() => {
+    setGlobalLoading(regionsLoading || accountsLoading);
+    return () => {
+      setGlobalLoading(false);
+    };
+  }, [regionsLoading, accountsLoading, setGlobalLoading]);
 
   // Salvar o estado do formulário no sessionStorage antes de navegar
   const saveFormState = useCallback(() => {
@@ -66,9 +78,7 @@ export default function RegisterFormEvent({
     const state = {
       name: formData.name,
       regionId: formData.regionId,
-      accountIds: Array.isArray(formData.accountIds)
-        ? formData.accountIds
-        : [],
+      accountIds: Array.isArray(formData.accountIds) ? formData.accountIds : [],
       dateRange: dateRange,
       openImmediately: formData.openImmediately,
       previewUrl: preview, // Salvar a URL da preview
@@ -209,6 +219,13 @@ export default function RegisterFormEvent({
       value: r.id,
     }));
   }, [fetchedRegions]);
+
+  const accountOptions = useMemo(() => {
+    return fetchedAccounts.map((account) => ({
+      label: account.username.toUpperCase(),
+      value: account.id,
+    }));
+  }, [fetchedAccounts]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -421,18 +438,27 @@ export default function RegisterFormEvent({
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Cabeçalho */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">
-            Criar Novo Evento
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Preencha as informações abaixo para criar um novo evento
-          </p>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="icon" asChild>
+              <Link href="/super/events">
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">
+                Criar Novo Evento
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Preencha as informações abaixo para criar um novo evento
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="rounded-lg border bg-card">
+        <div className="bg-white/95 dark:bg-white/5 backdrop-blur-md rounded-xl shadow-md border border-gray-200/80 dark:border-white/10">
           <div className="p-6">
             <FormProvider {...form}>
               <form onSubmit={handleSubmit} className="space-y-8">
@@ -489,6 +515,7 @@ export default function RegisterFormEvent({
                                   value={field.value as string}
                                   onChange={field.onChange}
                                   options={regionOptions}
+                                  loading={regionsLoading}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -520,6 +547,8 @@ export default function RegisterFormEvent({
                                   onChange={(selected) => {
                                     field.onChange(selected);
                                   }}
+                                  options={accountOptions}
+                                  loading={accountsLoading}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -537,9 +566,22 @@ export default function RegisterFormEvent({
                     <div className="space-y-6">
                       {/* Campo: Upload de Imagem */}
                       <div className="space-y-3">
-                        <FormLabel className="text-base font-medium">
-                          Imagem de Capa do Evento
-                        </FormLabel>
+                        <div className="flex items-center justify-between gap-3">
+                          <FormLabel className="text-base font-medium">
+                            Imagem de Capa do Evento
+                          </FormLabel>
+                          {previewUrl && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleRemoveImage}
+                              className="h-8 px-3"
+                            >
+                              Limpar imagem
+                            </Button>
+                          )}
+                        </div>
                         <FormField
                           control={form.control}
                           name="image"
@@ -594,16 +636,6 @@ export default function RegisterFormEvent({
                                           Imagem selecionada
                                         </div>
                                       </div>
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        className="w-full"
-                                        onClick={handleRemoveImage}
-                                      >
-                                        <X className="h-4 w-4 mr-2" />
-                                        Remover Imagem
-                                      </Button>
                                     </div>
                                   )}
                                 </div>
@@ -751,7 +783,7 @@ export default function RegisterFormEvent({
                   >
                     Cancelar
                   </Button>
-                  <Button type="submit" className="min-w-24">
+                  <Button type="submit" className="min-w-24 dark:text-white">
                     Criar Evento
                   </Button>
                 </div>

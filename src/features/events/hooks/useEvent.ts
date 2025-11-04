@@ -1,52 +1,42 @@
 import { getTypeInscriptionsByEvent } from "@/features/typeInscription/api/getTypeInscriptionsByEvent";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { getEvent } from "../api/getEvent";
 import { Event } from "../types/eventTypes";
+import { eventsKeys } from "./useEventsQuery";
 
 export function useEvent(eventId: string) {
-  const [event, setEvent] = useState<Event | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<Event>({
+    queryKey: eventsKeys.detail(eventId),
+    queryFn: async () => {
+      const [eventData, typesInscriptions] = await Promise.all([
+        getEvent(eventId),
+        getTypeInscriptionsByEvent(eventId),
+      ]);
 
-  const fetchEventData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Buscar dados básicos do evento
-      const eventData = await getEvent(eventId);
-
-      // Buscar tipos de inscrição em paralelo
-      const typesInscriptionsPromise = getTypeInscriptionsByEvent(eventId);
-
-      const [typesInscriptions] = await Promise.all([typesInscriptionsPromise]);
-
-      // Combinar os dados
-      const completeEventData: Event = {
+      return {
         ...eventData,
         typesInscriptions,
         countTypeInscriptions: typesInscriptions.length,
       };
+    },
+    enabled: Boolean(eventId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 2,
+    refetchOnWindowFocus: false,
+  });
 
-      setEvent(completeEventData);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
+  return {
+    event: data ?? null,
+    loading: isLoading,
+    error: error instanceof Error ? error.message : null,
+    refetch: async () => {
+      await refetch();
+    },
   };
-
-  useEffect(() => {
-    if (eventId) {
-      fetchEventData();
-    }
-  }, [eventId]);
-
-  const refetch = () => {
-    if (eventId) {
-      fetchEventData();
-    }
-  };
-
-  return { event, loading, error, refetch };
 }

@@ -23,7 +23,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import { useState } from "react";
+import { useInvalidateEventsQuery } from "../hooks/useEventsQuery";
 import { useFormEditEvent } from "../hooks/useFormEditEvent";
 import { Event } from "../types/eventTypes";
 
@@ -36,6 +37,7 @@ export default function EventManagement({
   event,
   refetch,
 }: EventManagementProps) {
+  const { invalidateDetail } = useInvalidateEventsQuery();
   const [showAmount, setShowAmount] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentType, setCurrentType] = useState<TypeInscriptions | null>(null);
@@ -102,6 +104,8 @@ export default function EventManagement({
     ) {
       try {
         await remove(type.id);
+        // Invalidar cache do evento para recarregar os tipos de inscrição
+        invalidateDetail(event.id);
         refetch(); // Recarrega os dados do evento
       } catch (error) {
         // Erro já tratado no hook
@@ -121,6 +125,8 @@ export default function EventManagement({
         // Criação
         await create({ ...data, eventId: event.id });
       }
+      // Invalidar cache do evento para recarregar os tipos de inscrição
+      invalidateDetail(event.id);
       refetch(); // Recarrega os dados do evento
     } catch (error) {
       // Erro já tratado no hook
@@ -128,7 +134,7 @@ export default function EventManagement({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -220,7 +226,7 @@ export default function EventManagement({
           {/* Coluna Principal */}
           <div className="lg:col-span-2 space-y-6">
             {/* Card de Informações Básicas */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-white/95 dark:bg-white/5 backdrop-blur-md rounded-xl shadow-md border border-gray-200/80 dark:border-white/10 p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                   Informações Básicas
@@ -271,7 +277,7 @@ export default function EventManagement({
             </div>
 
             {/* Card de Datas e Horários */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-white/95 dark:bg-white/5 backdrop-blur-md rounded-xl shadow-md border border-gray-200/80 dark:border-white/10 p-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                 Datas e Horários
               </h2>
@@ -287,12 +293,6 @@ export default function EventManagement({
                         type="date"
                         name="startDate"
                         value={formData.startDate}
-                        onChange={handleInputChange}
-                      />
-                      <Input
-                        type="time"
-                        name="startTime"
-                        value={formData.startTime}
                         onChange={handleInputChange}
                       />
                     </div>
@@ -316,12 +316,6 @@ export default function EventManagement({
                         value={formData.endDate}
                         onChange={handleInputChange}
                       />
-                      <Input
-                        type="time"
-                        name="endTime"
-                        value={formData.endTime}
-                        onChange={handleInputChange}
-                      />
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 text-gray-900 dark:text-white">
@@ -334,7 +328,7 @@ export default function EventManagement({
             </div>
 
             {/* Card de Localização */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-white/95 dark:bg-white/5 backdrop-blur-md rounded-xl shadow-md border border-gray-200/80 dark:border-white/10 p-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                 Localização
               </h2>
@@ -359,7 +353,7 @@ export default function EventManagement({
               </div>
 
               {/* Mapa será implementado posteriormente */}
-              <div className="mt-4 h-48 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+              <div className="mt-4 h-48 bg-gray-50/80 dark:bg-white/5 backdrop-blur-sm rounded-lg border border-gray-200/60 dark:border-white/10 flex items-center justify-center">
                 <p className="text-gray-500 dark:text-gray-400">
                   Mapa será implementado aqui
                 </p>
@@ -367,7 +361,7 @@ export default function EventManagement({
             </div>
 
             {/* Card de Tipos de Inscrição */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-white/95 dark:bg-white/5 backdrop-blur-md rounded-xl shadow-md border border-gray-200/80 dark:border-white/10 p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                   Tipos de Inscrição
@@ -401,7 +395,7 @@ export default function EventManagement({
                   {event.typesInscriptions.map((type) => (
                     <div
                       key={type.id}
-                      className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                      className="flex items-center justify-between p-4 border border-gray-200/60 dark:border-white/10 rounded-lg bg-gray-50/80 dark:bg-white/5 backdrop-blur-sm"
                     >
                       <div className="flex-1">
                         <h4 className="font-medium text-gray-900 dark:text-white">
@@ -445,13 +439,13 @@ export default function EventManagement({
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Card de Estatísticas */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-white/95 dark:bg-white/5 backdrop-blur-md rounded-xl shadow-md border border-gray-200/80 dark:border-white/10 p-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                 Estatísticas
               </h2>
 
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-blue-50/80 dark:bg-blue-500/10 backdrop-blur-sm rounded-lg border border-blue-200/60 dark:border-blue-500/10">
                   <div className="flex items-center gap-3">
                     <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     <span className="text-sm font-medium">Participantes</span>
@@ -461,7 +455,7 @@ export default function EventManagement({
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-green-50/80 dark:bg-green-500/10 backdrop-blur-sm rounded-lg border border-green-200/60 dark:border-green-500/10">
                   <div className="flex items-center gap-3">
                     <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
                     <span className="text-sm font-medium">Arrecadado</span>
@@ -484,7 +478,7 @@ export default function EventManagement({
                 </div>
 
                 {event.maxParticipants && (
-                  <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-purple-50/80 dark:bg-purple-500/10 backdrop-blur-sm rounded-lg border border-purple-200/60 dark:border-purple-500/10">
                     <div className="flex items-center gap-3">
                       <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                       <span className="text-sm font-medium">Vagas Totais</span>
@@ -497,117 +491,8 @@ export default function EventManagement({
               </div>
             </div>
 
-            {/* Card de Configurações */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                Configurações
-              </h2>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Preço do Ingresso
-                  </label>
-                  {isEditing ? (
-                    <Input
-                      type="number"
-                      name="ticketPrice"
-                      value={formData.ticketPrice}
-                      onChange={handleInputChange}
-                      placeholder="0,00"
-                      step="0.01"
-                    />
-                  ) : (
-                    <p className="text-lg font-medium text-gray-900 dark:text-white">
-                      {event.ticketPrice
-                        ? formatCurrency(event.ticketPrice)
-                        : "Gratuito"}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Limite de Participantes
-                  </label>
-                  {isEditing ? (
-                    <Input
-                      type="number"
-                      name="maxParticipants"
-                      value={formData.maxParticipants}
-                      onChange={handleInputChange}
-                      placeholder="Número ilimitado"
-                    />
-                  ) : (
-                    <p className="text-lg font-medium text-gray-900 dark:text-white">
-                      {event.maxParticipants || "Ilimitado"}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Status das Inscrições
-                  </label>
-                  {isEditing ? (
-                    <select
-                      name="status"
-                      value={formData.status}
-                      onChange={(e) =>
-                        handleInputChange({
-                          target: {
-                            name: "status",
-                            value: e.target.value,
-                            type: "text",
-                          },
-                        } as unknown as React.ChangeEvent<HTMLInputElement>)
-                      }
-                      className="border rounded p-2 bg-background"
-                    >
-                      <option value="OPEN">Aberto</option>
-                      <option value="CLOSE">Fechado</option>
-                      <option value="FINALIZED">Finalizado</option>
-                    </select>
-                  ) : (
-                    <Badge
-                      className={
-                        event.status === "OPEN"
-                          ? "bg-green-600 dark:text-white"
-                          : event.status === "FINALIZED"
-                            ? "bg-gray-600 dark:text-white"
-                            : "bg-red-600 dark:text-white"
-                      }
-                    >
-                      {event.status === "OPEN"
-                        ? "Inscrições Abertas"
-                        : event.status === "FINALIZED"
-                          ? "Evento Finalizado"
-                          : "Inscrições Fechadas"}
-                    </Badge>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Status dos Pagamentos
-                  </label>
-                  <Badge
-                    className={
-                      event.paymentEneble
-                        ? "bg-green-600 dark:text-white"
-                        : "bg-red-600 dark:text-white"
-                    }
-                  >
-                    {event.paymentEneble
-                      ? "Pagamentos Ativos"
-                      : "Pagamentos Inativos"}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-
             {/* Card de Imagem do Evento */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-white/95 dark:bg-white/5 backdrop-blur-md rounded-xl shadow-md border border-gray-200/80 dark:border-white/10 p-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                 Imagem do Evento
               </h2>

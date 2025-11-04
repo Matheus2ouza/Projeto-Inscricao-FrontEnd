@@ -5,8 +5,10 @@ import { updateEvent } from "../api/updateEvent";
 import { Event, UpdateEventInput } from "../types/eventTypes";
 import { useEventInscriptions } from "./useEventInscriptions";
 import { useEventPayment } from "./useEventPayment";
+import { useInvalidateEventsQuery } from "./useEventsQuery";
 
 export function useFormEditEvent(event: Event) {
+  const { invalidateDetail, invalidateList } = useInvalidateEventsQuery();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const { loading: paymentLoading, updatePayment } = useEventPayment();
@@ -60,11 +62,13 @@ export function useFormEditEvent(event: Event) {
       };
 
       await updateEvent(event.id, updateData);
+
+      // Invalidar cache do evento e da lista de eventos
+      invalidateDetail(event.id);
+      invalidateList();
+
       toast.success("Evento atualizado com sucesso!");
       setIsEditing(false);
-
-      // Recarregar a página para refletir as mudanças
-      window.location.reload();
     } catch (error) {
       toast.error("Erro ao atualizar evento");
       console.error("Error updating event:", error);
@@ -99,16 +103,18 @@ export function useFormEditEvent(event: Event) {
   const handleUpdatePayment = async (paymentEnabled: boolean) => {
     const success = await updatePayment(event.id, paymentEnabled);
     if (success) {
-      // Recarregar a página para refletir as mudanças
-      window.location.reload();
+      // Invalidar cache do evento
+      invalidateDetail(event.id);
+      invalidateList();
     }
   };
 
   const handleUpdateInscription = async (status: "OPEN" | "CLOSE") => {
     const success = await updateInscriptions(event.id, status);
     if (success) {
-      // Recarregar a página para refletir as mudanças
-      window.location.reload();
+      // Invalidar cache do evento
+      invalidateDetail(event.id);
+      invalidateList();
     }
   };
 

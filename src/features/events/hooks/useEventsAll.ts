@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { UseEventsParams, UseEventsResult } from "../types/eventTypes";
-import { useEventsQuery, usePrefetchEvents } from "./useEventsQuery";
+import {
+  useEventsQuery,
+  usePrefetchEventsQuery,
+} from "./useEventsQuery";
 
 export function useEventsAll({
   initialPage = 1,
@@ -17,7 +20,7 @@ export function useEventsAll({
   } = useEventsQuery(page, pageSize);
 
   // Pré-carregar próxima página
-  const { prefetchNextPage } = usePrefetchEvents();
+  const { prefetchNextPage } = usePrefetchEventsQuery();
 
   // Pré-carregar próxima página quando dados carregam
   if (data && page < data.pageCount) {

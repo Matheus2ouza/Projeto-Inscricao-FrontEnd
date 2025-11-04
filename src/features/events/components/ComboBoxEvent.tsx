@@ -17,7 +17,8 @@ import {
 import { cn } from "@/shared/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
 import * as React from "react";
-import { useEvents } from "../../events/hooks/useEvents";
+import { useEventsCombobox } from "../hooks/useEventsCombobox";
+import { EventDto } from "../types/eventTypes";
 
 export type EventOption = { label: string; value: string };
 
@@ -33,15 +34,15 @@ export function ComboboxEvent({
   options,
 }: ComboboxEventProps) {
   const [open, setOpen] = React.useState(false);
-  const { events: fetched, loading, error } = useEvents();
+  const { events: fetched, loading, error } = useEventsCombobox();
 
   // Preferência: props.options > API; fallback: []
   const events = React.useMemo<EventOption[]>(() => {
     if (options && options.length > 0) return options;
     if (fetched && fetched.length > 0) {
-      return fetched.map((r) => ({
-        label: r.name.toUpperCase(),
-        value: r.id,
+      return fetched.map((e: EventDto) => ({
+        label: e.name.toUpperCase(),
+        value: e.id,
       }));
     }
     return [];
@@ -71,15 +72,16 @@ export function ComboboxEvent({
                 ? "text-blue-700 dark:text-blue-300 font-semibold"
                 : "text-gray-700 dark:text-gray-200"
             )}
-            title={selectedEvent?.label} // Tooltip com texto completo
+            title={selectedEvent?.label ?? "Selecione o evento..."} // Tooltip com texto completo
           >
             {value
-              ? truncateText(selectedEvent?.label ?? "Selecione o evento...")
+              ? truncateText(selectedEvent?.label ?? "") ||
+                "Selecione o evento..."
               : loading
-              ? "Carregando eventos..."
-              : events.length === 0
-              ? "Nenhum evento encontrado"
-              : "Selecione o evento..."}
+                ? "Carregando eventos..."
+                : events.length === 0
+                  ? "Nenhum evento encontrado"
+                  : "Selecione o evento..."}
           </span>
           <ChevronsUpDown
             className={cn(
@@ -105,8 +107,8 @@ export function ComboboxEvent({
               {loading
                 ? "Carregando..."
                 : error
-                ? "Falha ao carregar os eventos."
-                : "Nenhum evento encontrado."}
+                  ? "Falha ao carregar os eventos."
+                  : "Nenhum evento encontrado."}
             </CommandEmpty>
             {events.length > 0 && (
               <CommandGroup>
