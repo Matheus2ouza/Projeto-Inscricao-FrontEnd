@@ -1,12 +1,15 @@
 "use client";
 
+import { useAccount } from "@/features/accounts/hooks/useAccount";
+import { updateEventImage } from "@/features/events/api/updateEventImage";
 import TypeInscriptionDialog from "@/features/typeInscription/components/TypeInscriptionDialog";
 import { useTypeInscriptions } from "@/features/typeInscription/hook/useTypeInscriptions";
 import { TypeInscriptions } from "@/features/typeInscription/types/typesInscriptionsTypes";
+import { ConfirmationDialog } from "@/shared/components/ConfirmationDialog";
+import ImageCropDialog from "@/shared/components/ImageCropDialog";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import { Textarea } from "@/shared/components/ui/textarea";
 import {
   ArrowLeft,
   Calendar,
@@ -19,14 +22,18 @@ import {
   Save,
   Tag,
   Trash2,
+  UserCheck,
   Users,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
+import { useEventResponsible } from "../hooks/useEventResponsible";
 import { useInvalidateEventsQuery } from "../hooks/useEventsQuery";
 import { useFormEditEvent } from "../hooks/useFormEditEvent";
 import { Event } from "../types/eventTypes";
+import ResponsiblesDialog from "./ResponsiblesDialog";
 
 interface EventManagementProps {
   event: Event;
@@ -47,13 +54,19 @@ export default function EventManagement({
     setIsEditing,
     loading,
     formData,
+    originalResponsibleIds,
     handleInputChange,
     handleSave,
     handleDelete,
     handleCancel,
     handleUpdatePayment,
     handleUpdateInscription,
+    handleResponsiblesChange,
+    getNewResponsibleIds,
   } = useFormEditEvent(event);
+
+  // Buscar contas para obter os nomes dos responsáveis
+  const { accounts } = useAccount(isEditing);
 
   const {
     loading: typeInscriptionLoading,
@@ -61,6 +74,22 @@ export default function EventManagement({
     update,
     remove,
   } = useTypeInscriptions(event.id);
+
+  const { remove: removeResponsible, loading: removingResponsible } =
+    useEventResponsible();
+
+  const [responsiblesDialogOpen, setResponsiblesDialogOpen] = useState(false);
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [deleteResponsibleDialog, setDeleteResponsibleDialog] = useState<{
+    open: boolean;
+    responsibleId: string | null;
+    responsibleName: string | null;
+  }>({
+    open: false,
+    responsibleId: null,
+    responsibleName: null,
+  });
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("pt-BR");
@@ -210,8 +239,14 @@ export default function EventManagement({
                   Cancelar
                 </Button>
                 <Button
-                  onClick={handleSave}
-                  className="flex items-center gap-2"
+                  onClick={() => {
+                    // Obter apenas os IDs dos novos responsáveis adicionados
+                    const newResponsibleIds = getNewResponsibleIds();
+
+                    // Salvar apenas com os IDs dos novos responsáveis
+                    handleSave(newResponsibleIds);
+                  }}
+                  className="flex items-center gap-2 dark:text-white"
                   disabled={loading}
                 >
                   <Save className="h-4 w-4" />
@@ -251,25 +286,6 @@ export default function EventManagement({
                   ) : (
                     <p className="text-lg font-medium text-gray-900 dark:text-white">
                       {event.name}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Descrição
-                  </label>
-                  {isEditing ? (
-                    <Textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      placeholder="Descrição do evento"
-                      rows={4}
-                    />
-                  ) : (
-                    <p className="text-gray-600 dark:text-gray-400">
-                      {event.description || "Nenhuma descrição fornecida"}
                     </p>
                   )}
                 </div>
@@ -357,6 +373,134 @@ export default function EventManagement({
                 <p className="text-gray-500 dark:text-gray-400">
                   Mapa será implementado aqui
                 </p>
+              </div>
+            </div>
+
+            {/* Card de Responsáveis */}
+            <div className="bg-white/95 dark:bg-white/5 backdrop-blur-md rounded-xl shadow-md border border-gray-200/80 dark:border-white/10 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Responsáveis
+                </h2>
+                <div className="flex items-center gap-3">
+                  {event.regionName && (
+                    <Badge
+                      variant="outline"
+                      className="flex items-center gap-1"
+                    >
+                      <MapPin className="h-3 w-3" />
+                      {event.regionName}
+                    </Badge>
+                  )}
+                  {isEditing && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setResponsiblesDialogOpen(true)}
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Adicionar Responsável
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {(() => {
+                  // Durante edição, mostrar todos os responsáveis selecionados (originais + novos)
+                  // No modo visualização, mostrar apenas os responsáveis do evento
+                  const displayResponsibles = isEditing
+                    ? formData.responsibleIds
+                        .map((id) => {
+                          // Tentar encontrar no evento primeiro
+                          const eventResponsible = event.responsibles?.find(
+                            (r) => r.id === id
+                          );
+                          if (eventResponsible) {
+                            return eventResponsible;
+                          }
+                          // Se não encontrar, buscar nas accounts (novo responsável)
+                          const account = accounts.find((acc) => acc.id === id);
+                          if (account) {
+                            return {
+                              id: account.id,
+                              name: account.username,
+                            };
+                          }
+                          return null;
+                        })
+                        .filter(
+                          (r): r is { id: string; name: string } => r !== null
+                        )
+                    : event.responsibles || [];
+
+                  return displayResponsibles.length > 0 ? (
+                    <div className="space-y-2">
+                      {displayResponsibles.map((responsible) => (
+                        <div
+                          key={responsible.id}
+                          className="flex items-center justify-between p-3 border border-gray-200/60 dark:border-white/10 rounded-lg bg-gray-50/80 dark:bg-white/5 backdrop-blur-sm"
+                        >
+                          <div className="flex items-center gap-2 flex-1">
+                            <UserCheck className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              {responsible.name}
+                            </span>
+                          </div>
+                          {isEditing && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                // Verificar se é o último responsável
+                                if (displayResponsibles.length === 1) {
+                                  toast.error(
+                                    "Impossível remover o responsável",
+                                    {
+                                      description:
+                                        "O evento deve ter pelo menos um responsável.",
+                                    }
+                                  );
+                                  return;
+                                }
+                                setDeleteResponsibleDialog({
+                                  open: true,
+                                  responsibleId: responsible.id,
+                                  responsibleName: responsible.name,
+                                });
+                              }}
+                              disabled={removingResponsible}
+                              className="h-8 px-3 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 dark:text-red-400 dark:hover:text-red-300"
+                            >
+                              Remover
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <UserCheck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Nenhum responsável atribuído
+                      </p>
+                      {isEditing && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="mt-4 flex items-center gap-2"
+                          onClick={() => setResponsiblesDialogOpen(true)}
+                        >
+                          <Plus className="h-4 w-4" />
+                          Adicionar Responsável
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
 
@@ -516,8 +660,13 @@ export default function EventManagement({
               </div>
 
               {isEditing && (
-                <Button variant="outline" className="w-full">
-                  Alterar Imagem
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setImageDialogOpen(true)}
+                  disabled={uploadingImage}
+                >
+                  {uploadingImage ? "Enviando..." : "Alterar Imagem"}
                 </Button>
               )}
             </div>
@@ -532,6 +681,95 @@ export default function EventManagement({
           eventId={event.id}
           onSubmit={handleSubmitType}
           loading={typeInscriptionLoading}
+        />
+
+        {/* Diálogo para gerenciar responsáveis */}
+        {isEditing && (
+          <ResponsiblesDialog
+            open={responsiblesDialogOpen}
+            onOpenChange={setResponsiblesDialogOpen}
+            selectedResponsibleIds={formData.responsibleIds}
+            onAddResponsible={(responsibleId) => {
+              if (!formData.responsibleIds.includes(responsibleId)) {
+                handleResponsiblesChange([
+                  ...formData.responsibleIds,
+                  responsibleId,
+                ]);
+              }
+            }}
+          />
+        )}
+
+        {/* Diálogo de crop de imagem 16:9 para salvar em 1920x1080 */}
+        {isEditing && (
+          <ImageCropDialog
+            open={imageDialogOpen}
+            onOpenChange={setImageDialogOpen}
+            aspect={16 / 9}
+            targetWidth={1920}
+            targetHeight={1080}
+            title="Alterar imagem do evento"
+            description="Arraste/solte sua imagem, ajuste o zoom e posição. Salvaremos em 1920x1080."
+            confirmLabel={uploadingImage ? "Enviando..." : "Salvar imagem"}
+            onConfirm={async ({ base64 }) => {
+              try {
+                setUploadingImage(true);
+                await updateEventImage({
+                  eventId: event.id,
+                  imageBase64: base64,
+                });
+                toast.success("Imagem atualizada com sucesso!");
+                setImageDialogOpen(false);
+                // Atualizar caches
+                invalidateDetail(event.id);
+                await refetch();
+              } catch (err) {
+                toast.error("Falha ao atualizar imagem do evento");
+              } finally {
+                setUploadingImage(false);
+              }
+            }}
+          />
+        )}
+
+        {/* Diálogo de confirmação para excluir responsável */}
+        <ConfirmationDialog
+          open={deleteResponsibleDialog.open}
+          onOpenChange={(open) => {
+            setDeleteResponsibleDialog({
+              open,
+              responsibleId: null,
+              responsibleName: null,
+            });
+          }}
+          onConfirm={async () => {
+            if (deleteResponsibleDialog.responsibleId) {
+              const success = await removeResponsible(
+                event.id,
+                deleteResponsibleDialog.responsibleId,
+                () => {
+                  // Callback de sucesso: recarregar e atualizar lista local
+                  refetch();
+                  handleResponsiblesChange(
+                    formData.responsibleIds.filter(
+                      (id) => id !== deleteResponsibleDialog.responsibleId
+                    )
+                  );
+                  setDeleteResponsibleDialog({
+                    open: false,
+                    responsibleId: null,
+                    responsibleName: null,
+                  });
+                }
+              );
+            }
+          }}
+          title="Excluir Responsável"
+          message={`Tem certeza que deseja remover o responsável "${deleteResponsibleDialog.responsibleName}" deste evento?`}
+          confirmText="Excluir"
+          cancelText="Cancelar"
+          variant="destructive"
+          isLoading={removingResponsible}
         />
       </div>
     </div>

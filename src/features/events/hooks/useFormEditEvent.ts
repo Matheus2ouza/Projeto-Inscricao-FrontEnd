@@ -14,6 +14,10 @@ export function useFormEditEvent(event: Event) {
   const { loading: paymentLoading, updatePayment } = useEventPayment();
   const { loading: inscriptionsLoading, updateInscriptions } =
     useEventInscriptions();
+
+  // IDs dos responsáveis originais do evento
+  const originalResponsibleIds = event.responsibles?.map((r) => r.id) || [];
+
   const [formData, setFormData] = useState({
     name: event.name,
     description: event.description || "",
@@ -29,6 +33,7 @@ export function useFormEditEvent(event: Event) {
     maxParticipants: event.maxParticipants || 0,
     ticketPrice: event.ticketPrice || 0,
     status: event.status || "CLOSE",
+    responsibleIds: originalResponsibleIds,
   });
 
   const handleInputChange = (
@@ -42,7 +47,7 @@ export function useFormEditEvent(event: Event) {
     }));
   };
 
-  const handleSave = async () => {
+  const handleSave = async (newResponsibleIds?: string[]) => {
     try {
       setLoading(true);
 
@@ -52,13 +57,13 @@ export function useFormEditEvent(event: Event) {
 
       const updateData: UpdateEventInput = {
         name: formData.name,
-        description: formData.description,
-        startDate,
-        endDate,
+        startDate: new Date(startDate).toISOString(),
+        endDate: new Date(endDate).toISOString(),
         location: formData.location,
         maxParticipants: formData.maxParticipants || undefined,
         ticketPrice: formData.ticketPrice || undefined,
         status: formData.status,
+        responsibles: newResponsibleIds && newResponsibleIds.length > 0 ? newResponsibleIds : undefined,
       };
 
       await updateEvent(event.id, updateData);
@@ -134,8 +139,23 @@ export function useFormEditEvent(event: Event) {
       maxParticipants: event.maxParticipants || 0,
       ticketPrice: event.ticketPrice || 0,
       status: event.status || "CLOSE",
+      responsibleIds: originalResponsibleIds,
     });
     setIsEditing(false);
+  };
+
+  // Função para obter apenas os IDs dos novos responsáveis adicionados
+  const getNewResponsibleIds = (): string[] => {
+    return formData.responsibleIds.filter(
+      (id) => !originalResponsibleIds.includes(id)
+    );
+  };
+
+  const handleResponsiblesChange = (responsibleIds: string[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      responsibleIds,
+    }));
   };
 
   return {
@@ -143,11 +163,14 @@ export function useFormEditEvent(event: Event) {
     setIsEditing,
     loading: loading || paymentLoading || inscriptionsLoading,
     formData,
+    originalResponsibleIds,
     handleInputChange,
     handleSave,
     handleDelete,
     handleCancel,
     handleUpdatePayment,
     handleUpdateInscription,
+    handleResponsiblesChange,
+    getNewResponsibleIds,
   };
 }

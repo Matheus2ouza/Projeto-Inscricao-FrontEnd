@@ -124,7 +124,7 @@ export default function EventsTableSuper() {
               className="bg-card text-card-foreground flex flex-col transition-all duration-300 ease-in-out shadow-sm w-full overflow-hidden rounded-xl"
             >
               {/* Imagem do Evento */}
-              <div className="relative w-full aspect-[3/1.1] overflow-hidden">
+              <div className="relative w-full aspect-[16/9] overflow-hidden">
                 <Skeleton className="w-full h-full" />
               </div>
               {/* Conteúdo do Card */}
@@ -213,12 +213,14 @@ export default function EventsTableSuper() {
                 )}
               >
                 {/* Imagem do Evento - Ocupando toda a parte superior */}
-                <div className="relative w-full aspect-[3/1.1] overflow-hidden">
+                <div className="relative w-full aspect-[16/9] overflow-hidden">
                   {event.imageUrl ? (
                     <Image
                       src={event.imageUrl}
                       alt={event.name}
                       fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      priority={events.indexOf(event) < 2}
                       className="object-cover"
                     />
                   ) : (
@@ -226,7 +228,7 @@ export default function EventsTableSuper() {
                   )}
                   <div className="absolute inset-0 bg-black/20" />
                   <Badge
-                    className={`absolute top-3 right-3 ${statusBadge.color} text-white min-w-[100px] flex items-center justify-center text-xs`}
+                    className={`absolute top-3 right-3 ${statusBadge.color} text-white min-w-[100px] flex items-center justify-center text-sm`}
                   >
                     {statusBadge.label}
                   </Badge>
@@ -421,7 +423,7 @@ export default function EventsTableSuper() {
                     <Button
                       asChild
                       variant="default"
-                      className="flex items-center gap-2 text-xs sm:text-sm"
+                      className="flex items-center gap-2 text-xs sm:text-sm dark:text-white"
                     >
                       <Link href={`/super/events/${event.id}`}>
                         Gerenciar Evento
