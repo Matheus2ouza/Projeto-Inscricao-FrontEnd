@@ -1,7 +1,7 @@
 "use client";
 
-import { useAccountsComboboxQuery } from "./useAccountsQuery";
 import type { AccountDto } from "../api/getUsersCombobox";
+import { useAccountsComboboxQuery } from "./useAccountsQuery";
 
 type UseAccountResult = {
   accounts: AccountDto[];
@@ -20,7 +20,7 @@ export function useAccount(autoFetch: boolean = true): UseAccountResult {
     error: error
       ? error instanceof Error
         ? error.message
-      : "Falha ao carregar contas"
+        : "Falha ao carregar contas"
       : null,
     refetch: async () => {
       await refetch();

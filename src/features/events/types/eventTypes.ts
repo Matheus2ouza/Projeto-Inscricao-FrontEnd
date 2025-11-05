@@ -1,5 +1,10 @@
 import { TypeInscriptions } from "@/features/typeInscription/types/typesInscriptionsTypes";
 
+export type Responsible = {
+  id: string;
+  name: string;
+};
+
 export type Event = {
   id: string;
   name: string;
@@ -7,17 +12,19 @@ export type Event = {
   endDate: string;
   quantityParticipants: number;
   amountCollected: number;
-  imageUrl: string;
-  location: string;
-  latitude: number;
-  longitude: number;
+  imageUrl?: string;
+  location?: string;
+  latitude?: number | null;
+  longitude?: number | null;
   status: string;
   paymentEneble: boolean;
   regionId: string;
+  regionName?: string;
   createdAt: string;
   updatedAt: string;
   countTypeInscriptions?: number;
   typesInscriptions: TypeInscriptions[];
+  responsibles?: Responsible[];
   // Campos opcionais adicionais para a tela de gerenciamento
   description?: string;
   maxParticipants?: number;
@@ -66,15 +73,14 @@ export type UseEventsResult = {
 
 export type UpdateEventInput = {
   name?: string;
-  description?: string;
   startDate?: string;
   endDate?: string;
   location?: string;
   maxParticipants?: number;
   ticketPrice?: number;
-  image?: string;
   latitude?: number;
   longitude?: number;
   address?: string;
-  status?: string; // Alterado de isOpen para status
+  status?: string;
+  responsibles?: string[]; // IDs dos responsáveis adicionados durante a edição
 };
