@@ -1,7 +1,7 @@
 "use client";
 
-import IndividualInscriptionForm from "@/features/individualInscription/components/IndividualInscriptionForm";
-import { IndividualInscriptionInfo } from "@/features/individualInscription/components/IndividualInscriptionInfo";
+import IndividualInscriptionForm from "@/features/inscriptionIndiv/components/IndivInscriptionForm";
+import { IndividualInscriptionInfo } from "@/features/inscriptionIndiv/components/IndivInscriptionInfo";
 import { Button } from "@/shared/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useParams } from "next/navigation";
