@@ -15,6 +15,7 @@ export default function GroupInscriptionConfirmPage() {
     confirmationData,
     confirmationResult, // Adicione esta linha
     isConfirming,
+    isCancelling,
     timeRemaining,
     handleConfirm,
     handleCancel,
@@ -84,6 +85,7 @@ export default function GroupInscriptionConfirmPage() {
           onConfirm={handleConfirm}
           onCancel={handleCancel}
           isConfirming={isConfirming}
+          isCancelling={isCancelling}
           timeRemaining={timeRemaining}
         />
       )}
