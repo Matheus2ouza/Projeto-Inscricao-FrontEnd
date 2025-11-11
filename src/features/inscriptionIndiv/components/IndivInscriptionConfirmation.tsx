@@ -116,6 +116,7 @@ interface IndividualInscriptionConfirmationProps {
   cacheKey: string;
   confirmationData: any;
   confirming: boolean;
+  cancelling: boolean;
   timeRemaining: number;
   handleConfirm: () => void;
   handleCancel: () => void;
@@ -125,6 +126,7 @@ export default function IndividualInscriptionConfirmation({
   cacheKey,
   confirmationData,
   confirming,
+  cancelling,
   timeRemaining,
   handleConfirm,
   handleCancel,
@@ -343,7 +345,8 @@ export default function IndividualInscriptionConfirmation({
                         •
                       </span>
                       <span>
-                        Após a confirmação, não será possível alterar os dados
+                        Após a confirmação, ainda é possivel alterar os dados em
+                        <strong> Minhas Inscrições</strong>
                       </span>
                     </li>
                   </ul>
@@ -360,9 +363,16 @@ export default function IndividualInscriptionConfirmation({
           onClick={handleCancel}
           variant="outline"
           className="flex-1 h-14 text-base"
-          disabled={confirming || timeRemaining <= 0}
+          disabled={confirming || cancelling || timeRemaining <= 0}
         >
-          Cancelar
+          {cancelling ? (
+            <>
+              <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin mr-2" />
+              Cancelando...
+            </>
+          ) : (
+            "Cancelar"
+          )}
         </Button>
         <Button
           onClick={handleConfirm}
@@ -371,7 +381,7 @@ export default function IndividualInscriptionConfirmation({
             timeRemaining <= 5 && "bg-orange-600 hover:bg-orange-700",
             timeRemaining <= 0 && "bg-red-600 hover:bg-red-700"
           )}
-          disabled={confirming || timeRemaining <= 0}
+          disabled={confirming || cancelling || timeRemaining <= 0}
         >
           {timeRemaining <= 0 ? (
             "Tempo Esgotado"

@@ -2,8 +2,9 @@
 
 import { useGlobalLoading } from "@/components/GlobalLoading";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { cancelIndividualInscription } from "../api/cancelIndividualInscription";
 import {
   confirmIndividualInscription,
   ConfirmIndividualInscriptionResponse,
@@ -19,6 +20,7 @@ export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
     useState<ConfirmIndividualInscriptionResponse | null>(null);
   const { setLoading } = useGlobalLoading();
   const [confirming, setConfirming] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(30 * 60); // 30 minutos em segundos
 
@@ -79,7 +81,55 @@ export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
     };
 
     loadConfirmationData();
-  }, [cacheKey]);
+  }, [cacheKey, setLoading]);
+
+  // Função para quando o tempo expirar
+  const handleTimeExpired = useCallback(async () => {
+    const decodedCacheKey = decodeURIComponent(cacheKey);
+
+    try {
+      // Chamar API para cancelar a inscrição
+      await cancelIndividualInscription(decodedCacheKey);
+
+      // Limpar dados do localStorage
+      localStorage.removeItem(`individual-inscription-${decodedCacheKey}`);
+      localStorage.removeItem(`individual-time-${decodedCacheKey}`);
+
+      toast.error("Tempo esgotado! A inscrição foi cancelada automaticamente.");
+      router.replace("/user/events");
+    } catch (error: unknown) {
+      console.error("Erro ao cancelar inscrição (tempo expirado):", error);
+
+      // Limpar dados do localStorage mesmo em caso de erro
+      localStorage.removeItem(`individual-inscription-${decodedCacheKey}`);
+      localStorage.removeItem(`individual-time-${decodedCacheKey}`);
+
+      // Type guard para verificar se é um erro com estrutura de resposta
+      const isErrorWithResponse = (
+        err: unknown
+      ): err is { response?: { data?: { message?: string } } } => {
+        return typeof err === "object" && err !== null && "response" in err;
+      };
+
+      // Type guard para verificar se é um Error padrão
+      const isStandardError = (err: unknown): err is Error => {
+        return err instanceof Error;
+      };
+
+      let errorMessage = "Tempo esgotado. Erro ao cancelar inscrição.";
+
+      if (isErrorWithResponse(error)) {
+        errorMessage =
+          error.response?.data?.message ||
+          "Tempo esgotado. Erro ao cancelar inscrição.";
+      } else if (isStandardError(error)) {
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage);
+      router.replace("/user/events");
+    }
+  }, [cacheKey, router]);
 
   // Contador de tempo
   useEffect(() => {
@@ -97,19 +147,7 @@ export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeRemaining, confirmationData]);
-
-  // Função para quando o tempo expirar
-  const handleTimeExpired = () => {
-    const decodedCacheKey = decodeURIComponent(cacheKey);
-
-    // Limpar dados do localStorage
-    localStorage.removeItem(`individual-inscription-${decodedCacheKey}`);
-    localStorage.removeItem(`individual-time-${decodedCacheKey}`);
-
-    toast.error("Tempo esgotado! A inscrição foi cancelada automaticamente.");
-    router.replace("/user/events");
-  };
+  }, [timeRemaining, confirmationData, handleTimeExpired]);
 
   // Função para confirmar inscrição
   const handleConfirm = async () => {
@@ -162,12 +200,52 @@ export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
   };
 
   // Função para cancelar/voltar
-  const handleCancel = () => {
-    // Limpar dados do localStorage ao cancelar
-    const decodedCacheKey = decodeURIComponent(cacheKey);
-    localStorage.removeItem(`individual-inscription-${decodedCacheKey}`);
-    localStorage.removeItem(`individual-time-${decodedCacheKey}`);
-    router.replace("/user/events");
+  const handleCancel = async () => {
+    setCancelling(true);
+    setLoading(true);
+    try {
+      // Decodificar o cacheKey para a API
+      const decodedCacheKey = decodeURIComponent(cacheKey);
+
+      // Chamar API para cancelar a inscrição
+      await cancelIndividualInscription(decodedCacheKey);
+
+      // Limpar dados do localStorage após cancelamento bem-sucedido
+      localStorage.removeItem(`individual-inscription-${decodedCacheKey}`);
+      localStorage.removeItem(`individual-time-${decodedCacheKey}`);
+
+      toast.success("Inscrição cancelada com sucesso!");
+      router.replace("/user/individual-inscription");
+    } catch (error: unknown) {
+      console.error("Erro ao cancelar inscrição:", error);
+
+      // Type guard para verificar se é um erro com estrutura de resposta
+      const isErrorWithResponse = (
+        err: unknown
+      ): err is { response?: { data?: { message?: string } } } => {
+        return typeof err === "object" && err !== null && "response" in err;
+      };
+
+      // Type guard para verificar se é um Error padrão
+      const isStandardError = (err: unknown): err is Error => {
+        return err instanceof Error;
+      };
+
+      let errorMessage = "Erro ao cancelar inscrição. Tente novamente.";
+
+      if (isErrorWithResponse(error)) {
+        errorMessage =
+          error.response?.data?.message ||
+          "Erro ao cancelar inscrição. Tente novamente.";
+      } else if (isStandardError(error)) {
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage);
+    } finally {
+      setCancelling(false);
+      setLoading(false);
+    }
   };
 
   // Função para pagamento
@@ -177,7 +255,7 @@ export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
 
   // Função para pular pagamento
   const handleSkipPayment = () => {
-    router.replace("/user/events");
+    router.replace("/user/individual-inscription");
   };
 
   // Converter segundos para minutos
@@ -188,6 +266,7 @@ export const useIndividualInscriptionConfirmation = (cacheKey: string) => {
     confirmationData,
     confirmationResult,
     confirming,
+    cancelling,
     error,
     timeRemaining: minutesRemaining,
 

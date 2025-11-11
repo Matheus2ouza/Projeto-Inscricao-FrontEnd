@@ -1,8 +1,8 @@
 "use client";
 
-import IndividualInscriptionConfirmation from "@/features/individualInscription/components/IndividualInscriptionConfirmation";
-import { IndividualPaymentConfirmation } from "@/features/individualInscription/components/IndividualPaymentConfirmation";
-import { useIndividualInscriptionConfirmation } from "@/features/individualInscription/hooks/useIndividualInscriptionConfirmation";
+import IndividualInscriptionConfirmation from "@/features/inscriptionIndiv/components/IndivInscriptionConfirmation";
+import { IndividualPaymentConfirmation } from "@/features/inscriptionIndiv/components/IndivPaymentConfirmation";
+import { useIndividualInscriptionConfirmation } from "@/features/inscriptionIndiv/hooks/useIndividualInscriptionConfirmation";
 import { Button } from "@/shared/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useParams } from "next/navigation";
@@ -15,6 +15,7 @@ export default function IndividualInscriptionConfirmPage() {
     confirmationData,
     confirmationResult,
     confirming,
+    cancelling,
     error,
     timeRemaining,
     handleConfirm,
@@ -85,6 +86,7 @@ export default function IndividualInscriptionConfirmPage() {
             cacheKey={cacheKey}
             confirmationData={confirmationData}
             confirming={confirming}
+            cancelling={cancelling}
             timeRemaining={timeRemaining}
             handleConfirm={handleConfirm}
             handleCancel={handleCancel}

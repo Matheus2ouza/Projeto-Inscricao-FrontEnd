@@ -17,7 +17,7 @@ export type Event = {
   latitude?: number | null;
   longitude?: number | null;
   status: string;
-  paymentEneble: boolean;
+  paymentEnebled: boolean;
   regionId: string;
   regionName?: string;
   createdAt: string;
@@ -83,4 +83,48 @@ export type UpdateEventInput = {
   address?: string;
   status?: string;
   responsibles?: string[]; // IDs dos responsáveis adicionados durante a edição
+};
+
+export type FindDetailsEventRequest = {
+  eventId: string;
+};
+
+export type TypeInscription = {
+  description: string;
+  value: number;
+};
+
+export type statusEvent = "OPEN" | "CLOSE" | "FINALIZED";
+
+export type FindDetailsEventResponse = {
+  id: string;
+  name: string;
+  startDate: string | Date;
+  endDate: string | Date;
+  imageUrl?: string;
+  location?: string;
+  longitude?: number | null;
+  latitude?: number | null;
+  status: statusEvent;
+  paymentEnabled: boolean;
+  regionName?: string;
+  typeInscriptions: TypeInscription[];
+};
+
+export type InscriptionSummary = {
+  id: string;
+  name: string;
+  createAt: string | Date;
+  countParticipants: number;
+};
+
+export type AccountWithInscriptions = {
+  id: string;
+  username: string;
+  countInscriptons: number;
+  inscriptions: InscriptionSummary[];
+};
+
+export type FindAccountWithInscriptionsResponse = {
+  accounts: AccountWithInscriptions[];
 };

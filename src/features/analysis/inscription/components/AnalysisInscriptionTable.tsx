@@ -56,7 +56,7 @@ export default function AnalysisInscriptionTable() {
   // Função para determinar o status da análise
   const getAnalysisStatusInfo = (
     countInscriptions: number,
-    countInscritpionsAnalysis: number,
+    countInscritpionsAnalysis: number
   ) => {
     const pendingCount = countInscriptions - countInscritpionsAnalysis;
     const inAnalysisCount = countInscritpionsAnalysis;
@@ -157,12 +157,12 @@ export default function AnalysisInscriptionTable() {
           {Array.from({ length: 8 }).map((_, index) => (
             <Card
               key={index}
-              className="w-full border border-transparent shadow-md bg-white dark:bg-zinc-900 dark:border-zinc-800"
+              className="w-full border border-transparent shadow-md rounded-xl bg-white dark:bg-zinc-900 dark:border-zinc-800"
             >
               <CardBody className="p-0">
                 <Skeleton className="w-full h-48 rounded-t-xl" />
               </CardBody>
-              <CardFooter className="flex flex-col items-start p-4 bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800">
+              <CardFooter className="flex flex-col items-start p-4 bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800 rounded-b-xl">
                 <Skeleton className="h-6 w-3/4 mb-2" />
                 <Skeleton className="h-4 w-1/2 mb-2" />
                 <Skeleton className="h-4 w-1/2" />
@@ -176,7 +176,7 @@ export default function AnalysisInscriptionTable() {
             {events.map((event) => {
               const statusInfo = getAnalysisStatusInfo(
                 event.countInscriptions,
-                event.countInscriptionsAnalysis,
+                event.countInscriptionsAnalysis
               );
               const gradientClass = generateGradient(event.name);
               // Se não há imagem, não está carregando. Se há imagem, verifica o estado
@@ -187,7 +187,7 @@ export default function AnalysisInscriptionTable() {
               return (
                 <Card
                   key={event.id}
-                  className="w-full hover:shadow-xl transition-all duration-300 border border-transparent shadow-md rounded-xl hover:scale-[1.02] overflow-visible bg-white dark:bg-zinc-900 dark:border-zinc-800"
+                  className="w-full hover:shadow-xl transition-all duration-300 border border-transparent shadow-md rounded-xl hover:scale-[1.02] overflow-visible bg-white dark:bg-zinc-900"
                 >
                   <CardBody className="p-0 relative overflow-visible">
                     <div className="w-full h-48 relative">
@@ -250,7 +250,7 @@ export default function AnalysisInscriptionTable() {
                       </div>
                     )}
                   </CardBody>
-                  <CardFooter className="flex flex-col items-start p-4 gap-3 bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800">
+                  <CardFooter className="flex flex-col items-start p-4 gap-3 bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800 rounded-b-xl">
                     <h3 className="font-bold text-lg mb-1 line-clamp-2 text-gray-900 dark:text-white">
                       {event.name}
                     </h3>
@@ -281,10 +281,11 @@ export default function AnalysisInscriptionTable() {
                     {/* Botão de Análise */}
                     <div className="flex flex-col w-full gap-2 mt-2">
                       <Button
-                        variant="outline"
+                        variant="default"
                         size="sm"
                         onClick={() => handleIndividualInscription(event.id)}
                         disabled={statusInfo.disabled}
+                        className="dark: text-white"
                       >
                         {event.countInscriptions === 0
                           ? "Sem Inscrições"

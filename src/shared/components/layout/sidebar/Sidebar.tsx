@@ -60,7 +60,7 @@ export default function AppSidebarNormal({
   const { user } = useCurrentUser();
   const router = useRouter();
   const isMobile = useIsMobile();
-  const [inscriptionsOpen, setInscriptionsOpen] = React.useState(false);
+  const [inscriptionsOpen, setInscriptionsOpen] = React.useState(true);
 
   const userInitials = React.useMemo(() => {
     if (user?.username) {
@@ -104,6 +104,7 @@ export default function AppSidebarNormal({
             <SidebarGroup className="gap-2">
               <SidebarGroupContent>
                 <SidebarMenu>
+                  {/* Inicio */}
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
                       <a href="/user/home" className="flex items-center gap-2">
@@ -113,6 +114,20 @@ export default function AppSidebarNormal({
                     </SidebarMenuButton>
                   </SidebarMenuItem>
 
+                  {/* Eventos */}
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a
+                        href="/user/events"
+                        className="flex items-center gap-2"
+                      >
+                        <CalendarCheck2 className="size-4" />
+                        Eventos
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  {/* Inscrições */}
                   <SidebarMenuItem>
                     <Collapsible
                       open={inscriptionsOpen}
@@ -135,7 +150,18 @@ export default function AppSidebarNormal({
                       <CollapsibleContent>
                         <SidebarMenuSub className="mt-1 border-0 pl-6">
                           <SidebarMenuSubItem>
-                            <SidebarMenuSubButton href="#" className="gap-2">
+                            <SidebarMenuSubButton
+                              href="/user/individual-inscription"
+                              className="gap-2"
+                            >
+                              <span>Inscrição em Individual</span>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                          <SidebarMenuSubItem>
+                            <SidebarMenuSubButton
+                              href="/user/group-inscription"
+                              className="gap-2"
+                            >
                               <span>Inscrição em Grupo</span>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
@@ -144,18 +170,7 @@ export default function AppSidebarNormal({
                     </Collapsible>
                   </SidebarMenuItem>
 
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <a
-                        href="/user/events"
-                        className="flex items-center gap-2"
-                      >
-                        <CalendarCheck2 className="size-4" />
-                        Eventos
-                      </a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-
+                  {/* Minhas inscrições */}
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
                       <a

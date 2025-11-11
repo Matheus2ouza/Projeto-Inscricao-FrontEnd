@@ -57,7 +57,7 @@ export default function EventManagementPage() {
             {"Erro ao carregar evento"}
           </p>
           <Button asChild>
-            <Link href="/super/events">Voltar para Eventos</Link>
+            <Link href="/super/events/manager">Voltar para Eventos</Link>
           </Button>
         </div>
       </div>

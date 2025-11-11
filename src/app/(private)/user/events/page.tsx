@@ -13,7 +13,7 @@ import {
 } from "@/shared/components/ui/pagination";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Card, CardBody, CardFooter } from "@heroui/react";
-import { Calendar, Loader2, MapPin, User, Users } from "lucide-react";
+import { Calendar, Loader2, MapPin } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -26,12 +26,8 @@ export default function EventsPage() {
     pageSize: 8,
   });
 
-  const handleIndividualInscription = (eventId: string) => {
-    router.push(`/user/individual-inscription/${eventId}`);
-  };
-
-  const handleGroupInscription = (eventId: string) => {
-    router.push(`/user/group-inscription/${eventId}`);
+  const handleDetailsEvent = (eventId: string) => {
+    router.push(`/user/events/${eventId}`);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -124,11 +120,14 @@ export default function EventsPage() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, index) => (
-            <Card key={index} className="w-full border-0 shadow-md">
+            <Card
+              key={index}
+              className="w-full border border-transparent shadow-md rounded-xl bg-white dark:bg-zinc-900 dark:border-zinc-800"
+            >
               <CardBody className="p-0">
                 <Skeleton className="w-full h-48 rounded-t-xl" />
               </CardBody>
-              <CardFooter className="flex flex-col items-start p-4">
+              <CardFooter className="flex flex-col items-start p-4 bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800 rounded-b-xl">
                 <Skeleton className="h-6 w-3/4 mb-2" />
                 <Skeleton className="h-4 w-1/2 mb-2" />
                 <Skeleton className="h-4 w-1/2" />
@@ -146,7 +145,7 @@ export default function EventsPage() {
               return (
                 <Card
                   key={event.id}
-                  className="w-full hover:shadow-xl transition-all duration-300 border-0 shadow-md rounded-xl overflow-hidden hover:scale-[1.02]"
+                  className="w-full hover:shadow-xl transition-all duration-300 border border-transparent shadow-md rounded-xl overflow-hidden hover:scale-[1.02] bg-white dark:bg-zinc-900"
                 >
                   <CardBody className="p-0 relative">
                     <div className="w-full h-48 relative">
@@ -154,7 +153,7 @@ export default function EventsPage() {
                         <>
                           {/* Loading overlay para a imagem */}
                           {imageLoading && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
+                            <div className="absolute inset-0 flex items-center justify-center bg-muted/80 dark:bg-muted/40 z-10">
                               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                             </div>
                           )}
@@ -197,22 +196,24 @@ export default function EventsPage() {
                       </Badge>
                     </div>
                   </CardBody>
-                  <CardFooter className="flex flex-col items-start p-4 gap-3">
-                    <h3 className="font-bold text-lg mb-1 line-clamp-2">
+                  <CardFooter className="flex flex-col items-start p-4 gap-3 bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800 rounded-b-xl">
+                    <h3 className="font-bold text-lg mb-1 line-clamp-2 text-gray-900 dark:text-white">
                       {event.name}
                     </h3>
 
-                    <div className="flex items-center text-sm dark:text-white mb-1">
-                      <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 mb-1">
+                      <Calendar className="w-4 h-4 mr-2 flex-shrink-0 text-gray-600 dark:text-gray-400" />
                       <span className="line-clamp-1">
                         {new Date(event.startDate).toLocaleDateString("pt-BR")}{" "}
                         - {new Date(event.endDate).toLocaleDateString("pt-BR")}
                       </span>
                     </div>
 
-                    <div className="flex items-center text-sm dark:text-white">
-                      <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
-                      <span className="line-clamp-1">{event.location}</span>
+                    <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
+                      <MapPin className="w-4 h-4 mr-2 flex-shrink-0 text-gray-600 dark:text-gray-400" />
+                      <span className="line-clamp-1">
+                        {event.location || "Local não informado"}
+                      </span>
                     </div>
 
                     {/* Botões de Inscrição */}
@@ -220,22 +221,10 @@ export default function EventsPage() {
                       <Button
                         size="sm"
                         className="w-full dark:text-white rounded-lg"
-                        onClick={() => handleIndividualInscription(event.id)}
+                        onClick={() => handleDetailsEvent(event.id)}
                         disabled={statusInfo.disabled}
                       >
-                        <User className="w-4 h-4 mr-2" />
-                        Inscrição Individual
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full rounded-lg border-2"
-                        onClick={() => handleGroupInscription(event.id)}
-                        disabled={statusInfo.disabled}
-                      >
-                        <Users className="w-4 h-4 mr-2" />
-                        Inscrição em Grupo
+                        Saiba Mais
                       </Button>
                     </div>
 
@@ -246,7 +235,7 @@ export default function EventsPage() {
                             <Badge
                               key={type.id}
                               variant="outline"
-                              className="text-xs rounded-md border"
+                              className="text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-zinc-800"
                             >
                               {type.description}
                             </Badge>
@@ -254,7 +243,7 @@ export default function EventsPage() {
                           {event.typesInscriptions.length > 3 && (
                             <Badge
                               variant="outline"
-                              className="text-xs rounded-md border"
+                              className="text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-zinc-800"
                             >
                               +{event.typesInscriptions.length - 3}
                             </Badge>

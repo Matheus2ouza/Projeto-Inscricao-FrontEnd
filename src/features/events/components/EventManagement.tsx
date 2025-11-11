@@ -6,6 +6,7 @@ import TypeInscriptionDialog from "@/features/typeInscription/components/TypeIns
 import { useTypeInscriptions } from "@/features/typeInscription/hook/useTypeInscriptions";
 import { TypeInscriptions } from "@/features/typeInscription/types/typesInscriptionsTypes";
 import { ConfirmationDialog } from "@/shared/components/ConfirmationDialog";
+import EventMap from "@/shared/components/EventMap";
 import ImageCropDialog from "@/shared/components/ImageCropDialog";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -27,6 +28,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useEventResponsible } from "../hooks/useEventResponsible";
@@ -44,6 +46,7 @@ export default function EventManagement({
   event,
   refetch,
 }: EventManagementProps) {
+  const router = useRouter();
   const { invalidateDetail } = useInvalidateEventsQuery();
   const [showAmount, setShowAmount] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -169,7 +172,7 @@ export default function EventManagement({
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <Button variant="outline" size="icon" asChild>
-              <Link href="/super/events">
+              <Link href="/super/events/manager">
                 <ArrowLeft className="w-4 h-4" />
               </Link>
             </Button>
@@ -201,12 +204,12 @@ export default function EventManagement({
                     : "Abrir Inscrições"}
                 </Button>
                 <Button
-                  variant={event.paymentEneble ? "destructive" : "outline"}
-                  onClick={() => handleUpdatePayment(!event.paymentEneble)}
+                  variant={event.paymentEnebled ? "destructive" : "outline"}
+                  onClick={() => handleUpdatePayment(!event.paymentEnebled)}
                   className="flex items-center gap-2"
                   disabled={loading}
                 >
-                  {event.paymentEneble
+                  {event.paymentEnebled
                     ? "Fechar Pagamentos"
                     : "Abrir Pagamentos"}
                 </Button>
@@ -345,35 +348,66 @@ export default function EventManagement({
 
             {/* Card de Localização */}
             <div className="bg-white/95 dark:bg-white/5 backdrop-blur-md rounded-xl shadow-md border border-gray-200/80 dark:border-white/10 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                Localização
-              </h2>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Endereço
-                </label>
-                {isEditing ? (
-                  <Input
-                    name="location"
-                    value={formData.location}
-                    onChange={handleInputChange}
-                    placeholder="Endereço do evento"
-                  />
-                ) : (
-                  <div className="flex items-center gap-2 text-gray-900 dark:text-white">
-                    <MapPin className="h-4 w-4" />
-                    <span>{event.location || "Local não definido"}</span>
-                  </div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Localização
+                </h2>
+                {isEditing && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const params = new URLSearchParams();
+                      if (event.latitude && event.longitude) {
+                        params.append("lat", event.latitude.toString());
+                        params.append("lng", event.longitude.toString());
+                      }
+                      if (event.location) {
+                        params.append("address", event.location);
+                      }
+                      router.push(
+                        `/super/events/${event.id}/location?${params.toString()}`
+                      );
+                    }}
+                    className="flex items-center gap-2"
+                  >
+                    <Edit3 className="h-4 w-4" />
+                    {event.latitude && event.longitude
+                      ? "Editar Localização"
+                      : "Definir Localização"}
+                  </Button>
                 )}
               </div>
 
-              {/* Mapa será implementado posteriormente */}
-              <div className="mt-4 h-48 bg-gray-50/80 dark:bg-white/5 backdrop-blur-sm rounded-lg border border-gray-200/60 dark:border-white/10 flex items-center justify-center">
-                <p className="text-gray-500 dark:text-gray-400">
-                  Mapa será implementado aqui
-                </p>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Endereço
+                </label>
+                <div className="flex items-center gap-2 text-gray-900 dark:text-white">
+                  <MapPin className="h-4 w-4" />
+                  <span>{event.location || "Local não definido"}</span>
+                </div>
               </div>
+
+              {/* Mapa */}
+              {event.latitude && event.longitude ? (
+                <div className="mt-4 rounded-lg overflow-hidden border border-gray-200/60 dark:border-white/10">
+                  <EventMap
+                    lat={event.latitude}
+                    lng={event.longitude}
+                    height="300px"
+                    zoom={15}
+                    markerTitle={event.name}
+                  />
+                </div>
+              ) : (
+                <div className="mt-4 h-48 bg-gray-50/80 dark:bg-white/5 backdrop-blur-sm rounded-lg border border-gray-200/60 dark:border-white/10 flex items-center justify-center">
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Nenhuma localização definida
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Card de Responsáveis */}

@@ -12,7 +12,7 @@ export interface Participant {
   id: string;
   typeInscription: string | undefined;
   name: string;
-  birthDate: Date;
+  birthDate: Date | string;
   gender: string;
 }
 
@@ -24,8 +24,8 @@ export interface InscriptionDetails {
   phone: string;
   totalValue: number;
   status: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
   payments?: Payment[];
   participants: Participant[];
   countParticipants: number;

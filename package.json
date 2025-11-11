@@ -13,6 +13,7 @@
     "@heroui/navbar": "^2.2.24",
     "@heroui/react": "^2.8.4",
     "@hookform/resolvers": "^5.2.2",
+    "@radix-ui/react-aspect-ratio": "^1.1.8",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-dialog": "^1.1.15",
