@@ -26,6 +26,7 @@ interface GroupInscriptionConfirmationProps {
   onConfirm: () => void;
   onCancel: () => void;
   isConfirming: boolean;
+  isCancelling?: boolean;
   timeRemaining?: number; // em minutos
 }
 
@@ -85,6 +86,7 @@ export function GroupInscriptionConfirmation({
   onConfirm,
   onCancel,
   isConfirming,
+  isCancelling = false,
   timeRemaining = 30,
 }: GroupInscriptionConfirmationProps) {
   const formatCurrency = (value: number) => {
@@ -360,14 +362,22 @@ export function GroupInscriptionConfirmation({
           onClick={onCancel}
           variant="outline"
           className="flex-1 h-12 sm:h-14 text-sm sm:text-base order-2 sm:order-1"
-          disabled={isConfirming}
+          disabled={isConfirming || isCancelling}
         >
-          Cancelar
+          {isCancelling ? (
+            <>
+              <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin mr-2" />
+              <span className="hidden sm:inline">Cancelando...</span>
+              <span className="sm:hidden">Cancelando</span>
+            </>
+          ) : (
+            "Cancelar"
+          )}
         </Button>
         <Button
           onClick={onConfirm}
           className="flex-1 h-12 sm:h-14 text-sm sm:text-base bg-gray-900 hover:bg-gray-800 text-white order-1 sm:order-2"
-          disabled={isConfirming}
+          disabled={isConfirming || isCancelling}
         >
           {isConfirming ? (
             <>
