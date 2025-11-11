@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getInscriptionsDetails } from "../api/getInscriptionDetails";
+import { getInscriptionsDetails } from "../api/getInscriptionsDetails";
 import { DetailsInscriptionsTableProps } from "../types/inscriptionsDetails.types";
 
 // Chaves para o cache do React Query

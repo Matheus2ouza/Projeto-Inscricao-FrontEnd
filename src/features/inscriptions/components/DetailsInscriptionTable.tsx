@@ -1,11 +1,11 @@
 import { useGlobalLoading } from "@/components/GlobalLoading";
+import { downloadParticipantsPdf } from "@/features/inscriptions/api/downloadParticipantsPdf";
 import RegisterPaymentDialog from "@/features/payment/components/RegisterPaymentDialog";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
@@ -39,15 +39,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/shared/components/ui/tabs";
-import {
-  ArrowLeft,
-  CreditCard,
-  Download,
-  Eye,
-  Loader2,
-  Plus,
-  User,
-} from "lucide-react";
+import { CreditCard, Download, Eye, Loader2, Plus, User } from "lucide-react";
 import { MouseEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { InscriptionDetails } from "../types/inscriptionsDetails.types";
@@ -74,6 +66,8 @@ export default function DetailsInscriptionsTable({
   const [currentPage, setCurrentPage] = useState(1);
   const [currentPaymentPage, setCurrentPaymentPage] = useState(1);
   const [activeTab, setActiveTab] = useState("participants");
+  const [participantsDownloadLoading, setParticipantsDownloadLoading] =
+    useState(false);
   const { setLoading } = useGlobalLoading();
 
   const itemsPerPage = 15;
@@ -195,28 +189,12 @@ export default function DetailsInscriptionsTable({
   // Se houver erro, mostrar mensagem de erro
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => window.history.back()}
-          >
-            <ArrowLeft className="w-4 h-4" />
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            Tentar novamente
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Detalhes da Inscrição
-            </h1>
-          </div>
-        </div>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
-            <Button onClick={() => window.location.reload()} variant="outline">
-              Tentar novamente
-            </Button>
-          </div>
         </div>
       </div>
     );
@@ -225,24 +203,8 @@ export default function DetailsInscriptionsTable({
   // Se não há dados, mostrar mensagem
   if (!data) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => window.history.back()}
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Detalhes da Inscrição
-            </h1>
-          </div>
-        </div>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <p className="text-muted-foreground">Nenhum dado encontrado</p>
-        </div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-muted-foreground">Nenhum dado encontrado</p>
       </div>
     );
   }
@@ -263,21 +225,19 @@ export default function DetailsInscriptionsTable({
   };
 
   const getStatusText = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "paid":
+    switch (status) {
+      case "APPROVED":
         return "PAGO";
-      case "pending":
+      case "UNDER_REVIEW":
+        return "EM ANÁLISE";
+      case "REFUSED":
+        return "RECUSADO";
+      case "PENDING":
         return "PENDENTE";
-      case "under_review":
-        return "EM ANÁLISE";
-      case "cancelled":
+      case "PAID":
+        return "PAGO";
+      case "CANCELLED":
         return "CANCELADO";
-      case "aprovado":
-        return "APROVADO";
-      case "rejeitado":
-        return "REJEITADO";
-      case "em_análise":
-        return "EM ANÁLISE";
       default:
         return status.toUpperCase();
     }
@@ -285,20 +245,22 @@ export default function DetailsInscriptionsTable({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
-      case "UNDER_REVIEW":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+      case "APPROVED":
       case "PAID":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+      case "UNDER_REVIEW":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+      case "REFUSED":
       case "CANCELLED":
         return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+      case "PENDING":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
     }
   };
 
-  const calculateAge = (birthDate: Date) => {
+  const calculateAge = (birthDate: Date | string) => {
     const today = new Date();
     const birth = new Date(birthDate);
     let age = today.getFullYear() - birth.getFullYear();
@@ -324,6 +286,60 @@ export default function DetailsInscriptionsTable({
 
   const handleImageStart = (paymentId: string) => {
     setImageLoading((prev) => ({ ...prev, [paymentId]: true }));
+  };
+
+  const renderRejectionReason = (reason?: string | null) => {
+    if (!reason) {
+      return <span className="text-muted-foreground">-</span>;
+    }
+
+    return (
+      <div
+        className="w-full text-xs font-medium text-destructive break-words whitespace-pre-wrap leading-snug text-left"
+        title={reason}
+      >
+        {reason}
+      </div>
+    );
+  };
+
+  const handleDownloadParticipants = async () => {
+    if (!data?.id) {
+      toast.error("Inscrição não encontrada para gerar a lista.");
+      return;
+    }
+
+    try {
+      setParticipantsDownloadLoading(true);
+      const { pdfBase64, filename } = await downloadParticipantsPdf(data.id);
+      const byteCharacters = atob(pdfBase64);
+      const byteNumbers = new Array(byteCharacters.length);
+
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success("Download da lista iniciado.");
+    } catch (error) {
+      console.error("Erro ao baixar lista de participantes:", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Erro ao gerar PDF da lista de participantes.";
+      toast.error(message);
+    } finally {
+      setParticipantsDownloadLoading(false);
+    }
   };
 
   const goToPage = (page: number) => {
@@ -359,62 +375,61 @@ export default function DetailsInscriptionsTable({
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      {/* Header com botão voltar */}
-      <div className="flex items-center gap-4 mb-8">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => window.history.back()}
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Detalhes da Inscrição
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Informações completas da inscrição #{data.id.slice(0, 8)}...
-          </p>
-        </div>
-      </div>
-
+    <>
       <div className="space-y-4 sm:space-y-6">
         {/* Header com informações principais */}
         <Card>
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-              <div className="flex-1">
-                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                  <User className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Inscrição #{data.id.slice(0, 8)}...
-                </CardTitle>
-                <CardDescription className="text-sm sm:text-base">
-                  Responsável: {data.responsible}
-                </CardDescription>
+          <CardHeader className="pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div className="flex-1 space-y-3">
+                <div>
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-1">
+                    ID da Inscrição
+                  </p>
+                  <CardTitle className="text-base sm:text-lg font-mono">
+                    #{data.id.slice(0, 8)}...
+                  </CardTitle>
+                </div>
+                <div className="border-t pt-3">
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-2">
+                    Responsável
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <p className="text-lg sm:text-xl font-semibold text-foreground">
+                      {data.responsible}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <Badge className={`self-start ${getStatusColor(data.status)}`}>
-                {getStatusText(data.status)}
+              <Badge
+                className={`self-start text-sm px-3 py-1.5 ${getStatusColor(data.status)}`}
+              >
+                {getStatusText(data.status.toUpperCase())}
               </Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Telefone</p>
-                <p className="text-sm text-muted-foreground break-all">
-                  {data.phone}
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t text-center">
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Telefone
                 </p>
+                <p className="text-sm font-medium break-all">{data.phone}</p>
               </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Valor Total</p>
-                <p className="text-sm text-muted-foreground font-semibold">
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Valor Total
+                </p>
+                <p className="text-lg font-bold text-primary">
                   {formatCurrency(data.totalValue)}
                 </p>
               </div>
-              <div className="space-y-1 sm:col-span-2 lg:col-span-1">
-                <p className="text-sm font-medium">Data de Criação</p>
-                <p className="text-sm text-muted-foreground">
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Data de Criação
+                </p>
+                <p className="text-sm font-medium">
                   {formatDateTime(data.createdAt)}
                 </p>
               </div>
@@ -457,9 +472,19 @@ export default function DetailsInscriptionsTable({
                   <CardTitle className="text-lg sm:text-xl">
                     Lista de Participantes
                   </CardTitle>
-                  <div className="text-sm text-muted-foreground">
-                    {data.participants.length} participante(s) no total
-                  </div>
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2"
+                    onClick={handleDownloadParticipants}
+                    disabled={participantsDownloadLoading}
+                  >
+                    {participantsDownloadLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4" />
+                    )}
+                    Baixar Lista
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
@@ -633,12 +658,7 @@ export default function DetailsInscriptionsTable({
                             <div>{formatDateTime(payment.createdAt)}</div>
                             {payment.rejectionReason && (
                               <div className="mt-1">
-                                <Badge
-                                  variant="destructive"
-                                  className="text-[10px] max-w-full truncate"
-                                >
-                                  {payment.rejectionReason}
-                                </Badge>
+                                {renderRejectionReason(payment.rejectionReason)}
                               </div>
                             )}
                           </div>
@@ -814,18 +834,11 @@ export default function DetailsInscriptionsTable({
                                 {formatDateTime(payment.createdAt)}
                               </TableCell>
                               <TableCell>
-                                {payment.rejectionReason ? (
-                                  <Badge
-                                    variant="destructive"
-                                    className="max-w-xs truncate"
-                                  >
-                                    {payment.rejectionReason}
-                                  </Badge>
-                                ) : (
-                                  <span className="text-muted-foreground">
-                                    -
-                                  </span>
-                                )}
+                                <div className="max-w-sm">
+                                  {renderRejectionReason(
+                                    payment.rejectionReason
+                                  )}
+                                </div>
                               </TableCell>
                             </TableRow>
                           ))}
@@ -917,6 +930,6 @@ export default function DetailsInscriptionsTable({
         inscriptionId={data.id}
         totalValue={data.totalValue}
       />
-    </div>
+    </>
   );
 }
