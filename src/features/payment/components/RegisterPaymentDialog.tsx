@@ -238,7 +238,7 @@ export default function RegisterPaymentDialog({
         </DialogHeader>
 
         {/* Container principal com efeito de moeda */}
-        <div className="relative w-full h-[620px] [perspective:1000px]">
+        <div className="relative w-full h-[635px] [perspective:1000px]">
           {/* Card que gira */}
           <div
             className={`relative w-full h-full transition-transform duration-500 [transform-style:preserve-3d] ${
@@ -386,13 +386,16 @@ export default function RegisterPaymentDialog({
 
                     {/* Instruções */}
                     <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <h4 className="text-sm font-medium mb-2">Instruções:</h4>
-                      <ul className="text-xs text-muted-foreground space-y-1">
+                      <h4 className="text-base font-medium mb-2">
+                        Instruções:
+                      </h4>
+                      <ul className="text-sm text-muted-foreground space-y-1">
                         <li>
                           • Realize o pagamento via PIX ou depósito bancário
                         </li>
                         <li>• Utilize os dados acima para a transferência</li>
                         <li>• Após o pagamento, anexe o comprovante</li>
+                        <li>• Envie somente um comprovante de cada vez</li>
                         <li>• O valor pode ser parcial ou total</li>
                       </ul>
                     </div>
