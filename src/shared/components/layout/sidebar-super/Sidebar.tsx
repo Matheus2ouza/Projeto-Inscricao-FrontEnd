@@ -27,14 +27,16 @@ import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { cn } from "@/shared/lib/utils";
 import {
   BanknoteArrowDown,
-  CalendarCheck2,
+  CalendarDays,
   ChevronRight,
   ChevronsUpDown,
+  FileText,
   House,
   LogOut,
   Map,
   ScrollText,
   Settings,
+  SquareChartGantt,
   Tickets,
   Users,
 } from "lucide-react";
@@ -55,7 +57,7 @@ import {
 import { useCurrentUser } from "@/shared/context/user-context";
 import { useLogout } from "@/shared/hooks/logout/logout";
 
-export default function AppSidebarSuper({
+export default function veAppSidebarSuper({
   children,
 }: {
   children?: React.ReactNode;
@@ -65,6 +67,7 @@ export default function AppSidebarSuper({
   const router = useRouter();
   const [inscriptionsOpen, setInscriptionsOpen] = React.useState(true);
   const [paymentsOpen, setPaymentsOpen] = React.useState(true);
+  const [eventsOpen, setEventsOpen] = React.useState(true);
   const isMobile = useIsMobile();
 
   const userInitials = React.useMemo(() => {
@@ -222,15 +225,35 @@ export default function AppSidebarSuper({
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <a
-                        href="/super/events"
-                        className="flex items-center gap-2"
-                      >
-                        <CalendarCheck2 className="size-4" />
-                        Eventos
-                      </a>
-                    </SidebarMenuButton>
+                    <Collapsible open={eventsOpen} onOpenChange={setEventsOpen}>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton className="justify-between">
+                          <span className="flex items-center gap-2">
+                            <CalendarDays className="size-4" />
+                            Eventos
+                          </span>
+                          <ChevronRight
+                            className={cn(
+                              "size-4 text-muted-foreground transition-transform",
+                              eventsOpen && "rotate-90"
+                            )}
+                          />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub className="mt-1 border-0 pl-6">
+                          <SidebarMenuSubItem>
+                            <SidebarMenuSubButton
+                              href="/super/events/manager"
+                              className="gap-2"
+                            >
+                              <FileText className="size-4" />
+                              <span>Gerenciamento</span>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </Collapsible>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
@@ -260,7 +283,7 @@ export default function AppSidebarSuper({
                         href="/super/report"
                         className="flex items-center gap-2"
                       >
-                        <BanknoteArrowDown className="size-4" />
+                        <SquareChartGantt className="size-4" />
                         Relatórios
                       </a>
                     </SidebarMenuButton>

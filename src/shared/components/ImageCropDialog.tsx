@@ -146,56 +146,109 @@ export default function ImageCropDialog({
 
   const handleConfirm = async () => {
     if (!imageUrl || !imgRef.current) return;
-    // Render a fixed canvas of targetWidth x targetHeight, draw the image applying pan/zoom like CSS background-size: contain/cover.
+    // Render a fixed canvas of targetWidth x targetHeight
+    // We want to preserve what's visible in the viewport, including black bars (contain mode)
     const canvas = document.createElement("canvas");
     canvas.width = targetWidth;
     canvas.height = targetHeight;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Fill canvas with black background first
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, targetWidth, targetHeight);
+
     const img = imgRef.current;
 
-    // Determine how the image is displayed inside the viewport at current scale & offset
-    // The viewport on screen has some pixel size; we will compute scale mapping based on container size
+    // Get viewport dimensions
     const container = containerRef.current as HTMLDivElement;
     const viewportRect = container.getBoundingClientRect();
     const viewportWidth = viewportRect.width;
     const viewportHeight = viewportRect.height;
 
-    // Base image fit to cover the viewport
-    const baseScale = Math.max(
-      viewportWidth / img.naturalWidth,
-      viewportHeight / img.naturalHeight
-    );
+    // Calculate how the image is displayed in the viewport (contain mode)
+    const viewportAspect = viewportWidth / viewportHeight;
+    const imageAspect = img.naturalWidth / img.naturalHeight;
+
+    // Base scale to fit image in viewport (contain mode) - preserves entire image
+    let baseScale: number;
+    if (imageAspect > viewportAspect) {
+      // Image is wider - fit width, will have black bars top/bottom
+      baseScale = viewportWidth / img.naturalWidth;
+    } else {
+      // Image is taller - fit height, will have black bars left/right
+      baseScale = viewportHeight / img.naturalHeight;
+    }
+
+    // Apply user zoom
     const appliedScale = baseScale * scale;
-    const displayWidth = img.naturalWidth * appliedScale;
-    const displayHeight = img.naturalHeight * appliedScale;
+    const scaledImageWidth = img.naturalWidth * appliedScale;
+    const scaledImageHeight = img.naturalHeight * appliedScale;
 
-    // The image center in viewport coordinates (0,0) at center
-    const centerX = viewportWidth / 2 + offset.x;
-    const centerY = viewportHeight / 2 + offset.y;
+    // Calculate image position in viewport (centered + offset)
+    const imageCenterX = viewportWidth / 2 + offset.x;
+    const imageCenterY = viewportHeight / 2 + offset.y;
 
-    // Top-left of image on screen
-    const imageLeft = centerX - displayWidth / 2;
-    const imageTop = centerY - displayHeight / 2;
+    // Top-left corner of scaled image in viewport coordinates
+    const imageViewportLeft = imageCenterX - scaledImageWidth / 2;
+    const imageViewportTop = imageCenterY - scaledImageHeight / 2;
 
-    // Now map viewport (target crop) to image pixel coordinates
-    // For each target canvas pixel, corresponds to a viewport pixel scaled to target dims
-    // Equivalent shortcut: compute the portion of original image that is visible in viewport and scale into target canvas
-    const sx = Math.max(0, ((0 - imageLeft) / displayWidth) * img.naturalWidth);
-    const sy = Math.max(
-      0,
-      ((0 - imageTop) / displayHeight) * img.naturalHeight
-    );
-    const sWidth = Math.min(
+    // Calculate what portion of the image is visible in the viewport
+    // Map viewport rectangle to image coordinates
+    const viewportLeftInImage = Math.max(0, -imageViewportLeft / appliedScale);
+    const viewportTopInImage = Math.max(0, -imageViewportTop / appliedScale);
+    const viewportRightInImage = Math.min(
       img.naturalWidth,
-      (viewportWidth / displayWidth) * img.naturalWidth
+      (viewportWidth - imageViewportLeft) / appliedScale
     );
-    const sHeight = Math.min(
+    const viewportBottomInImage = Math.min(
       img.naturalHeight,
-      (viewportHeight / displayHeight) * img.naturalHeight
+      (viewportHeight - imageViewportTop) / appliedScale
     );
 
+    const sx = viewportLeftInImage;
+    const sy = viewportTopInImage;
+    const sWidth = viewportRightInImage - viewportLeftInImage;
+    const sHeight = viewportBottomInImage - viewportTopInImage;
+
+    // Calculate how the image should be drawn on canvas (contain mode)
+    // We want to preserve the same aspect ratio and positioning as in the viewport
+    let canvasImageWidth: number;
+    let canvasImageHeight: number;
+    let canvasImageX: number;
+    let canvasImageY: number;
+
+    if (imageAspect > viewportAspect) {
+      // Image is wider - fits width, add black bars top/bottom
+      canvasImageWidth = targetWidth;
+      canvasImageHeight = targetWidth / imageAspect;
+      canvasImageX = 0;
+      canvasImageY = (targetHeight - canvasImageHeight) / 2;
+    } else {
+      // Image is taller - fits height, add black bars left/right
+      canvasImageWidth = targetHeight * imageAspect;
+      canvasImageHeight = targetHeight;
+      canvasImageX = (targetWidth - canvasImageWidth) / 2;
+      canvasImageY = 0;
+    }
+
+    // Apply user zoom to the drawing area
+    const zoomedCanvasWidth = canvasImageWidth * scale;
+    const zoomedCanvasHeight = canvasImageHeight * scale;
+
+    // Calculate offset based on pan, mapping viewport offset to canvas offset
+    const canvasOffsetX = (offset.x / viewportWidth) * targetWidth;
+    const canvasOffsetY = (offset.y / viewportHeight) * targetHeight;
+
+    // Final position accounting for zoom and pan
+    const finalCanvasX =
+      canvasImageX + (canvasImageWidth - zoomedCanvasWidth) / 2 - canvasOffsetX;
+    const finalCanvasY =
+      canvasImageY +
+      (canvasImageHeight - zoomedCanvasHeight) / 2 -
+      canvasOffsetY;
+
+    // Draw the visible portion of the image
     ctx.imageSmoothingQuality = "high";
     ctx.drawImage(
       img,
@@ -203,16 +256,17 @@ export default function ImageCropDialog({
       sy,
       sWidth,
       sHeight,
-      0,
-      0,
-      targetWidth,
-      targetHeight
+      finalCanvasX,
+      finalCanvasY,
+      zoomedCanvasWidth,
+      zoomedCanvasHeight
     );
 
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob((b) => resolve(b), "image/jpeg", 0.92)
     );
     if (!blob) return;
+
     const base64 = await blobToBase64(blob);
     const file = new File([blob], "event-image-1920x1080.jpg", {
       type: "image/jpeg",
@@ -222,13 +276,13 @@ export default function ImageCropDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl">
+      <DialogContent className="max-w-[70vw] sm:max-w-[65vw] overflow-hidden">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 overflow-hidden">
           {/* Dropzone / Input */}
           {!imageUrl && (
             <div
@@ -265,10 +319,10 @@ export default function ImageCropDialog({
 
           {/* Crop viewport */}
           {imageUrl && (
-            <div className="space-y-3">
+            <div className="space-y-3 min-w-0">
               <div
                 ref={containerRef}
-                className="relative w-full bg-black/70 rounded-md overflow-hidden select-none"
+                className="relative w-full max-w-full bg-black/70 rounded-md overflow-hidden select-none"
                 style={{ aspectRatio: `${aspect}` }}
                 onWheel={handleWheel}
                 onMouseDown={startPan}
@@ -344,7 +398,11 @@ export default function ImageCropDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {cancelLabel}
           </Button>
-          <Button onClick={handleConfirm} disabled={!imageUrl}>
+          <Button
+            onClick={handleConfirm}
+            disabled={!imageUrl}
+            className="dark:text-white"
+          >
             {confirmLabel}
           </Button>
         </DialogFooter>

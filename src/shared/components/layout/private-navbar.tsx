@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/shared/components/ui/button";
 import Logo from "@/shared/components/ui/logo";
 import { ModeToggle } from "@/shared/components/ui/mode-toggle";
 import { SidebarTrigger } from "@/shared/components/ui/sidebar";
@@ -10,7 +9,7 @@ const PrivateNavbar = () => {
   const { logout } = useLogout();
   return (
     <>
-      <nav className="flex justify-between items-center px-2 sm:px-4 lg:px-6 py-3 bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700 w-full overflow-hidden relative z-50">
+      <nav className="flex justify-between items-center px-2 sm:px-4 lg:px-6 py-3 bg-white dark:bg-sidebar shadow-sm border-b border-gray-200 dark:border-sidebar-border w-full overflow-hidden relative z-50">
         {/* Left Section: Sidebar Trigger + Logo + Título */}
         <div className="flex items-center space-x-3">
           {/* Botão para abrir/fechar sidebar */}
@@ -26,11 +25,6 @@ const PrivateNavbar = () => {
 
         {/* Right Section: Desktop Navigation + Actions + Toggle de Tema */}
         <div className="flex items-center space-x-6">
-          <div className="hidden md:flex items-center">
-            <Button variant="outline" onClick={logout}>
-              Sair
-            </Button>
-          </div>
           {/* Toggle de Tema */}
           <ModeToggle />
         </div>
