@@ -419,13 +419,22 @@ export default function EventsTableSuper() {
                   </div>
 
                   {/* Footer do Card */}
-                  <div className="flex justify-end items-center pt-3 sm:pt-4">
+                  <div className="flex justify-end items-center gap-3 pt-3 sm:pt-4">
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 text-xs sm:text-sm dark:text-white"
+                      asChild
+                    >
+                      <Link href={`/super/events/list-inscription/${event.id}`}>
+                        Lista de Inscrições
+                      </Link>
+                    </Button>
                     <Button
                       asChild
                       variant="default"
                       className="flex items-center gap-2 text-xs sm:text-sm dark:text-white"
                     >
-                      <Link href={`/super/events/${event.id}`}>
+                      <Link href={`/super/events/manager/${event.id}`}>
                         Gerenciar Evento
                       </Link>
                     </Button>

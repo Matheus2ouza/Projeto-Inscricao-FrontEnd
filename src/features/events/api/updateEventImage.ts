@@ -7,7 +7,7 @@ type UpdateEventImageInput = {
 
 export async function updateEventImage({ eventId, imageBase64 }: UpdateEventImageInput): Promise<void> {
   try {
-    await axiosInstance.put(`/events/${eventId}/image`, {
+    await axiosInstance.patch(`/events/${eventId}/update/image`, {
       image: imageBase64,
     });
   } catch (error) {
