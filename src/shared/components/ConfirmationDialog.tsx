@@ -75,7 +75,7 @@ export function ConfirmationDialog({
           </div>
         </DialogHeader>
 
-        <DialogFooter className="gap-2 sm:gap-0">
+        <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
           <Button
             type="button"
             variant="outline"
