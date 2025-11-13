@@ -1,6 +1,7 @@
 export type Event = {
   id: string;
   name: string;
+  status: string;
   imageUrl?: string;
   countPayments: number;
   countPaymentsAnalysis: number;

@@ -54,14 +54,28 @@ export type PaymentDetail = {
   id: string;
   status: string;
   value: number;
-  image: string;
+  image?: string | null;
 };
 
-export type AnalysisPaymentResponse = {
+export type AnalysisPaymentRequest = {
+  status?: string[];
+  page: number;
+  pageSize: number;
+};
+
+export type Inscription = {
   id: string;
+  status: string;
   responsible: string;
   phone: string;
   email?: string;
   totalValue: number;
   payments: PaymentDetail[];
+};
+
+export type AnalysisPaymentResponse = {
+  inscription: Inscription;
+  total: number;
+  page: number;
+  pageCount: number;
 };
