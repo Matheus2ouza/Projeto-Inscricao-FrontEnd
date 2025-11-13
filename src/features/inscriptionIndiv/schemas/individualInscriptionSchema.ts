@@ -1,4 +1,3 @@
-// schemas/individualInscriptionSchema.ts
 import { z } from "zod";
 
 export const individualInscriptionSchema = z.object({
