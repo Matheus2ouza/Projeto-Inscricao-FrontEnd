@@ -56,12 +56,7 @@ export default function Login() {
       <div className="min-h-screen flex flex-col">
         {/* Main content */}
         <div className="flex-1 flex flex-col items-center justify-center p-0 mb-16">
-          {" "}
-          {/* Aumentei o margin-bottom */}
-          {/* Logo acima do card */}
           <Logo className="w-48 h-48 object-contain mx-auto mb-8" />{" "}
-          {/* Adicionei margin-bottom na logo */}
-          {/* Card de Login */}
           <div className="w-full max-w-md p-8 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-2xl rounded-2xl border border-white/30 dark:border-gray-700/30 hover:shadow-3xl transition-all duration-300">
             {/* Header */}
             <div className="text-center mb-8">
