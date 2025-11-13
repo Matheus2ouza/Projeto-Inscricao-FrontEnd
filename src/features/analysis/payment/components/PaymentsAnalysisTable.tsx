@@ -1,5 +1,6 @@
 "use client";
 
+import { useEvent } from "@/features/events/hooks/useEvent";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
@@ -12,7 +13,7 @@ import {
   CreditCard,
   DollarSign,
   Menu,
-  Users
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -23,6 +24,7 @@ export default function PaymentsAnalysisTable() {
   const params = useParams();
   const router = useRouter();
   const eventId = params.id as string;
+  const { event } = useEvent(eventId);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<{
     field: string;
@@ -58,9 +60,7 @@ export default function PaymentsAnalysisTable() {
 
       // Verifica se alguma inscrição da conta tem o nome do responsável que corresponde à busca
       return account.inscriptions.some((inscription) =>
-        inscription.responsible
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
+        inscription.responsible.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }) || [];
 
@@ -155,9 +155,7 @@ export default function PaymentsAnalysisTable() {
               {error.message}
             </p>
             <Button asChild className="w-full">
-              <Link href="/super/payments/analysis">
-                Voltar para Análise
-              </Link>
+              <Link href="/super/payments/analysis">Voltar para Análise</Link>
             </Button>
           </CardContent>
         </Card>
@@ -235,7 +233,8 @@ export default function PaymentsAnalysisTable() {
                           (total, account) =>
                             total +
                             account.inscriptions.reduce(
-                              (acc, inscription) => acc + inscription.totalValue,
+                              (acc, inscription) =>
+                                acc + inscription.totalValue,
                               0
                             ),
                           0
@@ -389,7 +388,9 @@ export default function PaymentsAnalysisTable() {
                                               field: "responsible",
                                               direction: "asc",
                                             });
-                                          } else if (sortBy.direction === "asc") {
+                                          } else if (
+                                            sortBy.direction === "asc"
+                                          ) {
                                             setSortBy({
                                               field: "responsible",
                                               direction: "desc",
@@ -434,7 +435,9 @@ export default function PaymentsAnalysisTable() {
                                               field: "countPayments",
                                               direction: "asc",
                                             });
-                                          } else if (sortBy.direction === "asc") {
+                                          } else if (
+                                            sortBy.direction === "asc"
+                                          ) {
                                             setSortBy({
                                               field: "countPayments",
                                               direction: "desc",
@@ -479,7 +482,9 @@ export default function PaymentsAnalysisTable() {
                                               field: "value",
                                               direction: "asc",
                                             });
-                                          } else if (sortBy.direction === "asc") {
+                                          } else if (
+                                            sortBy.direction === "asc"
+                                          ) {
                                             setSortBy({
                                               field: "value",
                                               direction: "desc",
@@ -516,29 +521,37 @@ export default function PaymentsAnalysisTable() {
                                 </tr>
                               </thead>
                               <tbody>
-                                {account.inscriptions.map((inscription, index) => (
-                                  <tr
-                                    key={`${account.id}-${index}`}
-                                    className="border-t hover:bg-muted/50 cursor-pointer transition-colors"
-                                    onClick={() => router.push(`/super/payments/payment/${inscription.id}`)}
-                                  >
-                                    <td className="px-3 py-3">
-                                      <span className="font-medium text-sm">
-                                        {inscription.responsible}
-                                      </span>
-                                    </td>
-                                    <td className="px-3 py-3 text-center">
-                                      <span className="font-semibold text-sm text-green-600">
-                                        {inscription.countPayments}
-                                      </span>
-                                    </td>
-                                    <td className="px-3 py-3 text-center">
-                                      <span className="font-semibold text-sm">
-                                        R$ {inscription.totalValue.toFixed(2)}
-                                      </span>
-                                    </td>
-                                  </tr>
-                                ))}
+                                {account.inscriptions.map(
+                                  (inscription, index) => (
+                                    <tr
+                                      key={`${account.id}-${index}`}
+                                      className="border-t hover:bg-muted/50 cursor-pointer transition-colors"
+                                      onClick={() => {
+                                        const eventStatus =
+                                          event?.status || "OPEN";
+                                        router.push(
+                                          `/super/payments/payment/${inscription.id}?eventStatus=${eventStatus}`
+                                        );
+                                      }}
+                                    >
+                                      <td className="px-3 py-3">
+                                        <span className="font-medium text-sm">
+                                          {inscription.responsible}
+                                        </span>
+                                      </td>
+                                      <td className="px-3 py-3 text-center">
+                                        <span className="font-semibold text-sm text-green-600">
+                                          {inscription.countPayments}
+                                        </span>
+                                      </td>
+                                      <td className="px-3 py-3 text-center">
+                                        <span className="font-semibold text-sm">
+                                          R$ {inscription.totalValue.toFixed(2)}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  )
+                                )}
                               </tbody>
                             </table>
                           </div>
