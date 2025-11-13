@@ -21,6 +21,7 @@ export interface InscriptionDetails {
   accountId: string;
   eventId: string;
   responsible: string;
+  email: string;
   phone: string;
   totalValue: number;
   status: string;
@@ -40,6 +41,7 @@ export type GetInscriptionsDetails = {
   accountId: string;
   eventId: string;
   responsible: string;
+  email: string;
   phone: string;
   totalValue: number;
   status: string;

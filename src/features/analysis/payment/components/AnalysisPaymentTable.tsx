@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
   Pagination,
@@ -51,6 +52,36 @@ export default function AnalysisPaymentTable() {
       ...prev,
       [eventId]: true,
     }));
+  };
+
+  // Função para determinar o status do evento
+  const getEventStatusInfo = (status: string) => {
+    switch (status) {
+      case "OPEN":
+        return {
+          label: "Inscrições Abertas",
+          badgeClass: "bg-green-500 hover:bg-green-600 text-white",
+          disabled: false,
+        };
+      case "CLOSE":
+        return {
+          label: "Inscrições Fechadas",
+          badgeClass: "bg-red-500 hover:bg-red-600 text-white",
+          disabled: true,
+        };
+      case "FINALIZED":
+        return {
+          label: "Evento Finalizado",
+          badgeClass: "bg-gray-500 hover:bg-gray-600 text-white",
+          disabled: true,
+        };
+      default:
+        return {
+          label: "Status Desconhecido",
+          badgeClass: "bg-gray-500 hover:bg-gray-600 text-white",
+          disabled: true,
+        };
+    }
   };
 
   // Função para determinar o status da análise
@@ -178,6 +209,8 @@ export default function AnalysisPaymentTable() {
                 event.countPayments,
                 event.countPaymentsAnalysis
               );
+
+              const statusEvent = getEventStatusInfo(event.status);
               const gradientClass = generateGradient(event.name);
               // Se não há imagem, não está carregando. Se há imagem, verifica o estado
               const isImageLoading = event.imageUrl
@@ -235,6 +268,11 @@ export default function AnalysisPaymentTable() {
                         ></div>
                       )}
                     </div>
+                    <div className="absolute top-2 right-2 select-none">
+                      <Badge className={`${statusEvent.badgeClass} border-0`}>
+                        {statusEvent.label}
+                      </Badge>
+                    </div>
                     {/* Badge de status - só aparece após a imagem carregar */}
                     {!isImageLoading && (
                       <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 select-none pointer-events-none">
@@ -266,16 +304,14 @@ export default function AnalysisPaymentTable() {
                         </span>
                       </div>
 
-                      {event.countPayments > 0 && (
-                        <div className="flex justify-between items-center text-sm dark:text-white">
-                          <span className="text-gray-600 dark:text-gray-400">
-                            Pendentes:
-                          </span>
-                          <span className="font-semibold text-yellow-600 dark:text-yellow-400">
-                            {event.countPaymentsAnalysis}
-                          </span>
-                        </div>
-                      )}
+                      <div className="flex justify-between items-center text-sm dark:text-white">
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Pendentes:
+                        </span>
+                        <span className="font-semibold text-yellow-600 dark:text-yellow-400">
+                          {event.countPaymentsAnalysis}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Botão de Análise */}

@@ -1,6 +1,8 @@
 import { useGlobalLoading } from "@/components/GlobalLoading";
 import { downloadParticipantsPdf } from "@/features/inscriptions/api/downloadParticipantsPdf";
+import { useUpdateInscription } from "@/features/inscriptions/hooks/useEditInscription";
 import RegisterPaymentDialog from "@/features/payment/components/RegisterPaymentDialog";
+import { ConfirmationDialog } from "@/shared/components/ConfirmationDialog";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -17,6 +19,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/shared/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/shared/components/ui/form";
+import { Input } from "@/shared/components/ui/input";
 import {
   Pagination,
   PaginationContent,
@@ -39,7 +50,15 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/shared/components/ui/tabs";
-import { CreditCard, Download, Eye, Loader2, Plus, User } from "lucide-react";
+import {
+  CreditCard,
+  Download,
+  Eye,
+  Loader2,
+  Plus,
+  Trash2,
+  User,
+} from "lucide-react";
 import { MouseEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { InscriptionDetails } from "../types/inscriptionsDetails.types";
@@ -69,6 +88,27 @@ export default function DetailsInscriptionsTable({
   const [participantsDownloadLoading, setParticipantsDownloadLoading] =
     useState(false);
   const { setLoading } = useGlobalLoading();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const {
+    form,
+    handleSubmit: handleUpdateSubmit,
+    isUpdating,
+    handleDelete,
+    isDeleting,
+  } = useUpdateInscription({
+    inscriptionId: data?.id,
+    initialValues: {
+      responsible: data?.responsible,
+      phone: data?.phone,
+      email: data?.email,
+    },
+    onSuccess: () => setIsEditDialogOpen(false),
+    onDeleteSuccess: () => {
+      setIsDeleteDialogOpen(false);
+      window.history.back();
+    },
+  });
 
   const itemsPerPage = 15;
   const paymentItemsPerPage = 10;
@@ -377,6 +417,103 @@ export default function DetailsInscriptionsTable({
   return (
     <>
       <div className="space-y-4 sm:space-y-6">
+        {data && (
+          <div className="flex justify-end gap-2">
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline">Editar Inscrição</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Editar dados da inscrição</DialogTitle>
+                  <DialogDescription>
+                    Atualize as informações de contato do responsável.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <Form {...form}>
+                  <form onSubmit={handleUpdateSubmit} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="responsible"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Responsável</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Telefone</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>E-mail</FormLabel>
+                          <FormControl>
+                            <Input type="email" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="flex justify-end gap-2 pt-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsEditDialogOpen(false)}
+                        disabled={isUpdating}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="text-white"
+                        disabled={isUpdating}
+                      >
+                        {isUpdating ? (
+                          <span className="flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Salvando...
+                          </span>
+                        ) : (
+                          "Salvar alterações"
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+            <Button
+              variant="destructive"
+              onClick={() => setIsDeleteDialogOpen(true)}
+              disabled={isDeleting}
+              className="flex items-center gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Excluir Inscrição
+            </Button>
+          </div>
+        )}
         {/* Header com informações principais */}
         <Card>
           <CardHeader className="pb-4">
@@ -410,7 +547,15 @@ export default function DetailsInscriptionsTable({
             </div>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-4 border-t text-center">
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  E-mail
+                </p>
+                <p className="text-sm font-medium break-all">
+                  {data.email || "-"}
+                </p>
+              </div>
               <div className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Telefone
@@ -929,6 +1074,18 @@ export default function DetailsInscriptionsTable({
         onOpenChange={setRegisterPaymentOpen}
         inscriptionId={data.id}
         totalValue={data.totalValue}
+      />
+
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDelete}
+        title="Excluir Inscrição"
+        message="Tem certeza que deseja excluir esta inscrição? Esta ação não pode ser desfeita e todos os dados associados serão permanentemente removidos."
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        variant="destructive"
+        isLoading={isDeleting}
       />
     </>
   );

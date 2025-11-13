@@ -2,7 +2,6 @@ import axiosInstance from "@/shared/lib/apiClient";
 import { PaymentStatus, UpdatePaymentStatusResponse } from "../types/analysisTypes";
 
 type UpdatePaymentStatusPayload = {
-  paymentId: string;
   statusPayment: PaymentStatus;
   rejectionReason?: string;
 };
@@ -14,7 +13,6 @@ export async function updatePaymentStatus(
 ): Promise<UpdatePaymentStatusResponse> {
   try {
     const payload: UpdatePaymentStatusPayload = {
-      paymentId,
       statusPayment,
     };
 

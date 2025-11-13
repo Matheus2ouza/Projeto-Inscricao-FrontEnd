@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { getInscriptionsDetails } from "../api/getInscriptionsDetails";
 import { DetailsInscriptionsTableProps } from "../types/inscriptionsDetails.types";
 
@@ -11,13 +12,28 @@ export const inscriptionDetailsKeys = {
 export function useInscriptionDetails({
   inscriptionId,
 }: DetailsInscriptionsTableProps) {
+  const queryClient = useQueryClient();
+
+  // Verificar se a inscrição foi deletada
+  const isDeleted = useMemo(() => {
+    const deletedInscriptions = queryClient.getQueryData<Set<string>>([
+      "deleted-inscriptions",
+    ]);
+    return deletedInscriptions?.has(inscriptionId) || false;
+  }, [inscriptionId, queryClient]);
+
+  // Se a inscrição foi deletada, não executar a query
+  const shouldExecuteQuery = !!inscriptionId && !isDeleted;
+
   return useQuery({
     queryKey: inscriptionDetailsKeys.detail(inscriptionId),
     queryFn: () => getInscriptionsDetails(inscriptionId),
-    staleTime: 5 * 60 * 1000, // 5 minutos - dados de inscrição não mudam frequentemente
-    gcTime: 10 * 60 * 1000, // 10 minutos
+    staleTime: Infinity, // Mantém os dados sempre fresh até invalidarmos manualmente
+    gcTime: 10 * 60 * 1000, // 10 minutos em cache antes de ser coletado
     retry: 2,
     refetchOnWindowFocus: false,
-    enabled: !!inscriptionId, // Só executa se inscriptionId existir
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    enabled: shouldExecuteQuery, // Só executa se inscriptionId existir e não foi deletada
   });
 }

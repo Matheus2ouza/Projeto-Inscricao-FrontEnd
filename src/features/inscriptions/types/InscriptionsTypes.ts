@@ -63,3 +63,9 @@ export type UsePaymentsResult = {
   setPage: (p: number) => void;
   refetch: () => Promise<void>;
 };
+
+export type UpdateInscriptionInput = {
+  responsible: string;
+  phone: string;
+  email: string;
+};
