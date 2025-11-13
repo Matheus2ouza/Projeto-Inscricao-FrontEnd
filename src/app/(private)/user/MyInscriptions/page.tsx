@@ -16,7 +16,7 @@ export default function MyInscriptions() {
 
   const handleBack = () => {
     // Voltar para a página do evento
-    router.push(`/user/MyInscriptions`);
+    router.push(`/user/home`);
   };
 
   return (
