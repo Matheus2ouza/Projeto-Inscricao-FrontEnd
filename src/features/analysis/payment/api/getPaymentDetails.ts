@@ -1,13 +1,27 @@
 import axiosInstance from "@/shared/lib/apiClient";
-import { AnalysisPaymentResponse } from "../types/analysisTypes";
+import qs from "qs";
+import {
+  AnalysisPaymentRequest,
+  AnalysisPaymentResponse,
+} from "../types/analysisTypes";
 
 export async function getPaymentDetails(
-  inscriptionId: string
+  inscriptionId: string,
+  params: AnalysisPaymentRequest
 ): Promise<AnalysisPaymentResponse> {
   try {
     const { data } = await axiosInstance.get<AnalysisPaymentResponse>(
-      `/payments/${inscriptionId}/analysis`
+      `/payments/${inscriptionId}/analysis`,
+      {
+        params: {
+          page: params.page,
+          pageSize: params.pageSize,
+          status: params.status,
+        },
+        paramsSerializer: (p) => qs.stringify(p, { arrayFormat: "repeat" }),
+      }
     );
+
     return data;
   } catch (error) {
     console.error("Error fetching payment details:", error);
