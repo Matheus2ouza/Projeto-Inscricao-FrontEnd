@@ -1,18 +1,32 @@
 import axiosInstance from "@/shared/lib/apiClient";
-import { PaymentStatus, UpdatePaymentStatusResponse } from "../types/analysisTypes";
+import { PaymentStatus, UpdatePaymentResponse } from "../types/analysisTypes";
 
 type UpdatePaymentStatusPayload = {
+  eventId: string;
+  inscriptionId: string;
   statusPayment: PaymentStatus;
   rejectionReason?: string;
 };
 
-export async function updatePaymentStatus(
-  paymentId: string,
-  statusPayment: PaymentStatus,
-  rejectionReason?: string
-): Promise<UpdatePaymentStatusResponse> {
+type UpdatePaymentStatusParams = {
+  paymentId: string;
+  inscriptionId: string;
+  eventId: string;
+  statusPayment: PaymentStatus;
+  rejectionReason?: string;
+};
+
+export async function updatePaymentStatus({
+  paymentId,
+  inscriptionId,
+  eventId,
+  statusPayment,
+  rejectionReason,
+}: UpdatePaymentStatusParams): Promise<UpdatePaymentResponse> {
   try {
     const payload: UpdatePaymentStatusPayload = {
+      inscriptionId,
+      eventId,
       statusPayment,
     };
 
