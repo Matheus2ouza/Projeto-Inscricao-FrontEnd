@@ -43,10 +43,9 @@ export enum PaymentStatus {
   REFUSED = "REFUSED", // Recusado
 }
 
-export type UpdatePaymentStatusResponse = {
+export type UpdatePaymentResponse = {
   id: string;
   status: string;
-  rejectionReason?: string | null;
 };
 
 // Tipos para detalhes de pagamento de uma inscrição

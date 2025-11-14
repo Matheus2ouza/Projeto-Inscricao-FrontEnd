@@ -1,6 +1,7 @@
 "use client";
 
 import ImageViewerDialog from "@/shared/components/ImageViewerDialog";
+import { AspectRatio } from "@/shared/components/ui/aspect-ratio";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import {
@@ -20,83 +21,116 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/shared/components/ui/pagination";
-import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Textarea } from "@/shared/components/ui/textarea";
 import {
-  ArrowLeft,
   CheckCircle,
   CircleOff,
   CreditCard,
   DollarSign,
   Frown,
+  Loader2,
   Mail,
   OctagonX,
   Phone,
+  RefreshCcw,
+  Trash2,
   User,
   ZoomIn,
 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { usePaymentActions } from "../hooks/usePaymentActions";
-import { usePaymentDetailsQuery } from "../hooks/usePaymentDetails";
-import { PaymentStatus } from "../types/analysisTypes";
+import { AnalysisPaymentResponse } from "../types/analysisTypes";
 
-export default function PaymentDetailAnalysis() {
-  const params = useParams();
+interface PaymentDetailAnalysisProps {
+  inscriptionId: string;
+  eventStatus: string;
+  eventId: string;
+  paymentData: AnalysisPaymentResponse | null;
+  loading: boolean;
+  error: Error | null;
+  page: number;
+  pageCount: number;
+  total: number;
+  onPageChange: (page: number) => void;
+}
+
+export default function PaymentDetailAnalysis({
+  inscriptionId,
+  eventStatus,
+  eventId,
+  paymentData,
+  loading,
+  error,
+  page,
+  pageCount,
+  total,
+  onPageChange,
+}: PaymentDetailAnalysisProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const inscriptionId = params.id as string;
-  const eventStatus = searchParams.get("eventStatus") || "OPEN"; // Default para OPEN se não fornecido
   const [selectedImage, setSelectedImage] = useState<{
     url: string;
     paymentId: string;
   } | null>(null);
 
-  // Determinar quais status de pagamento buscar baseado no status do evento
-  const paymentStatusToFetch = useMemo(() => {
-    if (eventStatus === "OPEN") {
-      // Se evento está aberto, buscar todos os pagamentos
-      return [
-        PaymentStatus.APPROVED,
-        PaymentStatus.UNDER_REVIEW,
-        PaymentStatus.REFUSED,
-      ].map((status) => status.toString());
-    } else {
-      // Se evento está fechado, buscar apenas aprovados
-      return [
-        PaymentStatus.APPROVED.toString(),
-        PaymentStatus.UNDER_REVIEW.toString(),
-      ].map((status) => status.toString());
-    }
-  }, [eventStatus]);
-
-  const {
-    data: paymentData,
-    isLoading: loading,
-    error,
-    page,
-    setPage,
-    pageCount,
-    total,
-  } = usePaymentDetailsQuery(inscriptionId, paymentStatusToFetch);
-
   // Resetar página quando o status do evento mudar
   useEffect(() => {
-    setPage(1);
-  }, [eventStatus, setPage]);
+    onPageChange(1);
+  }, [eventStatus, onPageChange]);
 
-  const { approvePayment, refusePayment, isApproving, isRefusing } =
-    usePaymentActions();
+  const {
+    approvePayment,
+    refusePayment,
+    reviewPayment,
+    deletePayment,
+    isApproving,
+    isRefusing,
+    isReviewing,
+    isDeleting,
+  } = usePaymentActions({ inscriptionId, eventId });
 
   const [refusalDialog, setRefusalDialog] = useState<{
     paymentId: string;
     reason: string;
   } | null>(null);
   const [refusalError, setRefusalError] = useState<string | null>(null);
+  const [deleteDialogPaymentId, setDeleteDialogPaymentId] = useState<
+    string | null
+  >(null);
+  const [imageLoadingState, setImageLoadingState] = useState<
+    Record<string, boolean>
+  >({});
+  const [manualReviewState, setManualReviewState] = useState<
+    Record<string, boolean>
+  >({});
+
+  useEffect(() => {
+    if (!paymentData) {
+      return;
+    }
+
+    setImageLoadingState((prev) => {
+      const next = { ...prev };
+
+      paymentData.inscription.payments.forEach((payment) => {
+        if (payment.image && !(payment.id in next)) {
+          next[payment.id] = true;
+        }
+      });
+
+      return next;
+    });
+  }, [paymentData]);
+  useEffect(() => {
+    setManualReviewState({});
+  }, [paymentData]);
 
   const handleApprovePayment = (paymentId: string) => {
+    setManualReviewState((prev) => {
+      const { [paymentId]: _omit, ...rest } = prev;
+      return rest;
+    });
     approvePayment(paymentId);
   };
 
@@ -114,6 +148,7 @@ export default function PaymentDetailAnalysis() {
     if (!refusalDialog) return;
 
     const trimmedReason = refusalDialog.reason.trim();
+    const paymentId = refusalDialog.paymentId;
 
     if (!trimmedReason) {
       setRefusalError("Informe o motivo da reprovação.");
@@ -122,12 +157,16 @@ export default function PaymentDetailAnalysis() {
 
     refusePayment(
       {
-        paymentId: refusalDialog.paymentId,
+        paymentId,
         rejectionReason: trimmedReason,
       },
       {
         onSuccess: () => {
           handleCloseRefusalDialog();
+          setManualReviewState((prev) => {
+            const { [paymentId]: _omit, ...rest } = prev;
+            return rest;
+          });
         },
         onError: () => {
           // Keep dialog open so the reviewer can adjust the reason if needed
@@ -136,12 +175,52 @@ export default function PaymentDetailAnalysis() {
     );
   };
 
+  const handleReviewPayment = (paymentId: string) => {
+    setManualReviewState((prev) => ({
+      ...prev,
+      [paymentId]: true,
+    }));
+    reviewPayment(paymentId);
+  };
+
+  const handleDeletePayment = (paymentId: string) => {
+    setDeleteDialogPaymentId(paymentId);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogPaymentId(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteDialogPaymentId) return;
+
+    deletePayment(deleteDialogPaymentId, {
+      onSuccess: () => {
+        handleCloseDeleteDialog();
+      },
+    });
+  };
+
   const handleImageClick = (imageUrl: string, paymentId: string) => {
     setSelectedImage({ url: imageUrl, paymentId });
   };
 
   const handleCloseImageViewer = () => {
     setSelectedImage(null);
+  };
+
+  const markImageAsLoaded = (paymentId: string) => {
+    setImageLoadingState((prev) => ({
+      ...prev,
+      [paymentId]: false,
+    }));
+  };
+
+  const markImageAsErrored = (paymentId: string) => {
+    setImageLoadingState((prev) => ({
+      ...prev,
+      [paymentId]: false,
+    }));
   };
 
   const getStatusColor = (status: string) => {
@@ -175,299 +254,265 @@ export default function PaymentDetailAnalysis() {
       case "approved":
         return <CheckCircle className="w-4 h-4" />;
       case "refused":
-        return <OctagonX className="w-4 h-4" />;
+        return <CircleOff className="w-4 h-4" />;
       default:
         return <CreditCard className="w-4 h-4" />;
     }
   };
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <Card className="w-full max-w-md border-0 shadow-lg">
-          <CardContent className="p-6 text-center">
-            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CreditCard className="w-6 h-6 text-red-600 dark:text-red-400" />
-            </div>
-            <h2 className="text-xl font-semibold text-red-600 mb-2">
-              Erro ao carregar detalhes
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              {error.message}
-            </p>
-            <Button asChild className="w-full">
-              <Link href="/super/payments/analysis">Voltar para Análise</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  if (!paymentData) {
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="icon" onClick={() => router.back()}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Detalhes do Pagamento
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                ID: {inscriptionId}
-              </p>
+    <>
+      <div className="space-y-6">
+        {/* Informações do Responsável */}
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                <User className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {paymentData.inscription.responsible}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Responsável pela inscrição
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Loading State */}
-        {loading ? (
-          <div className="space-y-6">
-            <Card className="border-0 shadow-sm">
-              <CardContent className="p-6">
-                <Skeleton className="h-8 w-64 mb-4" />
-                <div className="space-y-3">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <Phone className="w-5 h-5 text-blue-600" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Telefone</p>
+                  <p className="font-medium">{paymentData.inscription.phone}</p>
                 </div>
-              </CardContent>
-            </Card>
-            <Card className="border-0 shadow-sm">
-              <CardContent className="p-6">
-                <Skeleton className="h-6 w-48 mb-4" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Skeleton className="h-32" />
-                  <Skeleton className="h-32" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        ) : paymentData ? (
-          <div className="space-y-6">
-            {/* Informações do Responsável */}
-            <Card className="border-0 shadow-sm">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                    <User className="w-8 h-8 text-white" />
-                  </div>
+              </div>
+
+              {paymentData.inscription.email && (
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <Mail className="w-5 h-5 text-blue-600" />
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {paymentData.inscription.responsible}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      Responsável pela inscrição
+                    <p className="text-xs text-muted-foreground">Email</p>
+                    <p className="font-medium text-sm break-all">
+                      {paymentData.inscription.email}
                     </p>
                   </div>
                 </div>
+              )}
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <Phone className="w-5 h-5 text-blue-600" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Telefone</p>
-                      <p className="font-medium">
-                        {paymentData.inscription.phone}
-                      </p>
-                    </div>
-                  </div>
-
-                  {paymentData.inscription.email && (
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <Mail className="w-5 h-5 text-blue-600" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">Email</p>
-                        <p className="font-medium text-sm break-all">
-                          {paymentData.inscription.email}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                    <DollarSign className="w-5 h-5 text-purple-600" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        Saldo devedor
-                      </p>
-                      <p className="font-bold text-lg text-purple-600">
-                        R$ {paymentData.inscription.totalValue.toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
+              <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                <DollarSign className="w-5 h-5 text-purple-600" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Saldo devedor</p>
+                  <p className="font-bold text-lg text-purple-600">
+                    R$ {paymentData.inscription.totalValue.toFixed(2)}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Cards de Resumo */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className="border-0 shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">
-                        Total de Pagamentos
-                      </p>
-                      <p className="text-2xl font-bold ml-4">{total}</p>
-                    </div>
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">
-                      <CreditCard className="h-4 w-4 text-white" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">
-                        Aprovados
-                      </p>
-                      <p className="text-2xl font-bold text-green-600 ml-4">
-                        {
-                          paymentData.inscription.payments.filter(
-                            (p) => p.status.toLowerCase() === "approved"
-                          ).length
-                        }
-                      </p>
-                    </div>
-                    <div className="p-2 bg-green-100 dark:bg-green-900 rounded-full">
-                      <CheckCircle className="h-4 w-4 text-white" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">
-                        Em Análise
-                      </p>
-                      <p className="text-2xl font-bold text-blue-600 ml-4">
-                        {
-                          paymentData.inscription.payments.filter(
-                            (p) => p.status.toLowerCase() === "under_review"
-                          ).length
-                        }
-                      </p>
-                    </div>
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">
-                      <CreditCard className="h-4 w-4 text-white" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">
-                        Recusados
-                      </p>
-                      <p className="text-2xl font-bold text-red-600 ml-4">
-                        {
-                          paymentData.inscription.payments.filter(
-                            (p) => p.status.toLowerCase() === "refused"
-                          ).length
-                        }
-                      </p>
-                    </div>
-                    <div className="p-2 bg-blue-100 dark:bg-red-900 rounded-full">
-                      <CircleOff className="h-4 w-4 text-white" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              </div>
             </div>
+          </CardContent>
+        </Card>
 
-            {/* Lista de Pagamentos */}
-            <Card className="border-0 shadow-sm">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold mb-4">Pagamentos</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {paymentData.inscription.payments.map((payment, index) => {
-                    const hasImage = Boolean(payment.image);
+        {/* Cards de Resumo */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Total de Pagamentos
+                  </p>
+                  <p className="text-2xl font-bold ml-4">{total}</p>
+                </div>
+                <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">
+                  <CreditCard className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-                    return (
-                      <Card
-                        key={payment.id}
-                        className="border shadow-sm hover:shadow-md transition-shadow"
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Aprovados
+                  </p>
+                  <p className="text-2xl font-bold text-green-600 ml-4">
+                    {
+                      paymentData.inscription.payments.filter(
+                        (p) => p.status.toLowerCase() === "approved"
+                      ).length
+                    }
+                  </p>
+                </div>
+                <div className="p-2 bg-green-100 dark:bg-green-900 rounded-full">
+                  <CheckCircle className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Em Análise
+                  </p>
+                  <p className="text-2xl font-bold text-blue-600 ml-4">
+                    {
+                      paymentData.inscription.payments.filter(
+                        (p) => p.status.toLowerCase() === "under_review"
+                      ).length
+                    }
+                  </p>
+                </div>
+                <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">
+                  <CreditCard className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Recusados
+                  </p>
+                  <p className="text-2xl font-bold text-red-600 ml-4">
+                    {
+                      paymentData.inscription.payments.filter(
+                        (p) => p.status.toLowerCase() === "refused"
+                      ).length
+                    }
+                  </p>
+                </div>
+                <div className="p-2 bg-blue-100 dark:bg-red-900 rounded-full">
+                  <CircleOff className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Lista de Pagamentos */}
+        <Card className="border-0 shadow-sm">
+          <CardContent>
+            <h3 className="text-xl font-bold mb-4">Pagamentos</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {paymentData.inscription.payments.map((payment, index) => {
+                const hasImage = Boolean(payment.image);
+                const isUnderReview =
+                  payment.status.toLowerCase() === "under_review";
+                const disableStatusActions =
+                  isApproving || isRefusing || isReviewing || isDeleting;
+                const showStatusActions =
+                  isUnderReview || manualReviewState[payment.id];
+                const isFirstCard = index === 0;
+                const isImageLoading =
+                  imageLoadingState[payment.id] ?? Boolean(payment.image);
+
+                return (
+                  <Card
+                    key={payment.id}
+                    className="border shadow-sm hover:shadow-md transition-shadow py-1"
+                  >
+                    <CardContent className="p-4">
+                      {/* Status */}
+                      <div className="flex justify-between items-center mb-3">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${getStatusColor(
+                            payment.status
+                          )}`}
+                        >
+                          {getStatusIcon(payment.status)}
+                          {getStatusText(payment.status)}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-gray-500 hover:text-red-600"
+                          onClick={() => handleDeletePayment(payment.id)}
+                          disabled={isDeleting}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          <span className="sr-only">Deletar pagamento</span>
+                        </Button>
+                      </div>
+
+                      {/* Imagem */}
+                      <AspectRatio
+                        ratio={4 / 3}
+                        className={`relative mb-3 rounded-lg overflow-hidden ${
+                          hasImage
+                            ? "cursor-pointer group"
+                            : "bg-gray-100 dark:bg-gray-800"
+                        }`}
+                        onClick={() =>
+                          hasImage && payment.image
+                            ? handleImageClick(payment.image, payment.id)
+                            : undefined
+                        }
                       >
-                        <CardContent className="p-4">
-                          {/* Status */}
-                          <div className="flex justify-between items-center mb-3">
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${getStatusColor(
-                                payment.status
-                              )}`}
-                            >
-                              {getStatusIcon(payment.status)}
-                              {getStatusText(payment.status)}
-                            </span>
-                          </div>
-
-                          {/* Imagem */}
-                          <div
-                            className={`relative h-48 mb-3 rounded-lg overflow-hidden ${
-                              hasImage
-                                ? "cursor-pointer group"
-                                : "bg-gray-100 dark:bg-gray-800"
-                            }`}
-                            onClick={() =>
-                              hasImage && payment.image
-                                ? handleImageClick(payment.image, payment.id)
-                                : undefined
-                            }
-                          >
-                            {hasImage && payment.image ? (
-                              <>
-                                <Image
-                                  src={payment.image}
-                                  alt={`Comprovante ${index + 1}`}
-                                  fill
-                                  className="object-cover"
-                                />
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex items-center justify-center">
-                                  <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </div>
-                              </>
-                            ) : (
-                              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
-                                <Frown className="w-10 h-10" />
-                                <span className="text-sm font-medium">
-                                  Imagem indisponível
-                                </span>
+                        {hasImage && payment.image ? (
+                          <>
+                            {isImageLoading && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/10 dark:bg-black/30 pointer-events-none">
+                                <Loader2 className="w-6 h-6 text-white animate-spin" />
                               </div>
                             )}
-                          </div>
-
-                          {/* Valor */}
-                          <div className="flex justify-between items-center mb-3">
-                            <span className="text-sm text-muted-foreground">
-                              Valor:
+                            <Image
+                              src={payment.image}
+                              alt={`Comprovante ${index + 1}`}
+                              fill
+                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                              priority={isFirstCard}
+                              className="object-cover"
+                              onLoad={() => markImageAsLoaded(payment.id)}
+                              onError={() => markImageAsErrored(payment.id)}
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex items-center justify-center">
+                              <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                          </>
+                        ) : (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                            <Frown className="w-10 h-10" />
+                            <span className="text-sm font-medium">
+                              Imagem indisponível
                             </span>
-                            <span className="font-bold text-lg text-green-600">
-                              R$ {payment.value.toFixed(2)}
-                            </span>
                           </div>
+                        )}
+                      </AspectRatio>
 
-                          {/* Botões de Ação */}
-                          <div className="flex gap-2 mt-3">
+                      {/* Valor */}
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-sm text-muted-foreground">
+                          Valor:
+                        </span>
+                        <span className="font-bold text-lg text-green-600">
+                          R$ {payment.value.toFixed(2)}
+                        </span>
+                      </div>
+
+                      {/* Botões de Ação */}
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {showStatusActions ? (
+                          <>
                             <Button
                               variant="outline"
                               size="sm"
                               className="flex-1 border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
                               onClick={() => handleApprovePayment(payment.id)}
-                              disabled={isApproving || isRefusing}
+                              disabled={disableStatusActions}
                             >
                               <CheckCircle className="w-4 h-4 mr-1" />
                               Aprovar
@@ -477,94 +522,97 @@ export default function PaymentDetailAnalysis() {
                               size="sm"
                               className="flex-1 border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                               onClick={() => handleRefusePayment(payment.id)}
-                              disabled={isApproving || isRefusing}
+                              disabled={disableStatusActions}
                             >
                               <OctagonX className="w-4 h-4 mr-1" />
                               Recusar
                             </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
+                          </>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                            onClick={() => handleReviewPayment(payment.id)}
+                            disabled={disableStatusActions}
+                          >
+                            <RefreshCcw className="w-4 h-4 mr-1" />
+                            Revisar status
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
 
-                {paymentData.inscription.payments.length === 0 && (
-                  <div className="text-center py-12">
-                    <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium mb-2">
-                      Nenhum pagamento registrado
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Não há pagamentos para esta inscrição.
-                    </p>
-                  </div>
-                )}
+            {paymentData.inscription.payments.length === 0 && (
+              <div className="text-center py-12">
+                <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">
+                  Nenhum pagamento registrado
+                </h3>
+                <p className="text-muted-foreground">
+                  Não há pagamentos para esta inscrição.
+                </p>
+              </div>
+            )}
 
-                {/* Paginação */}
-                {pageCount > 1 && (
-                  <div className="flex justify-center mt-6">
-                    <Pagination>
-                      <PaginationContent>
-                        <PaginationItem>
-                          <PaginationPrevious
-                            onClick={() => page > 1 && setPage(page - 1)}
-                            href={page > 1 ? "#" : undefined}
-                            className={
-                              page === 1 ? "pointer-events-none opacity-50" : ""
-                            }
-                          />
-                        </PaginationItem>
+            {/* Paginação */}
+            {pageCount > 1 && (
+              <div className="flex justify-center mt-6">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => page > 1 && onPageChange(page - 1)}
+                        href={page > 1 ? "#" : undefined}
+                        className={
+                          page === 1 ? "pointer-events-none opacity-50" : ""
+                        }
+                      />
+                    </PaginationItem>
 
-                        {Array.from({ length: pageCount }, (_, i) => (
-                          <PaginationItem key={i}>
-                            <PaginationLink
-                              isActive={page === i + 1}
-                              href="#"
-                              onClick={() => setPage(i + 1)}
-                            >
-                              {i + 1}
-                            </PaginationLink>
-                          </PaginationItem>
-                        ))}
+                    {Array.from({ length: pageCount }, (_, i) => (
+                      <PaginationItem key={i}>
+                        <PaginationLink
+                          isActive={page === i + 1}
+                          href="#"
+                          onClick={() => onPageChange(i + 1)}
+                        >
+                          {i + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
 
-                        <PaginationItem>
-                          <PaginationNext
-                            onClick={() =>
-                              page < pageCount && setPage(page + 1)
-                            }
-                            href={page < pageCount ? "#" : undefined}
-                            className={
-                              page === pageCount
-                                ? "pointer-events-none opacity-50"
-                                : ""
-                            }
-                          />
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
-                  </div>
-                )}
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() =>
+                          page < pageCount && onPageChange(page + 1)
+                        }
+                        href={page < pageCount ? "#" : undefined}
+                        className={
+                          page === pageCount
+                            ? "pointer-events-none opacity-50"
+                            : ""
+                        }
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
 
-                {/* Informação de paginação */}
-                {total > 0 && (
-                  <div className="text-center mt-4 text-sm text-muted-foreground">
-                    Mostrando {paymentData.inscription.payments.length} de{" "}
-                    {total} pagamentos (Página {page} de {pageCount})
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">Nenhum dado encontrado</h3>
-            <p className="text-muted-foreground">
-              Não foi possível carregar os detalhes do pagamento.
-            </p>
-          </div>
-        )}
+            {/* Informação de paginação */}
+            {total > 0 && (
+              <div className="text-center mt-4 text-sm text-muted-foreground">
+                Mostrando {paymentData.inscription.payments.length} de {total}{" "}
+                pagamentos (Página {page} de {pageCount})
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Image Viewer Dialog */}
@@ -640,6 +688,44 @@ export default function PaymentDetailAnalysis() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+
+      <Dialog
+        open={!!deleteDialogPaymentId}
+        onOpenChange={(open) => {
+          if (!open) {
+            handleCloseDeleteDialog();
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Deletar pagamento</DialogTitle>
+            <DialogDescription>
+              Essa ação removerá permanentemente o pagamento{" "}
+              {deleteDialogPaymentId
+                ? `${deleteDialogPaymentId.slice(0, 8)}...`
+                : ""}{" "}
+              e não poderá ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={handleCloseDeleteDialog}
+              disabled={isDeleting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deletando..." : "Deletar pagamento"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

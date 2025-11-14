@@ -467,7 +467,8 @@ export default function RegisterPaymentDialog({
                           htmlFor="receipt"
                           className="text-sm font-medium"
                         >
-                          Comprovante de Pagamento *
+                          Comprovante de Pagamento * (Somente um Comporvante de
+                          cada vez)
                         </Label>
 
                         {receiptFile ? (
