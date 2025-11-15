@@ -2,6 +2,7 @@
 
 import ImageViewerDialog from "@/shared/components/ImageViewerDialog";
 import { AspectRatio } from "@/shared/components/ui/aspect-ratio";
+import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import {
@@ -77,7 +78,8 @@ export default function PaymentDetailAnalysis({
   // Resetar página quando o status do evento mudar
   useEffect(() => {
     onPageChange(1);
-  }, [eventStatus, onPageChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventStatus]); // Resetar página quando o status do evento mudar
 
   const {
     approvePayment,
@@ -260,6 +262,42 @@ export default function PaymentDetailAnalysis({
     }
   };
 
+  const getInscriptionStatusText = (status: string) => {
+    switch (status.toUpperCase()) {
+      case "APPROVED":
+        return "PAGO";
+      case "UNDER_REVIEW":
+        return "EM ANÁLISE";
+      case "REFUSED":
+        return "RECUSADO";
+      case "PENDING":
+        return "PENDENTE";
+      case "PAID":
+        return "PAGO";
+      case "CANCELLED":
+        return "CANCELADO";
+      default:
+        return status.toUpperCase();
+    }
+  };
+
+  const getInscriptionStatusColor = (status: string) => {
+    switch (status.toUpperCase()) {
+      case "APPROVED":
+      case "PAID":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+      case "UNDER_REVIEW":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+      case "REFUSED":
+      case "CANCELLED":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+      case "PENDING":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+    }
+  };
+
   if (!paymentData) {
     return null;
   }
@@ -270,18 +308,27 @@ export default function PaymentDetailAnalysis({
         {/* Informações do Responsável */}
         <Card className="border-0 shadow-sm">
           <CardContent className="p-6">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                <User className="w-8 h-8 text-white" />
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+              <div className="flex items-center gap-4 flex-1">
+                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                  <User className="w-8 h-8 text-blue-600 dark:text-blue-300" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {paymentData.inscription.responsible}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Responsável pela inscrição
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {paymentData.inscription.responsible}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Responsável pela inscrição
-                </p>
-              </div>
+              <Badge
+                className={`self-start text-sm px-3 py-1.5 ${getInscriptionStatusColor(
+                  paymentData.inscription.status
+                )}`}
+              >
+                {getInscriptionStatusText(paymentData.inscription.status)}
+              </Badge>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -566,10 +613,17 @@ export default function PaymentDetailAnalysis({
                   <PaginationContent>
                     <PaginationItem>
                       <PaginationPrevious
-                        onClick={() => page > 1 && onPageChange(page - 1)}
-                        href={page > 1 ? "#" : undefined}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (page > 1) {
+                            onPageChange(page - 1);
+                          }
+                        }}
+                        href="#"
                         className={
-                          page === 1 ? "pointer-events-none opacity-50" : ""
+                          page === 1
+                            ? "pointer-events-none opacity-50"
+                            : "cursor-pointer"
                         }
                       />
                     </PaginationItem>
@@ -579,7 +633,11 @@ export default function PaymentDetailAnalysis({
                         <PaginationLink
                           isActive={page === i + 1}
                           href="#"
-                          onClick={() => onPageChange(i + 1)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            onPageChange(i + 1);
+                          }}
+                          className="cursor-pointer"
                         >
                           {i + 1}
                         </PaginationLink>
@@ -588,14 +646,17 @@ export default function PaymentDetailAnalysis({
 
                     <PaginationItem>
                       <PaginationNext
-                        onClick={() =>
-                          page < pageCount && onPageChange(page + 1)
-                        }
-                        href={page < pageCount ? "#" : undefined}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (page < pageCount) {
+                            onPageChange(page + 1);
+                          }
+                        }}
+                        href="#"
                         className={
                           page === pageCount
                             ? "pointer-events-none opacity-50"
-                            : ""
+                            : "cursor-pointer"
                         }
                       />
                     </PaginationItem>
