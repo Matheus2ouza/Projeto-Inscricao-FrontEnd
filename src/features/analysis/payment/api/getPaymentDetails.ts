@@ -31,7 +31,7 @@ export async function getPaymentDetails(
     };
     throw new Error(
       axiosError.response?.data?.message ||
-      "Falha ao carregar detalhes do pagamento"
+        "Falha ao carregar detalhes do pagamento"
     );
   }
 }
